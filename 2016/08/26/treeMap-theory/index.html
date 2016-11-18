@@ -1,0 +1,1583 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="TreeMap," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="前言由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。
+红黑树红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。
+红黑树的规定：
+1.一个节点只能是红色或者黑色2.根节点是黑色3.每个叶节点（null节点/空节点）为黑色4.如果一个节点为红色，则他们的2个子节点都为黑色5.从任意节点到其每个叶节点
+红">
+<meta property="og:type" content="article">
+<meta property="og:title" content="红黑树&TreeMap的实现原理">
+<meta property="og:url" content="https://zacard.net/2016/08/26/treeMap-theory/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="前言由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。
+红黑树红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。
+红黑树的规定：
+1.一个节点只能是红色或者黑色2.根节点是黑色3.每个叶节点（null节点/空节点）为黑色4.如果一个节点为红色，则他们的2个子节点都为黑色5.从任意节点到其每个叶节点
+红">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/brt-left.gif">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/brt-right.gif">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert3.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert-4.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert-5.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-2.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.1.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.1.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.2-1.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.2-2.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.3-1.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.3-2.png">
+<meta property="og:updated_time" content="2016-11-04T08:56:15.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="红黑树&TreeMap的实现原理">
+<meta name="twitter:description" content="前言由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。
+红黑树红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。
+红黑树的规定：
+1.一个节点只能是红色或者黑色2.根节点是黑色3.每个叶节点（null节点/空节点）为黑色4.如果一个节点为红色，则他们的2个子节点都为黑色5.从任意节点到其每个叶节点
+红">
+<meta name="twitter:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/brt-left.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2016/08/26/treeMap-theory/"/>
+
+
+
+
+
+  <title> 红黑树&TreeMap的实现原理 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/26/treeMap-theory/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                红黑树&TreeMap的实现原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-26T21:02:14+08:00">
+                2016-08-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/26/treeMap-theory/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/26/treeMap-theory/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/26/treeMap-theory/" class="leancloud_visitors" data-flag-title="红黑树&TreeMap的实现原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。</p>
+<h1 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h1><p>红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。</p>
+<p>红黑树的规定：</p>
+<p>1.一个节点只能是红色或者黑色<br>2.根节点是黑色<br>3.每个叶节点（null节点/空节点）为黑色<br>4.如果一个节点为红色，则他们的2个子节点都为黑色<br>5.从任意节点到其每个叶节点</p>
+<p>红黑树结构java代码示例：（TreeMap中的内部类Entry）</p>
+<pre><code>/**
+ * 红黑树节点结构
+ */
+static final class Entry&lt;K, V&gt; implements Map.Entry&lt;K, V&gt; {
+    K key; // 红黑树的排序字段
+    V value; // 节点存储的值
+    Entry&lt;K, V&gt; left; // 左子树节点
+    Entry&lt;K, V&gt; right; // 右子树节点
+    Entry&lt;K, V&gt; parent; // 父节点
+    boolean color = BLACK; // 节点颜色，默认为黑
+
+    /**
+     * Make a new cell with given key, value, and parent, and with
+     * {@code null} child links, and BLACK color.
+     */
+    Entry(K key, V value, Entry&lt;K, V&gt; parent) {
+        this.key = key;
+        this.value = value;
+        this.parent = parent;
+    }
+
+    /**
+     * Returns the key.
+     *
+     * @return the key
+     */
+    public K getKey() {
+        return key;
+    }
+
+    /**
+     * Returns the value associated with the key.
+     *
+     * @return the value associated with the key
+     */
+    public V getValue() {
+        return value;
+    }
+
+    /**
+     * Replaces the value currently associated with the key with the given
+     * value.
+     *
+     * @return the value associated with the key before this method was
+     * called
+     */
+    public V setValue(V value) {
+        V oldValue = this.value;
+        this.value = value;
+        return oldValue;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof Map.Entry))
+            return false;
+        Map.Entry&lt;?, ?&gt; e = (Map.Entry&lt;?, ?&gt;) o;
+
+        return valEquals(key, e.getKey()) &amp;&amp; valEquals(value, e.getValue());
+    }
+
+    public int hashCode() {
+        int keyHash = (key == null ? 0 : key.hashCode());
+        int valueHash = (value == null ? 0 : value.hashCode());
+        return keyHash ^ valueHash;
+    }
+
+    public String toString() {
+        return key + &quot;=&quot; + value;
+    }
+}
+</code></pre><a id="more"></a>
+<h2 id="红黑树的平衡"><a href="#红黑树的平衡" class="headerlink" title="红黑树的平衡"></a>红黑树的平衡</h2><p>在介绍红黑树的插入前，先弄清楚红黑树如何保持平衡。因为一般在对红黑树插入后，需要对红黑树做平衡化处理。</p>
+<h3 id="红黑树的左旋"><a href="#红黑树的左旋" class="headerlink" title="红黑树的左旋"></a>红黑树的左旋</h3><p>红黑树的左旋操作如下图：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/brt-left.gif" alt=""></p>
+<p>代码如下所示：(TreeMap.rotateLeft)</p>
+<pre><code>/**
+ * 红黑树左旋
+ */
+private void rotateLeft(Entry&lt;K, V&gt; p) {
+    if (p != null) {
+        // 获取p(对应动图中的E节点)的右子节点定义为r(对应为动图中的S)
+        Entry&lt;K, V&gt; r = p.right;
+        // 将p的右子节点设置为r的左子节点
+        p.right = r.left;
+        // 如果r的左子节点不为空,则设置r的左子节点的父节点为p
+        if (r.left != null)
+            r.left.parent = p;
+        // 将r的父节点设置为p的父节点
+        r.parent = p.parent;
+        // 如果p没有父节点,则将r设置为根节点
+        if (p.parent == null)
+            root = r;
+        // 如果p为p父节点的左子节点,则将p的父节点的左子节点设置为r
+        else if (p.parent.left == p)
+            p.parent.left = r;
+        // 反之将p的父节点的右子结点设置为r
+        else
+            p.parent.right = r;
+        // 将r的左子节点设置为p
+        r.left = p;
+        // 将p的父节点设置为r
+        p.parent = r;
+    }
+}
+</code></pre><h3 id="红黑树的右旋"><a href="#红黑树的右旋" class="headerlink" title="红黑树的右旋"></a>红黑树的右旋</h3><p>红黑树的右旋操作如下图：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/brt-right.gif" alt=""></p>
+<p>代码如下所示：（TreeMap.rotateRight）</p>
+<pre><code>/**
+ * 红黑树右旋
+ */
+private void rotateRight(Entry&lt;K, V&gt; p) {
+    if (p != null) {
+        // 将p的左子节点定义为l
+        Entry&lt;K, V&gt; l = p.left;
+        // 将p的左子节点设置为l的右子节点
+        p.left = l.right;
+        // 如果l的右子节点不为空,则将l的右子节点的父节点设置为p
+        if (l.right != null) l.right.parent = p;
+        // 将l的父节点设置为p的父节点
+        l.parent = p.parent;
+        // 如果p的父节点为空,则将l设置为根节点
+        if (p.parent == null)
+            root = l;
+        // 如果p为p的父节点的右子节点,则将p的父节点的右子节点设置为l
+        else if (p.parent.right == p)
+            p.parent.right = l;
+        // 反之将p的父节点的左子节点设置为l
+        else p.parent.left = l;
+        // 将l的右子节点设置为p
+        l.right = p;
+        // 将p的父节点设置为l
+        p.parent = l;
+    }
+}
+</code></pre><h2 id="红黑树插入"><a href="#红黑树插入" class="headerlink" title="红黑树插入"></a>红黑树插入</h2><p>首先红黑树是一棵二叉查找树，所以新增一个节点，首先根据二叉树的性质找到相应的节点位置。然后根据红黑树的特点进行调整和平衡。</p>
+<p>红黑树新增节点需要注意以下三点：</p>
+<p>1.新增节点默认为红色。<br>2.如果新增的节点的父节点为黑色，那么能维持红黑树的性质。<br>3.如果新增的节点的父节点为红色，那么会破坏红黑树的性质。需要通过重新着色、旋转等手段来维持红黑树的性质。</p>
+<p>红黑树的节点新增有以下5种情况：<br>(以下约定,新增节点为N,父节点为P,叔父节点为U,祖父节点为G)</p>
+<p>1.新增节点没有父节点，即为跟节点，直接设置为黑色。<br>2.新增节点的父节点为黑色，则直接插入。<br>3.新增节点(N)的父节点(P)和叔父节点(U)都为红色-&gt;将父节点(P)和叔父节点(U)设置为黑，祖父节点(G)设置为红。这时候，由于经由父节点(P)和叔父节点(U)的路径必经过祖父节点(G)，所以这些路径上的黑色节点数目还是相同的。但是祖父节点(G)变为红色之后，祖父节点(G)的父节点可能也是红色，这时候就要将祖父节点(G)当做新增节点递归处理。如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert3.png" alt=""></p>
+<p>4.新增节点(N)的父节点(P)为红色，父节点(P)为祖父节点(G)的左子节点，叔父节点(U)都为黑色或者缺少，且新增节点(N)为父节点(P)的右子节点-&gt;将节点N,P左旋（如下图所所示）。<strong>这里注意，如果父节点(P)为祖父节点(G)的右子节点时是要进行右旋。</strong>然后产生的结果其实还没有完成，以为违反了<strong>规则4</strong>，将P节点作为新增节点进行情况5的操作。</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert-4.png" alt=""></p>
+<p>5.新增节点(N)的父节点(P)为红色，父节点(P)为祖父节点(G)的左子节点，叔父节点(U)都为黑色或者缺少，且新增节点(N)为父节点(P)的左子节点-&gt;将祖父节(G)与父节点(P)进行右旋（<strong>如果父节点(P)为祖父节点(G)的右子节点，进行左旋</strong>），然而还没有完成，因为节点P,N都为红色，违反了规则4。将P,G的颜色进行交换。如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-insert-5.png" alt=""></p>
+<h2 id="TreeMap中元素的插入"><a href="#TreeMap中元素的插入" class="headerlink" title="TreeMap中元素的插入"></a>TreeMap中元素的插入</h2><p>TreeMap的<code>put()</code>方法其实只是找到新增节点插入的位置，而插入之后的红黑树平黑调整调用了<code>fixAfterInsertion()</code>方法进行。<code>put()</code>方法代码如下：</p>
+<pre><code>/**
+ * Associates the specified value with the specified key in this map.
+ * If the map previously contained a mapping for the key, the old
+ * value is replaced.
+ *
+ * @param key   key with which the specified value is to be associated
+ * @param value value to be associated with the specified key
+ * @return the previous value associated with {@code key}, or
+ * {@code null} if there was no mapping for {@code key}.
+ * (A {@code null} return can also indicate that the map
+ * previously associated {@code null} with {@code key}.)
+ * @throws ClassCastException   if the specified key cannot be compared
+ *                              with the keys currently in the map
+ * @throws NullPointerException if the specified key is null
+ *                              and this map uses natural ordering, or its comparator
+ *                              does not permit null keys
+ */
+public V put(K key, V value) {
+    // 用t表示当前root节点(也就是整棵数)
+    Entry&lt;K, V&gt; t = root;
+    // 当t为null时,说明是空树,treeMap中没有元素,直接插入
+    if (t == null) {
+        /*
+          这里key自我比较很奇怪。
+          其实是为了key的null校验和k类型检查。
+          校验key是否可比较的.
+          这里其实可以用类泛型限定,如TreeMap&lt;key extends Comparable&gt;,之所以没有这么做应该是jdk版本兼容性的考虑
+         */
+        compare(key, key); // type (and possibly null) check
+
+        // 根据key-value,生成节点赋值为root
+        root = new Entry&lt;&gt;(key, value, null);
+        // 容器的元素数量赋值为1
+        size = 1;
+        // 修改次数+1
+        modCount++;
+        return null;
+    }
+    int cmp;// key排序比较的结果
+    Entry&lt;K, V&gt; parent;// 父节点
+    // split comparator and comparable paths
+    Comparator&lt;? super K&gt; cpr = comparator;
+    // 如果指定的比较器不为空,使用指定的比较器进行比较
+    if (cpr != null) {
+        do {
+            parent = t;//parent赋值为上次循环后的t
+            // 比较key和当前节点的key
+            cmp = cpr.compare(key, t.key);
+            // key小于当前节点的key,则t指向t的左子节点
+            if (cmp &lt; 0)
+                t = t.left;
+            // key大于当前节点的key,则t指向t的右子节点
+            else if (cmp &gt; 0)
+                t = t.right;
+            // key等于当前节点的key,直接在当前节点设置新值并返回
+            else
+                return t.setValue(value);
+        } while (t != null);//递归的进行上述操作,直到t==null
+    } else { // 如果没有知道比较器,则按照默认的比较方式(即自然顺序)
+        // 如果key==null抛出空指针异常
+        if (key == null)
+            throw new NullPointerException();
+        // 以下处理过程和上面的一样
+        @SuppressWarnings(&quot;unchecked&quot;)
+        Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;
+        do {
+            parent = t;
+            cmp = k.compareTo(t.key);
+            if (cmp &lt; 0)
+                t = t.left;
+            else if (cmp &gt; 0)
+                t = t.right;
+            else
+                return t.setValue(value);
+        } while (t != null);
+    }
+    // 将新增的节点当做parent的子节点
+    Entry&lt;K, V&gt; e = new Entry&lt;&gt;(key, value, parent);
+    // 新增节点key小于parent的key,则作为左子节点
+    if (cmp &lt; 0)
+        parent.left = e;
+    // 新增节点key大于parent的key,则作为右子节点
+    else
+        parent.right = e;
+    // 新增节点已经在合适的位置了,然后进行红黑树的平衡调整
+    fixAfterInsertion(e);
+    size++;
+    modCount++;
+    return null;
+}
+</code></pre><p>再来看看<code>fixAfterInsertion()</code>如何进行红黑树的平衡的，代码如下：</p>
+<pre><code>/**
+ * 红黑树平衡
+ */
+private void fixAfterInsertion(Entry&lt;K, V&gt; x) {
+    x.color = RED; // 新增节点的颜色设置为红色
+
+    // 循环直到x为null或者x是根节点或者x的父节点为黑色
+    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
+        // 如果x的父节点为x的祖父节点的左节点
+        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
+            // 获取x的叔父节点定义为y
+            Entry&lt;K, V&gt; y = rightOf(parentOf(parentOf(x)));
+            // 如果叔父节点的颜色为红色(情况3)
+            if (colorOf(y) == RED) {
+                // 设置父节点的颜色为黑色
+                setColor(parentOf(x), BLACK);
+                // 设置叔父节点的颜色为黑色
+                setColor(y, BLACK);
+                // 设置祖父节点的颜色为红色
+                setColor(parentOf(parentOf(x)), RED);
+                // x赋值为祖父节点,递归判断
+                x = parentOf(parentOf(x));
+            }
+            // 如果叔父节点的颜色为黑色
+            else {
+                // 如果x为其父节点的右节点(情况4)
+                if (x == rightOf(parentOf(x))) {
+                    // x赋值为其父节点
+                    x = parentOf(x);
+                    // 根据x的父节点进行左旋
+                    rotateLeft(x);
+
+                }
+                // 情况5
+                // 设置x的父节点为黑色
+                setColor(parentOf(x), BLACK);
+                // 设置x的祖父节点为红色
+                setColor(parentOf(parentOf(x)), RED);
+                // 根据x的祖父节点右旋
+                rotateRight(parentOf(parentOf(x)));
+            }
+        }
+        // 如果x的父节点为x的祖父节点的右节点
+        else {
+            // 定义x的叔父节点为y
+            Entry&lt;K, V&gt; y = leftOf(parentOf(parentOf(x)));
+            // 如果叔父节点的颜色为红色(情况3)
+            if (colorOf(y) == RED) {
+                setColor(parentOf(x), BLACK);
+                setColor(y, BLACK);
+                setColor(parentOf(parentOf(x)), RED);
+                x = parentOf(parentOf(x));
+            }
+            // 如果叔父节点的颜色为黑色
+            else {
+                // 如果x为其父节点的左子节点(情况4)
+                if (x == leftOf(parentOf(x))) {
+                    // x赋值为其父节点
+                    x = parentOf(x);
+                    // 针对x父节点右旋
+                    rotateRight(x);
+                }
+                // 情况5
+                // 设置x的父节点颜色为黑色
+                setColor(parentOf(x), BLACK);
+                // 设置祖父节点颜色为红色
+                setColor(parentOf(parentOf(x)), RED);
+                // 根据祖父节点进行左旋
+                rotateLeft(parentOf(parentOf(x)));
+            }
+        }
+    }
+    // 设置根节点颜色为黑色
+    root.color = BLACK;
+}
+</code></pre><h2 id="红黑树的删除"><a href="#红黑树的删除" class="headerlink" title="红黑树的删除"></a>红黑树的删除</h2><p>相比较红黑树的插入，红黑树的删除更加复杂。删除一个节点，一般要寻找一个真正的删除点,替代删除点，然后根据删除点做红黑树的平衡。</p>
+<p>如何寻找到真正的删除点呢？其实就是寻找待删除点的中序遍历(LDR)的前继节点或者后继节点。即待删除点的最左父树的右父节点或者右子树的最左节点。</p>
+<p><strong>所以可以推断出，真正的删除点必定是一个只有一个孩子或者没有孩子的节点，而根据红黑树的性质，可以得出以下2个结论：</strong></p>
+<ul>
+<li>真正的删除点必定只有一个红色孩子节点或者没有孩子节点</li>
+<li>如果真正的删除点是一个红色节点，那它必定是个叶子节点</li>
+</ul>
+<p>所以，红黑树的删除步骤如下：</p>
+<p>1.寻找真正的删除点，将真正删除点的元素赋值为待删除点<br>2.删除真正的删除点，如果删除点有子节点，以子节点代替其位置<br>3.以删除点开始判定红黑树的平衡性质<br>4.如有必要做相应的平衡操作</p>
+<p>以下开始讨论红黑树删除的几种情况。我们约定，真正的删除点使用“旧”标记，旧点所在位置将被他的子节点取代（最多只会有一个子节点），我们使用“新”标记旧点的孩子节点。删除操作会有以下集中情况：</p>
+<p><strong>1.旧点为红色节点</strong></p>
+<p>若旧点为红色节点，则它必定为叶子节点，直接删除即可。</p>
+<p><strong>2.一黑一红</strong></p>
+<p>当旧点为黑色结点，新点为红色结点时，将新点取代旧点位置后，将新点染成黑色即可（如下图所示）。这里需要注意：旧点为红色，新点为黑色的情况不可能存在。</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-2.png" alt=""></p>
+<p><strong>3.双黑</strong></p>
+<p>当旧点和新点都为黑色是（新点为空节点也属于这种情况），情况比较复杂，需要根据旧点兄弟结点的颜色来决定进行什么样的操作。我们使用“兄”来表示旧点的兄弟结点。</p>
+<p><strong>3.1 红兄</strong></p>
+<p>由于兄弟结点为红色，所以父结点必定为黑色，而旧点被删除后，新点取代了它的位置。下图演示了两种可能的情况：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.1.png" alt=""></p>
+<p>红兄的情况需要进行RR或LL型旋转，然后将父结点染成红色，兄结点染成黑色。然后重新以新点为判定点进行平衡操作。我们可以观察到，旋转操作完成后，判定点没有向上回溯，而是降低了一层，此时变成了黑兄的情况（可能会是3.2.1、3.2.2、3.2.3）。</p>
+<p><strong>3.2 黑兄</strong></p>
+<p>黑兄的情况最为复杂，需要根据黑兄孩子结点（这里用“侄”表示）和父亲结点的颜色来决定做什么样的操作。</p>
+<p>3.2.1 黑兄二黑侄</p>
+<p>这种情况比较简单，只需将兄结点变为红色即可，然后根据父节点继续平衡。（其实这时候如果父节点为红色，将父节点设置为黑色，删除操作就结束了）如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.1.png" alt=""></p>
+<p>3.2.2 黑兄右黑侄</p>
+<p>黑兄，左侄红色，右侄黑色这种情况需要区分新点是起父节点的左子节点还是右子节点。</p>
+<p>3.2.2-1 新点是其父的左子节点</p>
+<p>将左侄设置为黑，兄节点设置为红色，然后以兄节点右旋（将情况转为了3.2.3-1）。如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.2-1.png" alt=""></p>
+<p>3.2.2-2 新点为其父节点的右子节点</p>
+<p>将兄节点的颜色设置为父节点颜色，父节点和左侄节点设置为黑色，然后根据父节点右旋。删除操作结束。如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.2-2.png" alt=""></p>
+<p>3.2.3 黑兄左黑侄</p>
+<p>黑兄，左黑侄，右红侄的情况也是需要区分新点是起父节点的左子节点还是右子节点.</p>
+<p>3.2.3-1 新点是左子节点</p>
+<p>将兄节点的颜色设置为父节点的颜色，父节点和右侄节点设置为黑色,然后根据父节点左旋。删除结束。如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.3-1.png" alt=""></p>
+<p>3.2.3-2 新点是右子节点</p>
+<p>将右侄设置为黑色，兄节点设置为红色，然后以兄节点左旋（将情况转为3.2.2-2）。如下图说示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/rb-tree-del-3.2.3-2.png" alt=""></p>
+<h2 id="TreeMap删除代码"><a href="#TreeMap删除代码" class="headerlink" title="TreeMap删除代码"></a>TreeMap删除代码</h2><p><code>TreeMap.remove</code>代码如下：</p>
+<pre><code>public V remove(Object key) {
+    // 根据key查找出节点p
+    Entry&lt;K, V&gt; p = getEntry(key);
+    // 如果p不存在,直接返回null
+    if (p == null)
+        return null;
+
+    V oldValue = p.value;
+    // 根据节点p删除节点
+    deleteEntry(p);
+    return oldValue;
+}
+</code></pre><p>remove其实只是根据key找出对应的节点。真正的删除在<code>deleteEntry</code>方法中,代码如下所示:</p>
+<pre><code>/**
+ * 删除节点p,然后平衡红黑树.
+ */
+private void deleteEntry(Entry&lt;K, V&gt; p) {
+    modCount++;
+    size--;
+
+    // If strictly internal, copy successor&apos;s element to p and then make p
+    // point to successor.
+    // 如果节点p存在左右子节点,则寻找其真正的删除点(其实是中序遍历的后继节点)
+    if (p.left != null &amp;&amp; p.right != null) {
+        // 寻找中序遍历的后继节点
+        Entry&lt;K, V&gt; s = successor(p);
+        // 将后继节点的元素值赋给节点p
+        p.key = s.key;
+        p.value = s.value;
+        // 将真正删除点赋值为节点p
+        p = s;
+    } // p has 2 children
+
+    // Start fixup at replacement node, if it exists.
+    // 定义真正删除点的替代节点
+    Entry&lt;K, V&gt; replacement = (p.left != null ? p.left : p.right);
+
+    // 如果存在替代节点
+    if (replacement != null) {
+        // Link replacement to parent
+        // 将替代节点代替真正删除点的位置
+        replacement.parent = p.parent;
+        if (p.parent == null)
+            root = replacement;
+        else if (p == p.parent.left)
+            p.parent.left = replacement;
+        else
+            p.parent.right = replacement;
+
+        // Null out links so they are OK to use by fixAfterDeletion.
+        // 删除真正删除节点
+        p.left = p.right = p.parent = null;
+
+        // Fix replacement
+        // 如果真正删除点为黑色,需要进行删除后的平衡操作
+        if (p.color == BLACK)
+            fixAfterDeletion(replacement);
+    } 
+    // 如果真正删除点的父节点为空,那其实treeMap中只有一个元素,直接删除
+    else if (p.parent == null) { // return if we are the only node.
+        root = null;
+    } 
+    // 如果真正删除点p没有子节点,这里有2中情况,如果p为红色即为情况1,直接删除。反之需要树的平衡
+    else { //  No children. Use self as phantom replacement and unlink.
+        // 如果p节点为黑色,则需要平衡树操作
+        if (p.color == BLACK)
+            fixAfterDeletion(p);
+
+        // 删除节点p
+        if (p.parent != null) {
+            if (p == p.parent.left)
+                p.parent.left = null;
+            else if (p == p.parent.right)
+                p.parent.right = null;
+            p.parent = null;
+        }
+    }
+}
+</code></pre><p>在删除节点后，可能需要调用<code>fixAfterDeletion</code>方法来平衡红黑树。<code>fixAfterDeletion</code>方法代码如下所示：</p>
+<pre><code>/**
+ * 红黑树节点删除后平衡操作
+ */
+private void fixAfterDeletion(Entry&lt;K, V&gt; x) {
+    // 循环平衡红黑树直到根节点或者节点的颜色为红色
+    while (x != root &amp;&amp; colorOf(x) == BLACK) {
+        // 当节点x为其父节点的左子节点时
+        if (x == leftOf(parentOf(x))) {
+            // 将x的兄节点定义为sib
+            Entry&lt;K, V&gt; sib = rightOf(parentOf(x));
+
+            // 当兄节点为红色时,情况3.1
+            if (colorOf(sib) == RED) {
+                // 将兄节点设置为黑色
+                setColor(sib, BLACK);
+                // 将父节点设置为黑色
+                setColor(parentOf(x), RED);
+                // 以父节点左旋
+                rotateLeft(parentOf(x));
+                sib = rightOf(parentOf(x));
+            }
+
+            // 如果兄节点的左右子节点都为黑色,情况3.2.1
+            if (colorOf(leftOf(sib)) == BLACK &amp;&amp;
+                    colorOf(rightOf(sib)) == BLACK) {
+                // 将兄节点设置为红色
+                setColor(sib, RED);
+                // 以x的父节点在递归平衡
+                x = parentOf(x);
+            }
+            // 如果兄节点左右子节点的颜色不一致
+            else {
+                // 如果只有右侄节点为黑色,情况3.2.2-1
+                if (colorOf(rightOf(sib)) == BLACK) {
+                    // 将左侄设置为黑色
+                    setColor(leftOf(sib), BLACK);
+                    // 将兄节点设置为红色
+                    setColor(sib, RED);
+                    // 以兄节点右旋
+                    rotateRight(sib);
+                    sib = rightOf(parentOf(x));
+                }
+                // 情况3.2.3-1
+                // 将兄节点的颜色设置为父节点的颜色
+                setColor(sib, colorOf(parentOf(x)));
+                // 将父节点设置为黑色
+                setColor(parentOf(x), BLACK);
+                // 将右侄节点设置为黑色
+                setColor(rightOf(sib), BLACK);
+                // 根据父节点左旋
+                rotateLeft(parentOf(x));
+                x = root;
+            }
+        }
+        // 当节点x为其父节点的右子节点
+        else { // symmetric
+            // 定义其兄节点为sib
+            Entry&lt;K, V&gt; sib = leftOf(parentOf(x));
+
+            // 当兄节点为红色,情况3.1
+            if (colorOf(sib) == RED) {
+                // 将兄节点颜色设置为黑色
+                setColor(sib, BLACK);
+                // 将父节点颜色设置为红色
+                setColor(parentOf(x), RED);
+                // 以父节点右旋
+                rotateRight(parentOf(x));
+                sib = leftOf(parentOf(x));
+            }
+
+            // 如果2个侄子节点都是黑色,情况3.2.1
+            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
+                    colorOf(leftOf(sib)) == BLACK) {
+                // 将兄节点设置为红色
+                setColor(sib, RED);
+                // 以父节点递归平衡
+                x = parentOf(x);
+            }
+            // 如果2个侄子节点的颜色不一致
+            else {
+                // 如果左侄节点颜色为黑色,情况3.2.3-2
+                if (colorOf(leftOf(sib)) == BLACK) {
+                    // 将右侄节点颜色设置为黑色
+                    setColor(rightOf(sib), BLACK);
+                    // 将兄节点颜色设置为红色
+                    setColor(sib, RED);
+                    // 以兄节点左旋
+                    rotateLeft(sib);
+                    sib = leftOf(parentOf(x));
+                }
+                // 情况3.2.2-2
+                // 将兄节点颜色设置为父节点颜色
+                setColor(sib, colorOf(parentOf(x)));
+                // 将父节点颜色设置为黑色
+                setColor(parentOf(x), BLACK);
+                // 将左侄节点颜色设置为黑色
+                setColor(leftOf(sib), BLACK);
+                // 以父节点右旋
+                rotateRight(parentOf(x));
+                x = root;
+            }
+        }
+    }
+
+    // 将x节点设置为黑色
+    setColor(x, BLACK);
+}
+</code></pre><h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>这篇笔记写了4天时间。参考了大量大牛的文章，遇到不太懂的时候就拿viso自己画图帮助理解。这次的学习过程收获良多，让我不得不再次感叹数据结构的精妙与算法的魅力。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/TreeMap/" rel="tag"># TreeMap</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/19/why-chmod777/" rel="next" title="chmod777原理">
+                <i class="fa fa-chevron-left"></i> chmod777原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/29/hash-collision/" rel="prev" title="Hash碰撞">
+                Hash碰撞 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/26/treeMap-theory/"
+           data-title="红黑树&TreeMap的实现原理" data-url="https://zacard.net/2016/08/26/treeMap-theory/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">62</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#红黑树"><span class="nav-number">2.</span> <span class="nav-text">红黑树</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#红黑树的平衡"><span class="nav-number">2.1.</span> <span class="nav-text">红黑树的平衡</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#红黑树的左旋"><span class="nav-number">2.1.1.</span> <span class="nav-text">红黑树的左旋</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#红黑树的右旋"><span class="nav-number">2.1.2.</span> <span class="nav-text">红黑树的右旋</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#红黑树插入"><span class="nav-number">2.2.</span> <span class="nav-text">红黑树插入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TreeMap中元素的插入"><span class="nav-number">2.3.</span> <span class="nav-text">TreeMap中元素的插入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#红黑树的删除"><span class="nav-number">2.4.</span> <span class="nav-text">红黑树的删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TreeMap删除代码"><span class="nav-number">2.5.</span> <span class="nav-text">TreeMap删除代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#后记"><span class="nav-number">3.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>

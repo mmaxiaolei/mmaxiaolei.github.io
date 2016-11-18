@@ -1,0 +1,1092 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="log4jdbc,sql,日志," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Log4jdbc 是一个开源 SQL 日志框架，它使用代理模式实现对常用的 JDBC Driver（ Oracle , Derby , MySQL , PostgreSQL , H2 , HSQLDB , …）操作的拦截，记录真实 SQL ，可以将占位符与参数全部合并在一起显示，方便直接拷贝 SQL 在 MySQL 等客户端直接执行，加快调试速度。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用log4jdbc更有效的记录java sql日志">
+<meta property="og:url" content="https://zacard.net/2015/09/24/log4jdbc20150924/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="Log4jdbc 是一个开源 SQL 日志框架，它使用代理模式实现对常用的 JDBC Driver（ Oracle , Derby , MySQL , PostgreSQL , H2 , HSQLDB , …）操作的拦截，记录真实 SQL ，可以将占位符与参数全部合并在一起显示，方便直接拷贝 SQL 在 MySQL 等客户端直接执行，加快调试速度。">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/555.png">
+<meta property="og:updated_time" content="2015-09-28T02:46:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用log4jdbc更有效的记录java sql日志">
+<meta name="twitter:description" content="Log4jdbc 是一个开源 SQL 日志框架，它使用代理模式实现对常用的 JDBC Driver（ Oracle , Derby , MySQL , PostgreSQL , H2 , HSQLDB , …）操作的拦截，记录真实 SQL ，可以将占位符与参数全部合并在一起显示，方便直接拷贝 SQL 在 MySQL 等客户端直接执行，加快调试速度。">
+<meta name="twitter:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/555.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2015/09/24/log4jdbc20150924/"/>
+
+
+
+
+
+  <title> 使用log4jdbc更有效的记录java sql日志 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2015/09/24/log4jdbc20150924/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                使用log4jdbc更有效的记录java sql日志
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2015-09-24T15:45:50+08:00">
+                2015-09-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2015/09/24/log4jdbc20150924/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/09/24/log4jdbc20150924/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2015/09/24/log4jdbc20150924/" class="leancloud_visitors" data-flag-title="使用log4jdbc更有效的记录java sql日志">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Log4jdbc 是一个开源 SQL 日志框架，它使用代理模式实现对常用的 JDBC Driver（ Oracle , Derby , MySQL , PostgreSQL , H2 , HSQLDB , …）操作的拦截，记录真实 SQL ，可以将占位符与参数全部合并在一起显示，方便直接拷贝 SQL 在 MySQL 等客户端直接执行，加快调试速度。</p>
+<a id="more"></a>
+<h3 id="Log4jdbc的特点"><a href="#Log4jdbc的特点" class="headerlink" title="Log4jdbc的特点"></a>Log4jdbc的特点</h3><p><a href="https://github.com/arthurblake/log4jdbc" target="_blank" rel="external">Log4jdbc</a>具有以下特点:</p>
+<ul>
+<li><p>完全支持 JDBC3 和 JDBC4</p>
+</li>
+<li><p>配置简单，在大多数情况下，只需要将 JDBC 驱动类改成net.sf.log4jdbc.DriverSpy ，同时将 jdbc:log4jdbc 添加到现有的 JDBC URL 之前，最后配置日志记录的种类即可</p>
+</li>
+<li><p>将 Prepared Statements 中的绑定参数自动插入到对应的位置。在大多数情况下极大改善了可读性及调试工作</p>
+</li>
+<li><p>SQL 的耗时信息能被获取从而帮助判断哪些语句执行得过慢，同时这些信息可以被工具识别得到一个关于慢 SQL 的报表</p>
+</li>
+<li><p>SQL 连接信息也可以获取从而帮助诊断关于连接池或线程的问题</p>
+</li>
+<li><p>兼容任何 JDBC 驱动，需要 JDK1.4 及以上与 Slf4j1.x </p>
+</li>
+<li><p>开源软件，使用 Apache 2.0 License</p>
+</li>
+</ul>
+<h3 id="使用步骤"><a href="#使用步骤" class="headerlink" title="使用步骤"></a>使用步骤</h3><h4 id="决定使用哪个版本的jar包"><a href="#决定使用哪个版本的jar包" class="headerlink" title="决定使用哪个版本的jar包"></a>决定使用哪个版本的jar包</h4><pre><code>JDK1.5:log4jdbc-log4j2-jdbc3.jar
+JDK1.6:log4jdbc-log4j2-jdbc4.jar
+JDK1.7:log4jdbc-log4j2-jdbc4.1.jar  
+JDK1.8:log4jdbc-log4j2-jdbc4.1.jar
+</code></pre><h4 id="将-JAR-包添加进项目"><a href="#将-JAR-包添加进项目" class="headerlink" title="将 JAR 包添加进项目"></a>将 JAR 包添加进项目</h4><p>这里只介绍maven方式引入</p>
+<pre><code> &lt;!--log4jdbc--&gt;
+ &lt;dependency&gt;
+     &lt;groupId&gt;org.bgee.log4jdbc-log4j2&lt;/groupId&gt;
+     &lt;artifactId&gt;log4jdbc-log4j2-jdbc4.1&lt;/artifactId&gt;
+     &lt;version&gt;1.16&lt;/version&gt;
+ &lt;/dependency&gt;
+ &lt;dependency&gt;
+     &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+     &lt;artifactId&gt;jcl-over-slf4j&lt;/artifactId&gt;
+     &lt;version&gt;1.7.5&lt;/version&gt;
+ &lt;/dependency&gt;   
+&lt;dependency&gt;  
+     &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+     &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;
+     &lt;version&gt;1.7.5&lt;/version&gt;
+&lt;/dependency&gt;  
+&lt;dependency&gt;  
+     &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+     &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
+     &lt;version&gt;1.7.5&lt;/version&gt;
+&lt;/dependency&gt;  
+</code></pre><h4 id="修改项目的JDBC驱动类"><a href="#修改项目的JDBC驱动类" class="headerlink" title="修改项目的JDBC驱动类"></a>修改项目的JDBC驱动类</h4><pre><code>#jdbc.driver=com.mysql.jdbc.Driver
+
+jdbc.driver=net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+</code></pre><h4 id="将jdbc-log4添加到现有的JDBC-URL之前"><a href="#将jdbc-log4添加到现有的JDBC-URL之前" class="headerlink" title="将jdbc:log4添加到现有的JDBC URL之前"></a>将jdbc:log4添加到现有的JDBC URL之前</h4><pre><code>#jdbc.url=jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&amp;amp;characterEncoding=UTF-8
+
+jdbc.url=jdbc:log4jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&amp;amp;characterEncoding=UTF-8
+</code></pre><h4 id="配置日志记录的种类"><a href="#配置日志记录的种类" class="headerlink" title="配置日志记录的种类"></a>配置日志记录的种类</h4><p>Log4jdbc 用以下几个可以配置的日志种类：</p>
+<ul>
+<li><p>jdbc.sqlonly : 仅记录 SQL</p>
+</li>
+<li><p>jdbc.sqltiming ：记录 SQL 以及耗时信息</p>
+</li>
+<li><p>jdbc.audit ：记录除了 ResultSet 之外的所有 JDBC 调用信息，会产生大量的记录，有利于调试跟踪具体的 JDBC 问题</p>
+</li>
+<li><p>jdbc.resultset ：会产生更多的记录信息，因为记录了 ResultSet 的信息</p>
+</li>
+<li><p>jdbc.connection ：记录连接打开、关闭等信息，有利于调试数据库连接相关问题</p>
+</li>
+</ul>
+<p>以上日志种类都可以设置为 DEBUG , INFO 或 ERROR 级别。当设置为 FATAL 或 OFF 时，意味关闭记录。</p>
+<p>以下是一个采用 Log4j 作为具体日志系统的典型配置，将这些配置到 log4j.properties 里面：</p>
+<pre><code>log4j.logger.jdbc.sqlonly=OFF  
+log4j.logger.jdbc.sqltiming=INFO  
+log4j.logger.jdbc.audit=OFF  
+log4j.logger.jdbc.resultset=OFF  
+log4j.logger.jdbc.connection=OFF
+</code></pre><h4 id="添加log4jdbc-log4j2-properties文件"><a href="#添加log4jdbc-log4j2-properties文件" class="headerlink" title="添加log4jdbc.log4j2.properties文件"></a>添加log4jdbc.log4j2.properties文件</h4><p>这是最后一步，在项目的 CLASSPATH 路径下创建一个 log4jdbc.log4j2.properties 文件，告诉 Log4jdbc-log4j2 使用的是 Slf4j 来记录和打印日志，在该配置文件里增加：</p>
+<pre><code>log4jdbc.spylogdelegator.name=net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator
+</code></pre><h4 id="运行项目，查看效果"><a href="#运行项目，查看效果" class="headerlink" title="运行项目，查看效果"></a>运行项目，查看效果</h4><p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/555.png" alt=""></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/log4jdbc/" rel="tag"># log4jdbc</a>
+          
+            <a href="/tags/sql/" rel="tag"># sql</a>
+          
+            <a href="/tags/日志/" rel="tag"># 日志</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/17/ngrok-use-info/" rel="next" title="反向代理工具ngrok使用说明">
+                <i class="fa fa-chevron-left"></i> 反向代理工具ngrok使用说明
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/14/java-enum的妙用/" rel="prev" title="java enum的妙用">
+                java enum的妙用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2015/09/24/log4jdbc20150924/"
+           data-title="使用log4jdbc更有效的记录java sql日志" data-url="https://zacard.net/2015/09/24/log4jdbc20150924/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">62</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Log4jdbc的特点"><span class="nav-number">1.</span> <span class="nav-text">Log4jdbc的特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用步骤"><span class="nav-number">2.</span> <span class="nav-text">使用步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#决定使用哪个版本的jar包"><span class="nav-number">2.1.</span> <span class="nav-text">决定使用哪个版本的jar包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将-JAR-包添加进项目"><span class="nav-number">2.2.</span> <span class="nav-text">将 JAR 包添加进项目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改项目的JDBC驱动类"><span class="nav-number">2.3.</span> <span class="nav-text">修改项目的JDBC驱动类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将jdbc-log4添加到现有的JDBC-URL之前"><span class="nav-number">2.4.</span> <span class="nav-text">将jdbc:log4添加到现有的JDBC URL之前</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置日志记录的种类"><span class="nav-number">2.5.</span> <span class="nav-text">配置日志记录的种类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加log4jdbc-log4j2-properties文件"><span class="nav-number">2.6.</span> <span class="nav-text">添加log4jdbc.log4j2.properties文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#运行项目，查看效果"><span class="nav-number">2.7.</span> <span class="nav-text">运行项目，查看效果</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>

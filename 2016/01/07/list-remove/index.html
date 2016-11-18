@@ -1,0 +1,1199 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,list," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景当我们要循环一个list中的元素，并且要删除某个元素的时候，一点要小心谨慎！其中深埋了好几个坑！
+坑1请看如下代码：
+/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&amp;lt;String&amp;gt; list = new ArrayList&amp;lt;&amp;gt;();
+    list.add(&amp;quot;1&amp;quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java list循环中删除元素的坑">
+<meta property="og:url" content="https://zacard.net/2016/01/07/list-remove/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="背景当我们要循环一个list中的元素，并且要删除某个元素的时候，一点要小心谨慎！其中深埋了好几个坑！
+坑1请看如下代码：
+/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&amp;lt;String&amp;gt; list = new ArrayList&amp;lt;&amp;gt;();
+    list.add(&amp;quot;1&amp;quot;">
+<meta property="og:updated_time" content="2016-01-17T11:57:45.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java list循环中删除元素的坑">
+<meta name="twitter:description" content="背景当我们要循环一个list中的元素，并且要删除某个元素的时候，一点要小心谨慎！其中深埋了好几个坑！
+坑1请看如下代码：
+/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&amp;lt;String&amp;gt; list = new ArrayList&amp;lt;&amp;gt;();
+    list.add(&amp;quot;1&amp;quot;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2016/01/07/list-remove/"/>
+
+
+
+
+
+  <title> java list循环中删除元素的坑 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/01/07/list-remove/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                java list循环中删除元素的坑
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-01-07T14:16:43+08:00">
+                2016-01-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/01/07/list-remove/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/07/list-remove/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/01/07/list-remove/" class="leancloud_visitors" data-flag-title="java list循环中删除元素的坑">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>当我们要循环一个list中的元素，并且要删除某个元素的时候，一点要小心谨慎！其中深埋了好几个坑！</p>
+<h3 id="坑1"><a href="#坑1" class="headerlink" title="坑1"></a>坑1</h3><p>请看如下代码：</p>
+<pre><code>/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&lt;String&gt; list = new ArrayList&lt;&gt;();
+    list.add(&quot;1&quot;);
+    list.add(&quot;2&quot;);
+    list.add(&quot;3&quot;);
+    list.add(&quot; &quot;);
+    list.add(&quot;  &quot;);
+    for (String s : list) {
+        if (StringUtils.isBlank(s)) {
+            list.remove(s);
+        }
+    }
+
+    System.out.println(&quot;list:&quot; + list);
+}
+</code></pre><p>输出结果：list:[1, 2, 3,   ] 。可以看到空白元素没有删除干净。</p>
+<a id="more"></a>
+<h3 id="坑1解决办法"><a href="#坑1解决办法" class="headerlink" title="坑1解决办法"></a>坑1解决办法</h3><p>请看如下代码：</p>
+<pre><code>/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&lt;String&gt; list = new ArrayList&lt;&gt;();
+    list.add(&quot;1&quot;);
+    list.add(&quot;2&quot;);
+    list.add(&quot;3&quot;);
+    list.add(&quot; &quot;);
+    list.add(&quot;  &quot;);
+
+    Iterator&lt;String&gt; iterator = list.iterator();
+    while (iterator.hasNext()) {
+        String s = iterator.next();
+        if (StringUtils.isBlank(s)) {
+            iterator.remove();
+        }
+    }
+
+    System.out.println(&quot;list:&quot; + list);
+}
+</code></pre><p>结果输出：list:[1, 2, 3]。解决办法其实就是用Iterator迭代器代替for循环。但是这个解决方法里还是隐藏了一个坑。</p>
+<h3 id="坑2"><a href="#坑2" class="headerlink" title="坑2"></a>坑2</h3><p>请看如下代码：</p>
+<pre><code>/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&lt;String&gt; list = Arrays.asList(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;&quot;,&quot; &quot;);
+
+    Iterator&lt;String&gt; iterator = list.iterator();
+    while (iterator.hasNext()) {
+        String s = iterator.next();
+        if (StringUtils.isBlank(s)) {
+            iterator.remove();
+        }
+    }
+
+    System.out.println(&quot;list:&quot; + list);
+}
+</code></pre><p>结果会直接报错：java.lang.UnsupportedOperationException。意思是不支持remove操作。<br>只是把list的定义换成了Arrays.asList，却有完全不一样的运行结果，非常神奇。查看Arrays.asList的源码：</p>
+<pre><code>/**
+ * Returns a fixed-size list backed by the specified array.  (Changes to
+ * the returned list &quot;write through&quot; to the array.)  This method acts
+ * as bridge between array-based and collection-based APIs, in
+ * combination with {@link Collection#toArray}.  The returned list is
+ * serializable and implements {@link RandomAccess}.
+ *
+ * &lt;p&gt;This method also provides a convenient way to create a fixed-size
+ * list initialized to contain several elements:
+ * &lt;pre&gt;
+ *     List&amp;lt;String&amp;gt; stooges = Arrays.asList(&quot;Larry&quot;, &quot;Moe&quot;, &quot;Curly&quot;);
+ * &lt;/pre&gt;
+ *
+ * @param &lt;T&gt; the class of the objects in the array
+ * @param a the array by which the list will be backed
+ * @return a list view of the specified array
+ */
+@SafeVarargs
+@SuppressWarnings(&quot;varargs&quot;)
+public static &lt;T&gt; List&lt;T&gt; asList(T... a) {
+    return new ArrayList&lt;&gt;(a);
+}
+</code></pre><p>单从代码看：return new ArrayList&lt;&gt;(a);应该是一个普通的ArrayList啊？！查看注释：返回一个固定大小的list！也就是说add和remove操作肯定会报错。同时也说明了这里的ArrayList不是我们平时使用的ArrayList。继续跟踪这个ArrayList：</p>
+<pre><code>/**
+ * @serial include
+ */
+private static class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+    implements RandomAccess, java.io.Serializable
+{
+    private static final long serialVersionUID = -2764017481108945198L;
+    private final E[] a;
+
+    ArrayList(E[] array) {
+        a = Objects.requireNonNull(array);
+    }
+    ...
+}
+</code></pre><p>原来此处的ArrayList是Arrays的一个实现了AbstractList的内部类，并且没有覆盖add和remove方法，默认这2个方法是会直接报“UnsupportedOperationException”的。</p>
+<h3 id="坑2解决办法"><a href="#坑2解决办法" class="headerlink" title="坑2解决办法"></a>坑2解决办法</h3><p>既然明白了报错原因，解决办法也很明显了：</p>
+<pre><code>/**
+ * 测试删除集合中的空白元素
+ */
+@Test
+public void removeBlank() {
+    List&lt;String&gt; list = Arrays.asList(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;&quot;,&quot; &quot;);
+
+    List&lt;String&gt; result= new ArrayList&lt;&gt;(list);
+    Iterator&lt;String&gt; iterator = result.iterator();
+    while (iterator.hasNext()) {
+        String s = iterator.next();
+        if (StringUtils.isBlank(s)) {
+            iterator.remove();
+        }
+    }
+
+    System.out.println(&quot;list:&quot; + result);
+}
+</code></pre><h3 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h3><p>通过踩这几个坑，再次验证了一个真理：在设计一个对外方法的时候，一点要谨慎处理集合和数组。因为你永远不知道客户端传给你的集合是什么，也不知道客户端是否会有对此集合有任何其他的不可控的操作。所以在使用客户端传递的集合对象时，最好拷贝一个新集合后再操作。</p>
+<h3 id="更新-2016-01-17"><a href="#更新-2016-01-17" class="headerlink" title="更新-2016.01.17"></a>更新-2016.01.17</h3><p>之前的解决方法中违反了java其中的一个编码准则：变量的作用范围越小约好。</p>
+<p>请看如下代码：</p>
+<pre><code>@Test
+public void testForAndWhile() {
+    List&lt;String&gt; names1 = Lists.newArrayList(&quot;张三&quot;, &quot;李四&quot;);
+    Iterator&lt;String&gt; iterator1= names1.iterator();
+    while (iterator1.hasNext()) {
+        String name = iterator1.next();
+        System.out.println(&quot;name1:&quot; + name);
+        iterator1.remove();
+    }
+
+    List&lt;String&gt; names2 = Lists.newArrayList(&quot;赵六&quot;, &quot;钱七&quot;);
+    Iterator&lt;String&gt; iterator2= names2.iterator();
+    while (iterator1.hasNext()) {
+        String name = iterator2.next();
+        System.out.println(&quot;name2:&quot; + name);
+        iterator2.remove();
+    }
+}
+</code></pre><p>这段代码的第二个循环不会打印任何东西，因为while条件中误用了第一个循环中的变量，造成的bug。但是这种bug却不会有任何编译错误和运行时错误，危害甚大。但是只要改成<strong>旧版</strong>for循环的形式，就可以很好的避免这种错误。</p>
+<p>请看如下改进代码：</p>
+<pre><code>@Test
+public void testForAndWhile() {
+    List&lt;String&gt; names1 = Lists.newArrayList(&quot;张三&quot;, &quot;李四&quot;);
+    for (Iterator&lt;String&gt; iterator= names1.iterator();iterator.hasNext();) {
+        System.out.println(&quot;name1:&quot;+iterator.next());
+        iterator.remove();
+    }
+
+    List&lt;String&gt; names2 = Lists.newArrayList(&quot;赵六&quot;, &quot;钱七&quot;);
+    for (Iterator&lt;String&gt; iterator= names2.iterator();iterator.hasNext();) {
+        System.out.println(&quot;name2:&quot;+iterator.next());
+        iterator.remove();
+    }
+}
+</code></pre><p>这个时候，如果错误的引用循环1中的代码，会有编译时错误，就可以很好的避免这种问题、</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/list/" rel="tag"># list</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/06/jetty-lock-file/" rel="next" title="关于windows下jetty锁文件的解决办法">
+                <i class="fa fa-chevron-left"></i> 关于windows下jetty锁文件的解决办法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/11/testcase-with-mybatis-plugin/" rel="prev" title="单元测试中涉及到mybatis plugin时需要注意的地方">
+                单元测试中涉及到mybatis plugin时需要注意的地方 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/01/07/list-remove/"
+           data-title="java list循环中删除元素的坑" data-url="https://zacard.net/2016/01/07/list-remove/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">62</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#坑1"><span class="nav-number">2.</span> <span class="nav-text">坑1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#坑1解决办法"><span class="nav-number">3.</span> <span class="nav-text">坑1解决办法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#坑2"><span class="nav-number">4.</span> <span class="nav-text">坑2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#坑2解决办法"><span class="nav-number">5.</span> <span class="nav-text">坑2解决办法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反思"><span class="nav-number">6.</span> <span class="nav-text">反思</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新-2016-01-17"><span class="nav-number">7.</span> <span class="nav-text">更新-2016.01.17</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,lock," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景锁作为并发共享数据，保证一致性的工具，在JAVA平台有多种实现(如 synchronized 和 ReentrantLock等等 ) 。这些已经写好提供的锁为我们开发提供了便利，但是锁的具体性质以及类型却很少被提及。
+自旋锁自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被当前线程改变时其他前程才能进入临界区。
+自旋锁流程：获取自旋锁时，如果没有任何线程保持该锁，那么将立即得到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java锁的种类及研究">
+<meta property="og:url" content="https://zacard.net/2016/01/13/java-lock-research/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="背景锁作为并发共享数据，保证一致性的工具，在JAVA平台有多种实现(如 synchronized 和 ReentrantLock等等 ) 。这些已经写好提供的锁为我们开发提供了便利，但是锁的具体性质以及类型却很少被提及。
+自旋锁自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被当前线程改变时其他前程才能进入临界区。
+自旋锁流程：获取自旋锁时，如果没有任何线程保持该锁，那么将立即得到">
+<meta property="og:updated_time" content="2016-01-14T06:24:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java锁的种类及研究">
+<meta name="twitter:description" content="背景锁作为并发共享数据，保证一致性的工具，在JAVA平台有多种实现(如 synchronized 和 ReentrantLock等等 ) 。这些已经写好提供的锁为我们开发提供了便利，但是锁的具体性质以及类型却很少被提及。
+自旋锁自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被当前线程改变时其他前程才能进入临界区。
+自旋锁流程：获取自旋锁时，如果没有任何线程保持该锁，那么将立即得到">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2016/01/13/java-lock-research/"/>
+
+
+
+
+
+  <title> java锁的种类及研究 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/01/13/java-lock-research/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                java锁的种类及研究
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-01-13T21:30:26+08:00">
+                2016-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/01/13/java-lock-research/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/13/java-lock-research/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/01/13/java-lock-research/" class="leancloud_visitors" data-flag-title="java锁的种类及研究">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>锁作为并发共享数据，保证一致性的工具，在JAVA平台有多种实现(如 synchronized 和 ReentrantLock等等 ) 。这些已经写好提供的锁为我们开发提供了便利，但是锁的具体性质以及类型却很少被提及。</p>
+<h3 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h3><p>自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被当前线程改变时其他前程才能进入临界区。</p>
+<p>自旋锁流程：获取自旋锁时，如果没有任何线程保持该锁，那么将立即得到锁；如果在获取自旋锁时锁已经有保持者，那么获取锁操作将自旋在那里，直到该自旋锁的保持者释放了锁。</p>
+<p>简单实现原理的代码如下：</p>
+<a id="more"></a>
+<pre><code>/**
+ * 自旋锁原理简单示例
+ *
+ * @author zacard
+ * @since 2016-01-13 21:40
+ */
+public class SpinLock {
+
+    private AtomicReference&lt;Thread&gt; sign = new AtomicReference&lt;&gt;();
+
+    // 获取锁
+    public void lock() {
+        Thread current = Thread.currentThread();
+        while (!sign.compareAndSet(null, current)) {
+
+        }
+    }
+
+    // 释放锁
+    public void unlock() {
+        Thread current = Thread.currentThread();
+        sign.compareAndSet(current, null);
+    }
+}
+</code></pre><p>要理解以上代码，我们要先弄清楚AtomicReference的作用。</p>
+<p>AtomicReference：位于java.util.concurrent.atomic包下。从包名就可知道它的大致作用：在并发环境中保证引用对象的原子操作。</p>
+<p>查看AtomicReference源码：</p>
+<pre><code>package java.util.concurrent.atomic;
+import java.util.function.UnaryOperator;
+import java.util.function.BinaryOperator;
+import sun.misc.Unsafe;
+
+/**
+ * An object reference that may be updated atomically. See the {@link
+ * java.util.concurrent.atomic} package specification for description
+ * of the properties of atomic variables.
+ * @since 1.5
+ * @author Doug Lea
+ * @param &lt;V&gt; The type of object referred to by this reference
+ */
+public class AtomicReference&lt;V&gt; implements java.io.Serializable {
+    private static final long serialVersionUID = -1848883965231344442L;
+
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final long valueOffset;
+
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicReference.class.getDeclaredField(&quot;value&quot;));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+
+    private volatile V value;
+
+    ...(省略)
+
+    /**
+     * Atomically sets the value to the given updated value
+     * if the current value {@code ==} the expected value.
+     * @param expect the expected value
+     * @param update the new value
+     * @return {@code true} if successful. False return indicates that
+     * the actual value was not equal to the expected value.
+     */
+    public final boolean compareAndSet(V expect, V update) {
+        return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
+    }
+
+    ...(省略)
+</code></pre><p>发现AtomicReference实现的基本原理是<strong>使用volatile关键字和Unsafe类来保证其可见性和原子性。</strong>（PS:在此暂不作扩展阅读Unsafe类）</p>
+<p>我们重点关注AtomicReference.compareAndSet()这个自旋锁用到的方法。从方法注释和方式实现，可以理解：<strong>这个方法的意思就是当当前的值==（注意是双等号）期望的值（即传入的第一个参数）时，把当前值更新为新值（即传入的第二个参数），并且返回true，否则返回false。</strong></p>
+<p>再回过头，看之前自旋锁的代码，就很好理解了。一开始AtomicReference中的值为null，当有线程获得锁后，将值更新为该线程。当其他线程进入被锁的方法时，由于sign.compareAndSet(null, current)始终返回的是false，导致while循环体一直在运行，知道获得锁的线程调用unlock方法，将当前持有线程重新设置为null：sign.compareAndSet(current, null)其他线程才可获得锁。</p>
+<h3 id="阻塞锁"><a href="#阻塞锁" class="headerlink" title="阻塞锁"></a>阻塞锁</h3><p>阻塞锁，与自旋锁不同，改变了线程的运行状态。阻塞锁，可以说是让线程进入阻塞状态进行等待，当获得相应的信号（唤醒，时间） 时，才可以进入线程的准备就绪状态，准备就绪状态的所有线程，通过竞争，进入运行状态。</p>
+<p>阻塞锁和自旋锁最大的区别就在于，当获取锁是，如果锁有持有者，当前线程是进入阻塞状态，等待当前线程结束而被唤醒的。</p>
+<p>简单实现原理的代码如下：</p>
+<pre><code>/**
+ * 阻塞锁原理简单示例
+ *
+ * @author zacard
+ * @since 2016-01-13 22:02
+ */
+public class BlockLock {
+
+    private AtomicReference&lt;Thread&gt; sign = new AtomicReference&lt;&gt;();
+
+    // 获取锁
+    public void lock() {
+        Thread current = Thread.currentThread();
+        if (!sign.compareAndSet(null, current)) {
+            LockSupport.park();
+        }
+    }
+
+    // 释放锁
+    public void unlock() {
+        Thread current = Thread.currentThread();
+        sign.compareAndSet(null, current);
+        LockSupport.unpark(current);
+    }
+}
+</code></pre><p>要理解以上代码，我们要先弄清楚LockSupport的作用。</p>
+<p>LockSupport：位于java.util.concurrent.locks包下（又是j.u.c）。同样，从包名和类名即可知道其作用：提供并发编程中的锁支持。</p>
+<p>还是先查看下LockSupport的源码:</p>
+<pre><code>public class LockSupport {
+    private LockSupport() {} // Cannot be instantiated.
+
+    private static void setBlocker(Thread t, Object arg) {
+        // Even though volatile, hotspot doesn&apos;t need a write barrier here.
+        UNSAFE.putObject(t, parkBlockerOffset, arg);
+    }
+
+    ...(省略)
+</code></pre><p> 又是sun.misc.Unsafe这个类，在此我们不得不先扩展研究下这个Unsafe类的作用和原理了。</p>
+<p> sun.misc.Unsafe：有个称号叫做魔术类。因为他能直接操作内存等一些复杂操作。包括直接修改内存值，绕过构造器，直接调用类方法等。当然，他主要提供了<strong>CAS（compareAndSwap）原子操作</strong>而被我们熟知。</p>
+<p> 查看Unsafe类源码:</p>
+<pre><code>public final class Unsafe {
+   private static final Unsafe theUnsafe;
+
+   ...(省略)
+
+   private Unsafe() {
+   }
+
+   @CallerSensitive
+   public static Unsafe getUnsafe() {
+       Class var0 = Reflection.getCallerClass();
+       if(!VM.isSystemDomainLoader(var0.getClassLoader())) {
+           throw new SecurityException(&quot;Unsafe&quot;);
+       } else {
+           return theUnsafe;
+       }
+   }
+
+   ...(省略)
+</code></pre><p>根据代码可知：Unsafe是final类，意味着我们不能通过继承来使用或改变这个类的方法。然后构造器是私有的，也不能实例化。但是他自己保存了一个静态私有不可改变的实例“theUnsafe”，并且只提供了一个静态方法getUnsafe()来获取这个类的实例。</p>
+<p>但是这个getUnsafe方法确有个限制：注意if语句里的判断，他表示如果不是受信任的类调用，会直接抛出异常。显然，我们平常编写的类都是不受信任的！</p>
+<p>但是，我们有反射！既然他已经持有了一个实例，就能通过反射强行窃取这个私有的实例。</p>
+<p>代码如下:</p>
+<pre><code>public void getUnsafe() {
+    try {
+        Field field = Unsafe.class.getDeclaredField(&quot;theUnsafe&quot;);
+        field.setAccessible(true);
+        Unsafe unsafe = (Unsafe) field.get(null);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+        e.printStackTrace();
+    }
+}
+</code></pre><p>Unsafe类的方法基本都是native关键字修饰的，也就是说这些方法都是原生态方法，方法对应的实现不是在当前文件，而是在用其他语言（如C和C++）实现的文件中。这也就是为什么Unsafe能够直接操作内存等一些特权功能的原因。</p>
+<p>回过头看下LockSupport中park()和uppark()这2个方法的作用。</p>
+<p>LockSupport.unpark():</p>
+<pre><code>/**
+ * Makes available the permit for the given thread, if it
+ * was not already available.  If the thread was blocked on
+ * {@code park} then it will unblock.  Otherwise, its next call
+ * to {@code park} is guaranteed not to block. This operation
+ * is not guaranteed to have any effect at all if the given
+ * thread has not been started.
+ *
+ * @param thread the thread to unpark, or {@code null}, in which case
+ *        this operation has no effect
+ */
+public static void unpark(Thread thread) {
+    if (thread != null)
+        UNSAFE.unpark(thread);
+}
+</code></pre><p>根据方法注释：对于给定线程，将许可证设置为可用状态。如果这个线程是因为调用park()而处于阻塞状态，则清除阻塞状态。反之，这个线程在下次调用park()时，将保证不被阻塞。</p>
+<p>LockSupport.park()：</p>
+<pre><code>/**
+ * Disables the current thread for thread scheduling purposes unless the
+ * permit is available.
+ *
+ * &lt;p&gt;If the permit is available then it is consumed and the call returns
+ * immediately; otherwise
+ * the current thread becomes disabled for thread scheduling
+ * purposes and lies dormant until one of three things happens:
+ *
+ * &lt;ul&gt;
+ * &lt;li&gt;Some other thread invokes {@link #unpark unpark} with the
+ * current thread as the target; or
+ *
+ * &lt;li&gt;Some other thread {@linkplain Thread#interrupt interrupts}
+ * the current thread; or
+ *
+ * &lt;li&gt;The call spuriously (that is, for no reason) returns.
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;This method does &lt;em&gt;not&lt;/em&gt; report which of these caused the
+ * method to return. Callers should re-check the conditions which caused
+ * the thread to park in the first place. Callers may also determine,
+ * for example, the interrupt status of the thread upon return.
+ *
+ * @param blocker the synchronization object responsible for this
+ *        thread parking
+ * @since 1.6
+ */
+public static void park(Object blocker) {
+    Thread t = Thread.currentThread();
+    setBlocker(t, blocker);
+    UNSAFE.park(false, 0L);
+    setBlocker(t, null);
+}
+</code></pre><p>根据注释：除非许可证是可用的，不然将当前线程的调度设置为不可用。当许可是可用时，方法会立即返回，不会阻塞，反之就会阻塞当前线程直到下面3件事发生:</p>
+<ul>
+<li><p>其他线程调用了unpark(此线程)</p>
+</li>
+<li><p>其他线程interrupts（终止）了此线程</p>
+</li>
+<li><p>调用时发生未知原因的返回</p>
+</li>
+</ul>
+<h3 id="重入锁"><a href="#重入锁" class="headerlink" title="重入锁"></a>重入锁</h3><p>重入锁，也叫做递归锁，指的是同一线程外层函数获得锁之后 ，内层递归函数仍然有获取该锁的代码，但不受影响。在JAVA环境下ReentrantLock和synchronized都是重入锁。</p>
+<p>测试代码如下:</p>
+<pre><code>/**
+ * 测试ReentrantLock和synchronized
+ */
+@Test
+public void testReentrantLock() {
+    // ReentrantLock test
+    for (int i = 0; i &lt; 3; i++) {
+        new Thread(new Runnable() {
+            ReentrantLock lock = new ReentrantLock();
+
+            public void get() {
+                lock.lock();
+                System.out.println(&quot;ReentrantLock:&quot; + Thread.currentThread().getId());
+                set();
+                lock.unlock();
+            }
+
+            public void set() {
+                lock.lock();
+                System.out.println(&quot;ReentrantLock:&quot; + Thread.currentThread().getId());
+                lock.unlock();
+            }
+
+            @Override
+            public void run() {
+                get();
+            }
+        }).start();
+    }
+
+    // synchronized test
+    for (int i = 0; i &lt; 3; i++) {
+        new Thread(new Runnable() {
+
+            public synchronized void get() {
+                System.out.println(&quot;synchronized:&quot; + Thread.currentThread().getId());
+                set();
+            }
+
+            public synchronized void set() {
+                System.out.println(&quot;synchronized:&quot; + Thread.currentThread().getId());
+            }
+
+            @Override
+            public void run() {
+                get();
+            }
+        }).start();
+    }
+}
+</code></pre><p>2段代码的输出一致：都会重复输出当前线程id2次。</p>
+<p>可重入锁最大的作用是避免死锁。以自旋锁作为例子：</p>
+<pre><code>/**
+ * 自旋锁原理简单示例
+ *
+ * @author zacard
+ * @since 2016-01-13 21:40
+ */
+public class SpinLock {
+
+    private AtomicReference&lt;Thread&gt; sign = new AtomicReference&lt;&gt;();
+
+    // 获取锁
+    public void lock() {
+        Thread current = Thread.currentThread();
+        while (!sign.compareAndSet(null, current)) {
+
+        }
+    }
+
+    // 释放锁
+    public void unlock() {
+        Thread current = Thread.currentThread();
+        sign.compareAndSet(current, null);
+    }
+}
+</code></pre><ul>
+<li><p>若有同一线程两调用lock()，会导致第二次调用lock位置进行自旋，产生了死锁说明这个锁并不是可重入的。（在lock函数内，应验证线程是否为已经获得锁的线程）</p>
+</li>
+<li><p>若1问题已经解决，当unlock（）第一次调用时，就已经将锁释放了。实际上不应释放锁</p>
+</li>
+</ul>
+<p>自旋锁避免死锁的方法（采用计数次统计）：</p>
+<pre><code>/**
+ * 自旋锁改进
+ *
+ * @author Guoqw
+ * @since 2016-01-14 14:11
+ */
+public class SpinLockImprove {
+
+    private AtomicReference&lt;Thread&gt; owner = new AtomicReference&lt;&gt;();
+
+    private int count = 0;
+
+    /**
+     * 获取锁
+     */
+    public void lock() {
+        Thread current = Thread.currentThread();
+        if (current == owner.get()) {
+            count++;
+            return;
+        }
+        while (!owner.compareAndSet(null, current)) {
+
+        }
+    }
+
+    /**
+     * 释放锁
+     */
+    public void unlock() {
+        Thread current = Thread.currentThread();
+        if (current == owner.get()) {
+            if (count != 0) {
+                count--;
+            } else {
+                owner.compareAndSet(current, null);
+            }
+        }
+    }
+}
+</code></pre><p>改进后自旋锁即为重入锁的简单实现。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/lock/" rel="tag"># lock</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/11/testcase-with-mybatis-plugin/" rel="next" title="单元测试中涉及到mybatis plugin时需要注意的地方">
+                <i class="fa fa-chevron-left"></i> 单元测试中涉及到mybatis plugin时需要注意的地方
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/19/maven-jetty-slow/" rel="prev" title="关于使用maven jetty插件启动慢的解决方法">
+                关于使用maven jetty插件启动慢的解决方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/01/13/java-lock-research/"
+           data-title="java锁的种类及研究" data-url="https://zacard.net/2016/01/13/java-lock-research/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">62</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自旋锁"><span class="nav-number">2.</span> <span class="nav-text">自旋锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阻塞锁"><span class="nav-number">3.</span> <span class="nav-text">阻塞锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重入锁"><span class="nav-number">4.</span> <span class="nav-text">重入锁</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>

@@ -1,0 +1,2685 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="优生笑，菜鸟哭">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zacard's Notes">
+<meta property="og:url" content="https://zacard.net/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="优生笑，菜鸟哭">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Zacard's Notes">
+<meta name="twitter:description" content="优生笑，菜鸟哭">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/"/>
+
+
+
+
+
+  <title> Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right 
+   page-home 
+ ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/09/11/spring3-async/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/11/spring3-async/" itemprop="url">
+                  spring3的@Async异步执行失效
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-09-11T09:45:37+08:00">
+                2016-09-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/09/11/spring3-async/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/11/spring3-async/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/09/11/spring3-async/" class="leancloud_visitors" data-flag-title="spring3的@Async异步执行失效">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>最近有个项目的spring的@Async的异步执行突然失效了。生产环境异步执行正常，那肯定是开发改了某个地方而导致的。</p>
+<h1 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h1><p>查看最近提交代码记录。与@Async有相关的改动只有一个spring.xml的改动。初步推断是这个改动引起的。回滚这部分代码，跑测试类，果然异步执行生效了。</p>
+<h1 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h1><p>在stackoverflow中找到了答案：</p>
+<blockquote>
+<p>In short, the context loaded by the ContextLoaderListener (generally from applicationContext.xml) is the parent of the context loaded by the DispatcherServlet (generally from <em>-servlet.xml). If you have the bean with the @Async method declared/component-scanned in both contexts, the version from the child context (DispatcherServlet) will override the one in the parent context (ContextLoaderListener). I verified this by excluding that component from component scanning in the </em>-servlet.xml – it now works as expected. </p>
+</blockquote>
+<p>意思是说：如果项目中存在多个配置文件（例如：applicationContext.xml、applicationContext-servlet.xml）并且这两个文件中配置的扫描包（即配置的：context:component-scan）都包含了配置过@Async的bean，那么后者就会覆盖前者。</p>
+<p>例如以下xml配置:</p>
+<p>applicationContext.xml:</p>
+<pre><code>&lt;context:component-scan base-package=&quot;com.demo&quot; /&gt;
+&lt;task:annotation-driven/&gt;
+&lt;task:executor id=&quot;executor&quot; pool-size=&quot;5-10&quot; queue-capacity=&quot;100&quot; rejection-policy=&quot;CALLER_RUNS&quot;/&gt;
+</code></pre><p>applicationContext-servlet.xml:</p>
+<pre><code>&lt;context:component-scan base-package=&quot;com.demo&quot; /&gt;
+</code></pre><p>并且在web.xml中配置的加载顺序为：applicationContext.xml &gt; applicationContext-servlet.xml，那么后者的component-scan就会覆盖前者的，同时前者配置的task也会被覆盖掉不起作用！</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/09/08/mac-jdk-dir/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/08/mac-jdk-dir/" itemprop="url">
+                  mac中jdk的路径
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-09-08T11:20:08+08:00">
+                2016-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/09/08/mac-jdk-dir/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/08/mac-jdk-dir/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/09/08/mac-jdk-dir/" class="leancloud_visitors" data-flag-title="mac中jdk的路径">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="mac中如何查询jdk安装路径"><a href="#mac中如何查询jdk安装路径" class="headerlink" title="mac中如何查询jdk安装路径"></a>mac中如何查询jdk安装路径</h1><p>可以使用工具命令<code>/usr/libexec/java_home</code>.</p>
+<p>例如以下所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/mac-jdk-dir1.png" alt=""></p>
+<p>还可以加-V选项列出所有的java home.</p>
+<p>例如以下所示:</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/mac-jdk-dir2.png" alt=""></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/29/hash-collision/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/29/hash-collision/" itemprop="url">
+                  Hash碰撞
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-29T15:54:02+08:00">
+                2016-08-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/29/hash-collision/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/29/hash-collision/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/29/hash-collision/" class="leancloud_visitors" data-flag-title="Hash碰撞">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="Hash定义"><a href="#Hash定义" class="headerlink" title="Hash定义"></a>Hash定义</h1><p>摘自百度百科：</p>
+<blockquote>
+<p>Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。</p>
+</blockquote>
+<h1 id="为什么会产生Hash碰撞"><a href="#为什么会产生Hash碰撞" class="headerlink" title="为什么会产生Hash碰撞"></a>为什么会产生Hash碰撞</h1><blockquote>
+<p>…通过散列算法，变换成固定长度的输出，该输出就是散列值…</p>
+</blockquote>
+<p>既然是根据输入值，变换成<strong>固定长度</strong>的输出，那就必然会存在不同的输入产生相同的输出。</p>
+<h1 id="如何解决Hash碰撞"><a href="#如何解决Hash碰撞" class="headerlink" title="如何解决Hash碰撞"></a>如何解决Hash碰撞</h1><h2 id="开放地址法"><a href="#开放地址法" class="headerlink" title="开放地址法"></a>开放地址法</h2><p>这种方法就是在计算一个key的哈希的时候，发现目标地址已经有值了，即发生冲突了，这个时候通过相应的函数在此地址后面的地址去找，直到没有冲突为止。这个方法常用的有线性探测，二次探测，再哈希。这种解决方法有个不好的地方就是，当发生冲突之后，会在之后的地址空间中找一个放进去，这样就有可能后来出现一个key哈希出来的结果也正好是它放进去的这个地址空间，这样就会出现非同义词的两个key发生冲突。</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/29/hash-collision/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/26/treeMap-theory/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/26/treeMap-theory/" itemprop="url">
+                  红黑树&TreeMap的实现原理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-26T21:02:14+08:00">
+                2016-08-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/26/treeMap-theory/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/26/treeMap-theory/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/26/treeMap-theory/" class="leancloud_visitors" data-flag-title="红黑树&TreeMap的实现原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。</p>
+<h1 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h1><p>红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。</p>
+<p>红黑树的规定：</p>
+<p>1.一个节点只能是红色或者黑色<br>2.根节点是黑色<br>3.每个叶节点（null节点/空节点）为黑色<br>4.如果一个节点为红色，则他们的2个子节点都为黑色<br>5.从任意节点到其每个叶节点</p>
+<p>红黑树结构java代码示例：（TreeMap中的内部类Entry）</p>
+<pre><code>/**
+ * 红黑树节点结构
+ */
+static final class Entry&lt;K, V&gt; implements Map.Entry&lt;K, V&gt; {
+    K key; // 红黑树的排序字段
+    V value; // 节点存储的值
+    Entry&lt;K, V&gt; left; // 左子树节点
+    Entry&lt;K, V&gt; right; // 右子树节点
+    Entry&lt;K, V&gt; parent; // 父节点
+    boolean color = BLACK; // 节点颜色，默认为黑
+
+    /**
+     * Make a new cell with given key, value, and parent, and with
+     * {@code null} child links, and BLACK color.
+     */
+    Entry(K key, V value, Entry&lt;K, V&gt; parent) {
+        this.key = key;
+        this.value = value;
+        this.parent = parent;
+    }
+
+    /**
+     * Returns the key.
+     *
+     * @return the key
+     */
+    public K getKey() {
+        return key;
+    }
+
+    /**
+     * Returns the value associated with the key.
+     *
+     * @return the value associated with the key
+     */
+    public V getValue() {
+        return value;
+    }
+
+    /**
+     * Replaces the value currently associated with the key with the given
+     * value.
+     *
+     * @return the value associated with the key before this method was
+     * called
+     */
+    public V setValue(V value) {
+        V oldValue = this.value;
+        this.value = value;
+        return oldValue;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof Map.Entry))
+            return false;
+        Map.Entry&lt;?, ?&gt; e = (Map.Entry&lt;?, ?&gt;) o;
+
+        return valEquals(key, e.getKey()) &amp;&amp; valEquals(value, e.getValue());
+    }
+
+    public int hashCode() {
+        int keyHash = (key == null ? 0 : key.hashCode());
+        int valueHash = (value == null ? 0 : value.hashCode());
+        return keyHash ^ valueHash;
+    }
+
+    public String toString() {
+        return key + &quot;=&quot; + value;
+    }
+}
+</code></pre>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/26/treeMap-theory/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/19/why-chmod777/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/19/why-chmod777/" itemprop="url">
+                  chmod777原理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-19T17:06:47+08:00">
+                2016-08-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/19/why-chmod777/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/19/why-chmod777/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/19/why-chmod777/" class="leancloud_visitors" data-flag-title="chmod777原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>很多Linux新手发现某个文件没有相关权限，一言不合就是<code>chmod 777</code>。<strong>首先说一句，<code>chmod 777</code>应该杜绝使用，尤其生产环境。</strong></p>
+<p>那<code>chmod 777</code>的背后原理到底是什么呢？</p>
+<h3 id="Unix权限设计"><a href="#Unix权限设计" class="headerlink" title="Unix权限设计"></a>Unix权限设计</h3><p>首先Unix系统的权限分为三种，分别为拥有者(owner)、用户组(group)、其他用户(other)。用<code>ll</code>命令可以查看具体的权限设置，如下图所示：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/819111111.png" alt=""></p>
+<p>每个项目前面那一串字母和横杠就是权限。第一位指的是文件类型：-代表普通文件，d代表文件夹。后面9位分为三组，每组代表了对应用户的权限：</p>
+<p><img src="https://sfault-image.b0.upaiyun.com/113/263/113263737-57ad2eec7ba6e_articlex" alt=""></p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/19/why-chmod777/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/12/docker-7-jetty/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/12/docker-7-jetty/" itemprop="url">
+                  Docker学习系列七：构建jetty镜像
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-12T09:51:38+08:00">
+                2016-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/12/docker-7-jetty/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/12/docker-7-jetty/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/12/docker-7-jetty/" class="leancloud_visitors" data-flag-title="Docker学习系列七：构建jetty镜像">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。</p>
+<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><pre><code>FROM oraclejdk8
+MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;
+
+# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
+RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-
+
+ENV JETTY_HOME /usr/local/jetty
+ENV PATH $JETTY_HOME/bin:$PATH
+RUN mkdir -p &quot;$JETTY_HOME&quot;
+WORKDIR $JETTY_HOME
+
+ENV JETTY_BASE /var/lib/jetty
+RUN mkdir -p &quot;$JETTY_BASE&quot;
+
+ENV JETTY_VERSION 9.3.10.v20160621
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
+
+# GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
+ENV JETTY_GPG_KEYS \
+        # 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;
+        B59B67FD7904984367F931800818D9D68FB67BAC \
+        # 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;
+        5DE533CB43DAF8BC3E372283E7AE839CD7C58886
+
+RUN set -xe \
+        # Install required packages for build time. Will be removed when build finishes.
+        &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \
+
+        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL&quot; -o jetty.tar.gz \
+        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL.asc&quot; -o jetty.tar.gz.asc \
+        &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
+        &amp;&amp; for key in $JETTY_GPG_KEYS; do \
+                gpg --keyserver ha.pool.sks-keyservers.net --recv-keys &quot;$key&quot;; done \
+        &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
+        &amp;&amp; rm -r &quot;$GNUPGHOME&quot; \
+        &amp;&amp; tar -xvzf jetty.tar.gz \
+        &amp;&amp; mv jetty-distribution-$JETTY_VERSION/* ./ \
+        &amp;&amp; sed -i &apos;/jetty-logging/d&apos; etc/jetty.conf \
+        &amp;&amp; rm -fr demo-base javadoc \
+        &amp;&amp; rm jetty.tar.gz* \
+        &amp;&amp; rm -fr jetty-distribution-$JETTY_VERSION/ \
+
+        # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
+        &amp;&amp; cd $JETTY_BASE \
+        &amp;&amp; modules=&quot;$(grep -- ^--module= &quot;$JETTY_HOME/start.ini&quot; | cut -d= -f2 | paste -d, -s)&quot; \
+        &amp;&amp; java -jar &quot;$JETTY_HOME/start.jar&quot; --add-to-startd=&quot;$modules,setuid&quot; \
+
+        # Remove installed packages and various cleanup
+        &amp;&amp; apk del .build-deps \
+        &amp;&amp; rm -fr .build-deps \
+        &amp;&amp; rm -rf /tmp/hsperfdata_root
+
+WORKDIR $JETTY_BASE
+
+ENV TMPDIR /tmp/jetty
+RUN set -xe \
+        &amp;&amp; mkdir -p &quot;$TMPDIR&quot; \
+        &amp;&amp; chown -R jetty:jetty &quot;$TMPDIR&quot; &quot;$JETTY_BASE&quot;
+
+COPY docker-entrypoint.sh /
+
+EXPOSE 8080
+ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]
+CMD [&quot;java&quot;,&quot;-jar&quot;,&quot;/usr/local/jetty/start.jar&quot;]
+</code></pre>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/12/docker-7-jetty/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/09/java-pass-by-value-or-reference/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/09/java-pass-by-value-or-reference/" itemprop="url">
+                  java是值传递还是引用传递
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-09T16:46:53+08:00">
+                2016-08-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/09/java-pass-by-value-or-reference/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/09/java-pass-by-value-or-reference/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/09/java-pass-by-value-or-reference/" class="leancloud_visitors" data-flag-title="java是值传递还是引用传递">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="java到底是值传递还是引用传递"><a href="#java到底是值传递还是引用传递" class="headerlink" title="java到底是值传递还是引用传递"></a>java到底是值传递还是引用传递</h3><blockquote>
+<p>“Java manipulates objects ‘by reference,’ but it passes object references to methods ‘by value.’” –David Flanagan</p>
+</blockquote>
+<p><strong>大神解释了：java操作对象都是通过引用传递，而给方法传参都是通过值传递</strong></p>
+<p>首先，操作对象通过引用传递这个大家应该没有什么争议。但是方法传参都是通过值传递，估计大家还有些疑虑。</p>
+<h4 id="代码验证"><a href="#代码验证" class="headerlink" title="代码验证"></a>代码验证</h4><p>我们知道，如果是值传递，那么实际上传的是一份拷贝。引用传递的话一般传递的是内存地址（看具体的jvm实现）。<br>所以，值传递是无法修改原值的，而引用传递是可以修改原值。</p>
+<p>请看以下代码例子:</p>
+<pre><code>@Test
+public void testPassedByValueOrReference() {
+    char[] c1 = {&apos;a&apos;,&apos;b&apos;};
+    change1(c1);
+    System.out.println(&quot;c1 after change1:&quot; + Arrays.toString(c1));
+    change2(c1);
+    System.out.println(&quot;c1 after change2:&quot; + Arrays.toString(c1));
+}
+
+private void change1(char[] c1) {
+    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
+    c1 = c2;
+}
+
+private void change2(char[] c1) {
+    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
+    c1[0] = c2[0];
+}
+</code></pre><p>输出：</p>
+<pre><code>c1 after change1:[a, b]
+c1 after change2:[e, b]
+</code></pre><p>我们知道，数组是个对象。传递给2个不同的方法，确出现了不一致的行为，既有点像值传递，有好像是引用传递。我们来看看这2个方法在内存中到底做了什么：</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/09/java-pass-by-value-or-reference/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/07/15/docker-six-zookeeper/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/07/15/docker-six-zookeeper/" itemprop="url">
+                  docker学习系列六：构建zookeeper镜像
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-07-15T15:57:33+08:00">
+                2016-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/07/15/docker-six-zookeeper/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/15/docker-six-zookeeper/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/07/15/docker-six-zookeeper/" class="leancloud_visitors" data-flag-title="docker学习系列六：构建zookeeper镜像">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="什么是zookeeper"><a href="#什么是zookeeper" class="headerlink" title="什么是zookeeper"></a>什么是zookeeper</h3><p>zookeeper 是一个分布式的，开源的协调服务框架，服务于分布式应用程序。</p>
+<h3 id="为什么要zookeeper"><a href="#为什么要zookeeper" class="headerlink" title="为什么要zookeeper"></a>为什么要zookeeper</h3><p>可以将分布式应用从处理协调服务的泥潭中解救出来。且性能优越，设计简洁优雅。</p>
+<ul>
+<li>顺序一致性: 来自客户端的更新操作将会按照顺序被作用</li>
+<li>原子性操作: 更新要么全部成功,要么全部失败,没有部分的结果</li>
+<li>统一的系统镜像: 无论客户端链接的是哪台服务器,都能获得同样的服务视图,也就是说他是无状态的</li>
+<li>可靠性保证: 一旦写入操作被执行(作用到服务器),这个状态将会被持久化,直到其他客户端的修改生效</li>
+<li>时间线特性: 客户端访问服务器系统镜像能在一个特定时间访问内保证当前系统是实时更新的</li>
+</ul>
+<h3 id="Dockfile"><a href="#Dockfile" class="headerlink" title="Dockfile"></a>Dockfile</h3><pre><code>FROM oraclejdk8
+MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;
+
+# Install required packages
+RUN apk add --no-cache \
+    bash \
+    su-exec
+
+ENV ZOO_USER zookeeper
+ENV ZOO_CONF_DIR /conf
+ENV ZOO_DATA_DIR /data
+ENV ZOO_DATA_LOG_DIR /datalog
+
+# Add a user and make dirs
+RUN set -x \
+    &amp;&amp; adduser -D &quot;$ZOO_USER&quot; \
+    &amp;&amp; mkdir -p &quot;$ZOO_DATA_LOG_DIR&quot; &quot;$ZOO_DATA_DIR&quot; &quot;$ZOO_CONF_DIR&quot; \
+    &amp;&amp; chown &quot;$ZOO_USER:$ZOO_USER&quot; &quot;$ZOO_DATA_LOG_DIR&quot; &quot;$ZOO_DATA_DIR&quot; &quot;$ZOO_CONF_DIR&quot;
+
+ARG GPG_KEY=C823E3E5B12AF29C67F81976F5CECB3CB5E9BD2D
+ARG DISTRO_NAME=zookeeper-3.4.9
+
+# Download Apache Zookeeper, verify its PGP signature, untar and clean up
+RUN set -x \
+    &amp;&amp; apk add --no-cache --virtual .build-deps \
+        gnupg \
+    &amp;&amp; wget -q &quot;http://www.apache.org/dist/zookeeper/$DISTRO_NAME/$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; wget -q &quot;http://www.apache.org/dist/zookeeper/$DISTRO_NAME/$DISTRO_NAME.tar.gz.asc&quot; \
+    &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
+    &amp;&amp; gpg --keyserver ha.pool.sks-keyservers.net --recv-key &quot;$GPG_KEY&quot; \
+    &amp;&amp; gpg --batch --verify &quot;$DISTRO_NAME.tar.gz.asc&quot; &quot;$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; tar -xzf &quot;$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; mv &quot;$DISTRO_NAME/conf/&quot;* &quot;$ZOO_CONF_DIR&quot; \
+    &amp;&amp; rm -r &quot;$GNUPGHOME&quot; &quot;$DISTRO_NAME.tar.gz&quot; &quot;$DISTRO_NAME.tar.gz.asc&quot; \
+    &amp;&amp; apk del .build-deps
+
+WORKDIR $DISTRO_NAME
+VOLUME [&quot;$ZOO_DATA_DIR&quot;, &quot;$ZOO_DATA_LOG_DIR&quot;]
+
+ENV ZOO_PORT 2181
+EXPOSE $ZOO_PORT
+
+ENV PATH $PATH:/$DISTRO_NAME/bin
+ENV ZOOCFGDIR $ZOO_CONF_DIR
+
+COPY docker-entrypoint.sh /
+ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]
+CMD [&quot;zkServer.sh&quot;, &quot;start-foreground&quot;]
+</code></pre><p>注意：这里依赖的镜像<code>oraclejdk8</code>请查看之前的文章“Docker学习系列五：构建oracle-jdk8镜像” </p>
+<h4 id="依赖的docker-entrypoint-sh"><a href="#依赖的docker-entrypoint-sh" class="headerlink" title="依赖的docker-entrypoint.sh"></a>依赖的docker-entrypoint.sh</h4><pre><code>#!/bin/bash
+
+set -e
+
+# Allow the container to be started with `--user`
+if [ &quot;$1&quot; = &apos;zkServer.sh&apos; -a &quot;$(id -u)&quot; = &apos;0&apos; ]; then
+    exec su-exec &quot;$ZOO_USER&quot; &quot;$0&quot; &quot;$@&quot;
+fi
+
+# Generate the config only if it doesn&apos;t exist
+if [ ! -f &quot;$ZOO_CONF_DIR/zoo.cfg&quot; ]; then
+    CONFIG=&quot;$ZOO_CONF_DIR/zoo.cfg&quot;
+
+    echo &quot;clientPort=$ZOO_PORT&quot; &gt;&gt; &quot;$CONFIG&quot;
+    echo &quot;dataDir=$ZOO_DATA_DIR&quot; &gt;&gt; &quot;$CONFIG&quot;
+    echo &quot;dataLogDir=$ZOO_DATA_LOG_DIR&quot; &gt;&gt; &quot;$CONFIG&quot;
+
+    echo &apos;tickTime=2000&apos; &gt;&gt; &quot;$CONFIG&quot;
+    echo &apos;initLimit=5&apos; &gt;&gt; &quot;$CONFIG&quot;
+    echo &apos;syncLimit=2&apos; &gt;&gt; &quot;$CONFIG&quot;
+
+    for server in $ZOO_SERVERS; do
+        echo &quot;$server&quot; &gt;&gt; &quot;$CONFIG&quot;
+    done
+fi
+
+# Write myid only if it doesn&apos;t exist
+if [ ! -f &quot;$ZOO_DATA_DIR/myid&quot; ]; then
+    echo &quot;${ZOO_MY_ID:-1}&quot; &gt; &quot;$ZOO_DATA_DIR/myid&quot;
+fi
+
+exec &quot;$@&quot;
+</code></pre><p>设置docker-entrypoint.sh权限：</p>
+<pre><code>chmod 755 docker-entrypoint.sh
+</code></pre><h3 id="build镜像"><a href="#build镜像" class="headerlink" title="build镜像"></a>build镜像</h3><pre><code>docker build -t zookeeper:3.4.9 .
+</code></pre><h3 id="测试镜像"><a href="#测试镜像" class="headerlink" title="测试镜像"></a>测试镜像</h3><h4 id="启动镜像"><a href="#启动镜像" class="headerlink" title="启动镜像"></a>启动镜像</h4><pre><code>docker run --name zookeeper --restart always -d zookeeper:3.4.9
+</code></pre><blockquote>
+<p>This image includes EXPOSE 2181 (the zookeeper port), so standard container linking will make it automatically available to the linked containers. Since the Zookeeper “fails fast” it’s better to always restart it.</p>
+</blockquote>
+<p>这个镜像内部开放了2181端口(zookeeper默认端口)，所有标准的容器链接会使之自动可用。然后因为Zookeeper是<code>fail fast</code>，所以最好总是能自动重启。</p>
+<h4 id="从另一个应用容器链接到zookeeper容器"><a href="#从另一个应用容器链接到zookeeper容器" class="headerlink" title="从另一个应用容器链接到zookeeper容器"></a>从另一个应用容器链接到zookeeper容器</h4><pre><code>docker run --name some-app --link some-zookeeper:zookeeper -d application-that-uses-zookeeper
+</code></pre><h4 id="从zookeeper命令行客户端链接到zookeeper容器"><a href="#从zookeeper命令行客户端链接到zookeeper容器" class="headerlink" title="从zookeeper命令行客户端链接到zookeeper容器"></a>从zookeeper命令行客户端链接到zookeeper容器</h4><pre><code>docker run -it --rm --link some-zookeeper:zookeeper zookeeper zkCli.sh -server zookeeper
+</code></pre><h4 id="集群模式启动zookeeper"><a href="#集群模式启动zookeeper" class="headerlink" title="集群模式启动zookeeper"></a>集群模式启动zookeeper</h4><p>docker-compose.yml:</p>
+<pre><code>version: &apos;2&apos;
+services:
+    zoo1:
+        image: zookeeper:3.4.9
+        restart: always
+        ports:
+            - 2181
+        environment:
+            ZOO_MY_ID: 1
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+    zoo2:
+        image: zookeeper:3.4.9
+        restart: always
+        ports:
+            - 2181
+        environment:
+            ZOO_MY_ID: 2
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+    zoo3:
+        image: zookeeper:3.4.9
+        restart: always
+        ports:
+            - 2181
+        environment:
+            ZOO_MY_ID: 3
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+</code></pre><p>启动集群：</p>
+<pre><code>docker-compose up
+</code></pre><p>查看集群状态（端口）：</p>
+<pre><code>docker-compose ps  
+</code></pre><p>这里需要注意：这里是伪集群。因为所有容器都启动在同一个物理主机中。实际应该是在不同的主机中启动zookeeper容器。</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>zookeeper的配置在<code>/conf</code>目录下。如果需要修改配置，可以挂载本地配置文件。例如以下所示：</p>
+<pre><code>docker run --name some-zookeeper --restart always -d -v $(pwd)/zoo.cfg:/conf/zoo.cfg zookeeper
+</code></pre>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/05/31/mybatis-batch-java8/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/05/31/mybatis-batch-java8/" itemprop="url">
+                  创造Lambda风格的mybatis批量操作
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-31T16:07:51+08:00">
+                2016-05-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/05/31/mybatis-batch-java8/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/mybatis-batch-java8/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/05/31/mybatis-batch-java8/" class="leancloud_visitors" data-flag-title="创造Lambda风格的mybatis批量操作">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="mybatis批量操作"><a href="#mybatis批量操作" class="headerlink" title="mybatis批量操作"></a>mybatis批量操作</h3><p>mybatis如何批量插入呢？常用的做法如下代码所示：</p>
+<pre><code>// UserDao.java
+/**
+ * 批量插入
+ */
+int batchInsert(@Param(&quot;users&quot;) List&lt;User&gt; users);
+
+// UserDao.xml
+&lt;insert id=&quot;batchInsert&quot;&gt;
+    INSERT INTO user (name,password) VALUES
+    &lt;foreach collection=&quot;users&quot; item=&quot;user&quot; index=&quot;index&quot; separator=&quot;,&quot;&gt;
+        (#{user.name},#{user.password})
+    &lt;/foreach&gt;
+&lt;/insert&gt;
+</code></pre><p>但是，这样有个影藏的bug：当user集合超过一定数量，会导致动态拼接的sql过长而导致执行报错。并且，批量更新就不能使用这种形式了。</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/05/31/mybatis-batch-java8/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/05/23/java-threadlocal/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/05/23/java-threadlocal/" itemprop="url">
+                  ThreadLocal的作用与原理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-23T10:10:15+08:00">
+                2016-05-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/05/23/java-threadlocal/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/23/java-threadlocal/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/05/23/java-threadlocal/" class="leancloud_visitors" data-flag-title="ThreadLocal的作用与原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>spring默认bean的注册形式是单例模式。那spring是如何解决并发安全问题的呢？就是通过ThreadLocal。到底ThreadLocal有和“魔力”能让普通类变成线程安全的类呢？</p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>先来看看ThreadLocal.java的源码注释：</p>
+<blockquote>
+<p>This class provides thread-local variables. These variables differ from their normal counterparts in that each thread that accesses one (via its {@code get} or {@code set} method) has its own, independently initialized copy of the variable.  {@code ThreadLocal} instances are typically private static fields in classes that wish to associate state with a thread (e.g.,a user ID or Transaction ID).</p>
+</blockquote>
+<p>大致意思：</p>
+<blockquote>
+<p>这个类提供线程局部变量。这种在多线程环境下访问（通过get或set方法）时，能保证各个线程里的变量相对独立于其他线程内的变量。ThreadLocal实例通常是<code>private static</code>类型的，用于管理线程上下文。</p>
+</blockquote>
+<p>也就是说，<strong>Threadlocal提供了作用范围为线程的局部变量，这种变量只在线程生命周期内起作用。减少了线程内多个方法之间公共变量传递的复杂度。</strong></p>
+<p>这里关于线程安全的类有一个普遍适用的原则：<strong>如果一个类没有实例私有属性，或者实例私有属性也是无状态的类，那么这个类就是无状态的类。而一个无状态的类肯定是线程安全的类。</strong></p>
+<p>而用ThreadLocal包装类的所有实例私有属性后，这个类就没有实例私有属性了，那么这个类就是一个无状态类，因此也是一个线程安全的类。这也是spring使用ThreeadLocal处理bean的默认方式。</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/05/23/java-threadlocal/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
+
+
+          </div>
+          
+
+
+          
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">62</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>
