@@ -406,8 +406,8 @@
       
         
           
-            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p> 最近有个项目的spring的@Async的异步执行突然失效了。生产环境异步执行正常，那肯定是开发改了某个地方而导致的。</p>
-<h1 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h1><p> 查看最近提交代码记录。与@Async有相关的改动只有一个spring.xml的改动。初步推断是这个改动引起的。回滚这部分代码，跑测试类，果然异步执行生效了。</p>
+            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>最近有个项目的spring的@Async的异步执行突然失效了。生产环境异步执行正常，那肯定是开发改了某个地方而导致的。</p>
+<h1 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h1><p>查看最近提交代码记录。与@Async有相关的改动只有一个spring.xml的改动。初步推断是这个改动引起的。回滚这部分代码，跑测试类，果然异步执行生效了。</p>
 <h1 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h1><p>在stackoverflow中找到了答案：</p>
 <blockquote>
 <p>In short, the context loaded by the ContextLoaderListener (generally from applicationContext.xml) is the parent of the context loaded by the DispatcherServlet (generally from <em>-servlet.xml). If you have the bean with the @Async method declared/component-scanned in both contexts, the version from the child context (DispatcherServlet) will override the one in the parent context (ContextLoaderListener). I verified this by excluding that component from component scanning in the </em>-servlet.xml – it now works as expected. </p>
