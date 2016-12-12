@@ -102,7 +102,7 @@
 顺序一致性: 来自客户端的更新操作将会按照顺序被作用
 原子性操作: 更新要么全部成功,要么全部失败,没有部分的结果
 统一的系统镜像: 无论客户端链接的是哪台服务器,都能获得同样的服务视图,也就">
-<meta property="og:updated_time" content="2016-09-14T01:21:53.000Z">
+<meta property="og:updated_time" content="2016-12-12T16:11:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="docker学习系列六：构建zookeeper镜像">
 <meta name="twitter:description" content="什么是zookeeperzookeeper 是一个分布式的，开源的协调服务框架，服务于分布式应用程序。
@@ -415,88 +415,11 @@
 <li>可靠性保证: 一旦写入操作被执行(作用到服务器),这个状态将会被持久化,直到其他客户端的修改生效</li>
 <li>时间线特性: 客户端访问服务器系统镜像能在一个特定时间访问内保证当前系统是实时更新的</li>
 </ul>
-<h3 id="Dockfile"><a href="#Dockfile" class="headerlink" title="Dockfile"></a>Dockfile</h3><pre><code>FROM oraclejdk8
-MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;
-
-# Install required packages
-RUN apk add --no-cache \
-    bash \
-    su-exec
-
-ENV ZOO_USER zookeeper
-ENV ZOO_CONF_DIR /conf
-ENV ZOO_DATA_DIR /data
-ENV ZOO_DATA_LOG_DIR /datalog
-
-# Add a user and make dirs
-RUN set -x \
-    &amp;&amp; adduser -D &quot;$ZOO_USER&quot; \
-    &amp;&amp; mkdir -p &quot;$ZOO_DATA_LOG_DIR&quot; &quot;$ZOO_DATA_DIR&quot; &quot;$ZOO_CONF_DIR&quot; \
-    &amp;&amp; chown &quot;$ZOO_USER:$ZOO_USER&quot; &quot;$ZOO_DATA_LOG_DIR&quot; &quot;$ZOO_DATA_DIR&quot; &quot;$ZOO_CONF_DIR&quot;
-
-ARG GPG_KEY=C823E3E5B12AF29C67F81976F5CECB3CB5E9BD2D
-ARG DISTRO_NAME=zookeeper-3.4.9
-
-# Download Apache Zookeeper, verify its PGP signature, untar and clean up
-RUN set -x \
-    &amp;&amp; apk add --no-cache --virtual .build-deps \
-        gnupg \
-    &amp;&amp; wget -q &quot;http://www.apache.org/dist/zookeeper/$DISTRO_NAME/$DISTRO_NAME.tar.gz&quot; \
-    &amp;&amp; wget -q &quot;http://www.apache.org/dist/zookeeper/$DISTRO_NAME/$DISTRO_NAME.tar.gz.asc&quot; \
-    &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
-    &amp;&amp; gpg --keyserver ha.pool.sks-keyservers.net --recv-key &quot;$GPG_KEY&quot; \
-    &amp;&amp; gpg --batch --verify &quot;$DISTRO_NAME.tar.gz.asc&quot; &quot;$DISTRO_NAME.tar.gz&quot; \
-    &amp;&amp; tar -xzf &quot;$DISTRO_NAME.tar.gz&quot; \
-    &amp;&amp; mv &quot;$DISTRO_NAME/conf/&quot;* &quot;$ZOO_CONF_DIR&quot; \
-    &amp;&amp; rm -r &quot;$GNUPGHOME&quot; &quot;$DISTRO_NAME.tar.gz&quot; &quot;$DISTRO_NAME.tar.gz.asc&quot; \
-    &amp;&amp; apk del .build-deps
-
-WORKDIR $DISTRO_NAME
-VOLUME [&quot;$ZOO_DATA_DIR&quot;, &quot;$ZOO_DATA_LOG_DIR&quot;]
-
-ENV ZOO_PORT 2181
-EXPOSE $ZOO_PORT
-
-ENV PATH $PATH:/$DISTRO_NAME/bin
-ENV ZOOCFGDIR $ZOO_CONF_DIR
-
-COPY docker-entrypoint.sh /
-ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]
-CMD [&quot;zkServer.sh&quot;, &quot;start-foreground&quot;]
-</code></pre><p>注意：这里依赖的镜像<code>oraclejdk8</code>请查看之前的文章“Docker学习系列五：构建oracle-jdk8镜像” </p>
-<h4 id="依赖的docker-entrypoint-sh"><a href="#依赖的docker-entrypoint-sh" class="headerlink" title="依赖的docker-entrypoint.sh"></a>依赖的docker-entrypoint.sh</h4><pre><code>#!/bin/bash
-
-set -e
-
-# Allow the container to be started with `--user`
-if [ &quot;$1&quot; = &apos;zkServer.sh&apos; -a &quot;$(id -u)&quot; = &apos;0&apos; ]; then
-    exec su-exec &quot;$ZOO_USER&quot; &quot;$0&quot; &quot;$@&quot;
-fi
-
-# Generate the config only if it doesn&apos;t exist
-if [ ! -f &quot;$ZOO_CONF_DIR/zoo.cfg&quot; ]; then
-    CONFIG=&quot;$ZOO_CONF_DIR/zoo.cfg&quot;
-
-    echo &quot;clientPort=$ZOO_PORT&quot; &gt;&gt; &quot;$CONFIG&quot;
-    echo &quot;dataDir=$ZOO_DATA_DIR&quot; &gt;&gt; &quot;$CONFIG&quot;
-    echo &quot;dataLogDir=$ZOO_DATA_LOG_DIR&quot; &gt;&gt; &quot;$CONFIG&quot;
-
-    echo &apos;tickTime=2000&apos; &gt;&gt; &quot;$CONFIG&quot;
-    echo &apos;initLimit=5&apos; &gt;&gt; &quot;$CONFIG&quot;
-    echo &apos;syncLimit=2&apos; &gt;&gt; &quot;$CONFIG&quot;
-
-    for server in $ZOO_SERVERS; do
-        echo &quot;$server&quot; &gt;&gt; &quot;$CONFIG&quot;
-    done
-fi
-
-# Write myid only if it doesn&apos;t exist
-if [ ! -f &quot;$ZOO_DATA_DIR/myid&quot; ]; then
-    echo &quot;${ZOO_MY_ID:-1}&quot; &gt; &quot;$ZOO_DATA_DIR/myid&quot;
-fi
-
-exec &quot;$@&quot;
-</code></pre><p>设置docker-entrypoint.sh权限：</p>
+<h3 id="Dockfile"><a href="#Dockfile" class="headerlink" title="Dockfile"></a>Dockfile</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">FROM oraclejdk8</div><div class="line">   MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;</div><div class="line"></div><div class="line">   <span class="comment"># Install required packages</span></div><div class="line">   RUN apk add --no-cache \</div><div class="line">       bash \</div><div class="line">       su-exec</div><div class="line"></div><div class="line">   ENV ZOO_USER zookeeper</div><div class="line">   ENV ZOO_CONF_DIR /conf</div><div class="line">   ENV ZOO_DATA_DIR /data</div><div class="line">   ENV ZOO_DATA_LOG_DIR /datalog</div><div class="line"></div><div class="line">   <span class="comment"># Add a user and make dirs</span></div><div class="line">   RUN <span class="built_in">set</span> -x \</div><div class="line">       &amp;&amp; adduser -D <span class="string">"<span class="variable">$ZOO_USER</span>"</span> \</div><div class="line">       &amp;&amp; mkdir -p <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span> \</div><div class="line">       &amp;&amp; chown <span class="string">"<span class="variable">$ZOO_USER</span>:<span class="variable">$ZOO_USER</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span></div><div class="line"></div><div class="line">   ARG GPG_KEY=C823E3E5B12AF29C67F81976F5CECB3CB5E9BD2D</div><div class="line">   ARG DISTRO_NAME=zookeeper-3.4.9</div><div class="line"></div><div class="line">   <span class="comment"># Download Apache Zookeeper, verify its PGP signature, untar and clean up</span></div><div class="line">   RUN <span class="built_in">set</span> -x \</div><div class="line">       &amp;&amp; apk add --no-cache --virtual .build-deps \</div><div class="line">           gnupg \</div><div class="line">       &amp;&amp; wget -q <span class="string">"http://www.apache.org/dist/zookeeper/<span class="variable">$DISTRO_NAME</span>/<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; wget -q <span class="string">"http://www.apache.org/dist/zookeeper/<span class="variable">$DISTRO_NAME</span>/<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> \</div><div class="line">       &amp;&amp; <span class="built_in">export</span> GNUPGHOME=<span class="string">"<span class="variable">$(mktemp -d)</span>"</span> \</div><div class="line">       &amp;&amp; gpg --keyserver ha.pool.sks-keyservers.net --recv-key <span class="string">"<span class="variable">$GPG_KEY</span>"</span> \</div><div class="line">       &amp;&amp; gpg --batch --verify <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; tar -xzf <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; mv <span class="string">"<span class="variable">$DISTRO_NAME</span>/conf/"</span>* <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span> \</div><div class="line">       &amp;&amp; rm -r <span class="string">"<span class="variable">$GNUPGHOME</span>"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> \</div><div class="line">       &amp;&amp; apk del .build-deps</div><div class="line"></div><div class="line">   WORKDIR <span class="variable">$DISTRO_NAME</span></div><div class="line">   VOLUME [<span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span>, <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span>]</div><div class="line"></div><div class="line">   ENV ZOO_PORT 2181</div><div class="line">   EXPOSE <span class="variable">$ZOO_PORT</span></div><div class="line"></div><div class="line">   ENV PATH <span class="variable">$PATH</span>:/<span class="variable">$DISTRO_NAME</span>/bin</div><div class="line">   ENV ZOOCFGDIR <span class="variable">$ZOO_CONF_DIR</span></div><div class="line"></div><div class="line">   COPY docker-entrypoint.sh /</div><div class="line">   ENTRYPOINT [<span class="string">"/docker-entrypoint.sh"</span>]</div><div class="line">   CMD [<span class="string">"zkServer.sh"</span>, <span class="string">"start-foreground"</span>]</div></pre></td></tr></table></figure>
+<p>注意：这里依赖的镜像<code>oraclejdk8</code>请查看之前的文章“Docker学习系列五：构建oracle-jdk8镜像” </p>
+<a id="more"></a>
+<h4 id="依赖的docker-entrypoint-sh"><a href="#依赖的docker-entrypoint-sh" class="headerlink" title="依赖的docker-entrypoint.sh"></a>依赖的docker-entrypoint.sh</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/bash</span></div><div class="line"></div><div class="line">   <span class="built_in">set</span> <span class="_">-e</span></div><div class="line"></div><div class="line">   <span class="comment"># Allow the container to be started with `--user`</span></div><div class="line">   <span class="keyword">if</span> [ <span class="string">"<span class="variable">$1</span>"</span> = <span class="string">'zkServer.sh'</span> <span class="_">-a</span> <span class="string">"<span class="variable">$(id -u)</span>"</span> = <span class="string">'0'</span> ]; <span class="keyword">then</span></div><div class="line">       <span class="built_in">exec</span> su-exec <span class="string">"<span class="variable">$ZOO_USER</span>"</span> <span class="string">"<span class="variable">$0</span>"</span> <span class="string">"<span class="variable">$@</span>"</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="comment"># Generate the config only if it doesn't exist</span></div><div class="line">   <span class="keyword">if</span> [ ! <span class="_">-f</span> <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>/zoo.cfg"</span> ]; <span class="keyword">then</span></div><div class="line">       CONFIG=<span class="string">"<span class="variable">$ZOO_CONF_DIR</span>/zoo.cfg"</span></div><div class="line"></div><div class="line">       <span class="built_in">echo</span> <span class="string">"clientPort=<span class="variable">$ZOO_PORT</span>"</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line">       <span class="built_in">echo</span> <span class="string">"dataDir=<span class="variable">$ZOO_DATA_DIR</span>"</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line">       <span class="built_in">echo</span> <span class="string">"dataLogDir=<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line"></div><div class="line">       <span class="built_in">echo</span> <span class="string">'tickTime=2000'</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line">       <span class="built_in">echo</span> <span class="string">'initLimit=5'</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line">       <span class="built_in">echo</span> <span class="string">'syncLimit=2'</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line"></div><div class="line">       <span class="keyword">for</span> server <span class="keyword">in</span> <span class="variable">$ZOO_SERVERS</span>; <span class="keyword">do</span></div><div class="line">           <span class="built_in">echo</span> <span class="string">"<span class="variable">$server</span>"</span> &gt;&gt; <span class="string">"<span class="variable">$CONFIG</span>"</span></div><div class="line">       <span class="keyword">done</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="comment"># Write myid only if it doesn't exist</span></div><div class="line">   <span class="keyword">if</span> [ ! <span class="_">-f</span> <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>/myid"</span> ]; <span class="keyword">then</span></div><div class="line">       <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;ZOO_MY_ID:-1&#125;</span>"</span> &gt; <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>/myid"</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="built_in">exec</span> <span class="string">"<span class="variable">$@</span>"</span></div></pre></td></tr></table></figure>
+<p>设置docker-entrypoint.sh权限：</p>
 <pre><code>chmod 755 docker-entrypoint.sh
 </code></pre><h3 id="build镜像"><a href="#build镜像" class="headerlink" title="build镜像"></a>build镜像</h3><pre><code>docker build -t zookeeper:3.4.9 .
 </code></pre><h3 id="测试镜像"><a href="#测试镜像" class="headerlink" title="测试镜像"></a>测试镜像</h3><h4 id="启动镜像"><a href="#启动镜像" class="headerlink" title="启动镜像"></a>启动镜像</h4><pre><code>docker run --name zookeeper --restart always -d zookeeper:3.4.9
@@ -507,35 +430,8 @@ exec &quot;$@&quot;
 <h4 id="从另一个应用容器链接到zookeeper容器"><a href="#从另一个应用容器链接到zookeeper容器" class="headerlink" title="从另一个应用容器链接到zookeeper容器"></a>从另一个应用容器链接到zookeeper容器</h4><pre><code>docker run --name some-app --link some-zookeeper:zookeeper -d application-that-uses-zookeeper
 </code></pre><h4 id="从zookeeper命令行客户端链接到zookeeper容器"><a href="#从zookeeper命令行客户端链接到zookeeper容器" class="headerlink" title="从zookeeper命令行客户端链接到zookeeper容器"></a>从zookeeper命令行客户端链接到zookeeper容器</h4><pre><code>docker run -it --rm --link some-zookeeper:zookeeper zookeeper zkCli.sh -server zookeeper
 </code></pre><h4 id="集群模式启动zookeeper"><a href="#集群模式启动zookeeper" class="headerlink" title="集群模式启动zookeeper"></a>集群模式启动zookeeper</h4><p>docker-compose.yml:</p>
-<pre><code>version: &apos;2&apos;
-services:
-    zoo1:
-        image: zookeeper:3.4.9
-        restart: always
-        ports:
-            - 2181
-        environment:
-            ZOO_MY_ID: 1
-            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
-
-    zoo2:
-        image: zookeeper:3.4.9
-        restart: always
-        ports:
-            - 2181
-        environment:
-            ZOO_MY_ID: 2
-            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
-
-    zoo3:
-        image: zookeeper:3.4.9
-        restart: always
-        ports:
-            - 2181
-        environment:
-            ZOO_MY_ID: 3
-            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
-</code></pre><p>启动集群：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">version: <span class="string">'2'</span></div><div class="line">   services:</div><div class="line">       zoo1:</div><div class="line">           image: zookeeper:3.4.9</div><div class="line">           restart: always</div><div class="line">           ports:</div><div class="line">               - 2181</div><div class="line">           environment:</div><div class="line">               ZOO_MY_ID: 1</div><div class="line">               ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888</div><div class="line"></div><div class="line">       zoo2:</div><div class="line">           image: zookeeper:3.4.9</div><div class="line">           restart: always</div><div class="line">           ports:</div><div class="line">               - 2181</div><div class="line">           environment:</div><div class="line">               ZOO_MY_ID: 2</div><div class="line">               ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888</div><div class="line"></div><div class="line">       zoo3:</div><div class="line">           image: zookeeper:3.4.9</div><div class="line">           restart: always</div><div class="line">           ports:</div><div class="line">               - 2181</div><div class="line">           environment:</div><div class="line">               ZOO_MY_ID: 3</div><div class="line">               ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888</div></pre></td></tr></table></figure>
+<p>启动集群：</p>
 <pre><code>docker-compose up
 </code></pre><p>查看集群状态（端口）：</p>
 <pre><code>docker-compose ps  

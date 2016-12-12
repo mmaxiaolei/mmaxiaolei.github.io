@@ -87,27 +87,18 @@
 
 
 <meta name="description" content="前言Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。
-Dockerfile描述FROM oraclejdk8
-MAINTAINER zacard &amp;lt;mmaxiaolei@gmail.com&amp;gt;
-
-# add our user and group first to make s">
+Dockerfile描述12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Docker学习系列七：构建jetty镜像">
 <meta property="og:url" content="https://zacard.net/2016/08/12/docker-7-jetty/index.html">
 <meta property="og:site_name" content="Zacard's Notes">
 <meta property="og:description" content="前言Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。
-Dockerfile描述FROM oraclejdk8
-MAINTAINER zacard &amp;lt;mmaxiaolei@gmail.com&amp;gt;
-
-# add our user and group first to make s">
-<meta property="og:updated_time" content="2016-08-13T05:20:28.000Z">
+Dockerfile描述12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565">
+<meta property="og:updated_time" content="2016-12-12T16:05:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Docker学习系列七：构建jetty镜像">
 <meta name="twitter:description" content="前言Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。
-Dockerfile描述FROM oraclejdk8
-MAINTAINER zacard &amp;lt;mmaxiaolei@gmail.com&amp;gt;
-
-# add our user and group first to make s">
+Dockerfile描述12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565">
 
 
 
@@ -404,123 +395,28 @@ MAINTAINER zacard &amp;lt;mmaxiaolei@gmail.com&amp;gt;
 
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。</p>
-<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><pre><code>FROM oraclejdk8
-MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;
-
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-
-
-ENV JETTY_HOME /usr/local/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-RUN mkdir -p &quot;$JETTY_HOME&quot;
-WORKDIR $JETTY_HOME
-
-ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p &quot;$JETTY_BASE&quot;
-
-ENV JETTY_VERSION 9.3.10.v20160621
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
-
-# GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
-ENV JETTY_GPG_KEYS \
-        # 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;
-        B59B67FD7904984367F931800818D9D68FB67BAC \
-        # 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;
-        5DE533CB43DAF8BC3E372283E7AE839CD7C58886
-
-RUN set -xe \
-        # Install required packages for build time. Will be removed when build finishes.
-        &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \
-
-        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL&quot; -o jetty.tar.gz \
-        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL.asc&quot; -o jetty.tar.gz.asc \
-        &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
-        &amp;&amp; for key in $JETTY_GPG_KEYS; do \
-                gpg --keyserver ha.pool.sks-keyservers.net --recv-keys &quot;$key&quot;; done \
-        &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
-        &amp;&amp; rm -r &quot;$GNUPGHOME&quot; \
-        &amp;&amp; tar -xvzf jetty.tar.gz \
-        &amp;&amp; mv jetty-distribution-$JETTY_VERSION/* ./ \
-        &amp;&amp; sed -i &apos;/jetty-logging/d&apos; etc/jetty.conf \
-        &amp;&amp; rm -fr demo-base javadoc \
-        &amp;&amp; rm jetty.tar.gz* \
-        &amp;&amp; rm -fr jetty-distribution-$JETTY_VERSION/ \
-
-        # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
-        &amp;&amp; cd $JETTY_BASE \
-        &amp;&amp; modules=&quot;$(grep -- ^--module= &quot;$JETTY_HOME/start.ini&quot; | cut -d= -f2 | paste -d, -s)&quot; \
-        &amp;&amp; java -jar &quot;$JETTY_HOME/start.jar&quot; --add-to-startd=&quot;$modules,setuid&quot; \
-
-        # Remove installed packages and various cleanup
-        &amp;&amp; apk del .build-deps \
-        &amp;&amp; rm -fr .build-deps \
-        &amp;&amp; rm -rf /tmp/hsperfdata_root
-
-WORKDIR $JETTY_BASE
-
-ENV TMPDIR /tmp/jetty
-RUN set -xe \
-        &amp;&amp; mkdir -p &quot;$TMPDIR&quot; \
-        &amp;&amp; chown -R jetty:jetty &quot;$TMPDIR&quot; &quot;$JETTY_BASE&quot;
-
-COPY docker-entrypoint.sh /
-
-EXPOSE 8080
-ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]
-CMD [&quot;java&quot;,&quot;-jar&quot;,&quot;/usr/local/jetty/start.jar&quot;]
-</code></pre><a id="more"></a>
+<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">FROM oraclejdk8</div><div class="line">   MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;</div><div class="line"></div><div class="line">   <span class="comment"># add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added</span></div><div class="line">   RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-</div><div class="line"></div><div class="line">   ENV JETTY_HOME /usr/<span class="built_in">local</span>/jetty</div><div class="line">   ENV PATH <span class="variable">$JETTY_HOME</span>/bin:<span class="variable">$PATH</span></div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_HOME</span>"</span></div><div class="line">   WORKDIR <span class="variable">$JETTY_HOME</span></div><div class="line"></div><div class="line">   ENV JETTY_BASE /var/lib/jetty</div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   ENV JETTY_VERSION 9.3.10.v20160621</div><div class="line">   ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/<span class="variable">$JETTY_VERSION</span>/jetty-distribution-<span class="variable">$JETTY_VERSION</span>.tar.gz</div><div class="line"></div><div class="line">   <span class="comment"># GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)</span></div><div class="line">   ENV JETTY_GPG_KEYS \</div><div class="line">           <span class="comment"># 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;</span></div><div class="line">           B59B67FD7904984367F931800818D9D68FB67BAC \</div><div class="line">           <span class="comment"># 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;</span></div><div class="line">           5DE533CB43DAF8BC3E372283E7AE839CD7C58886</div><div class="line"></div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           <span class="comment"># Install required packages for build time. Will be removed when build finishes.</span></div><div class="line">           &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \</div><div class="line"></div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>"</span> -o jetty.tar.gz \</div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>.asc"</span> -o jetty.tar.gz.asc \</div><div class="line">           &amp;&amp; <span class="built_in">export</span> GNUPGHOME=<span class="string">"<span class="variable">$(mktemp -d)</span>"</span> \</div><div class="line">           &amp;&amp; <span class="keyword">for</span> key <span class="keyword">in</span> <span class="variable">$JETTY_GPG_KEYS</span>; <span class="keyword">do</span> \</div><div class="line">                   gpg --keyserver ha.pool.sks-keyservers.net --recv-keys <span class="string">"<span class="variable">$key</span>"</span>; <span class="keyword">done</span> \</div><div class="line">           &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \</div><div class="line">           &amp;&amp; rm -r <span class="string">"<span class="variable">$GNUPGHOME</span>"</span> \</div><div class="line">           &amp;&amp; tar -xvzf jetty.tar.gz \</div><div class="line">           &amp;&amp; mv jetty-distribution-<span class="variable">$JETTY_VERSION</span>/* ./ \</div><div class="line">           &amp;&amp; sed -i <span class="string">'/jetty-logging/d'</span> etc/jetty.conf \</div><div class="line">           &amp;&amp; rm -fr demo-base javadoc \</div><div class="line">           &amp;&amp; rm jetty.tar.gz* \</div><div class="line">           &amp;&amp; rm -fr jetty-distribution-<span class="variable">$JETTY_VERSION</span>/ \</div><div class="line"></div><div class="line">           <span class="comment"># Get the list of modules in the default start.ini and build new base with those modules, then add setuid</span></div><div class="line">           &amp;&amp; <span class="built_in">cd</span> <span class="variable">$JETTY_BASE</span> \</div><div class="line">           &amp;&amp; modules=<span class="string">"<span class="variable">$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)</span>"</span> \</div><div class="line">           &amp;&amp; java -jar <span class="string">"<span class="variable">$JETTY_HOME</span>/start.jar"</span> --add-to-startd=<span class="string">"<span class="variable">$modules</span>,setuid"</span> \</div><div class="line"></div><div class="line">           <span class="comment"># Remove installed packages and various cleanup</span></div><div class="line">           &amp;&amp; apk del .build-deps \</div><div class="line">           &amp;&amp; rm -fr .build-deps \</div><div class="line">           &amp;&amp; rm -rf /tmp/hsperfdata_root</div><div class="line"></div><div class="line">   WORKDIR <span class="variable">$JETTY_BASE</span></div><div class="line"></div><div class="line">   ENV TMPDIR /tmp/jetty</div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           &amp;&amp; mkdir -p <span class="string">"<span class="variable">$TMPDIR</span>"</span> \</div><div class="line">           &amp;&amp; chown -R jetty:jetty <span class="string">"<span class="variable">$TMPDIR</span>"</span> <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   COPY docker-entrypoint.sh /</div><div class="line"></div><div class="line">   EXPOSE 8080</div><div class="line">   ENTRYPOINT [<span class="string">"/docker-entrypoint.sh"</span>]</div><div class="line">   CMD [<span class="string">"java"</span>,<span class="string">"-jar"</span>,<span class="string">"/usr/local/jetty/start.jar"</span>]</div></pre></td></tr></table></figure>
+<a id="more"></a>
 <h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>这里的Dockerfile是根据官方的jetty9-alpine改写。其实也仅仅是把依赖镜像改成了自己构建的oracle-jdk8而已。</p>
 <p>这里还依赖了一个sh文件，具体内容如下：</p>
 <p><strong>docker-entrypoint.sh：</strong></p>
-<pre><code>#!/bin/sh
-
-set -e
-
-if [ &quot;$1&quot; = jetty.sh ]; then
-    if ! command -v bash &gt;/dev/null 2&gt;&amp;1 ; then
-        cat &gt;&amp;2 &lt;&lt;- &apos;EOWARN&apos;
-            ********************************************************************
-            ERROR: bash not found. Use of jetty.sh requires bash.
-            ********************************************************************
-        EOWARN
-        exit 1
-    fi
-    cat &gt;&amp;2 &lt;&lt;- &apos;EOWARN&apos;
-        ********************************************************************
-        WARNING: Use of jetty.sh from this image is deprecated and may
-            be removed at some point in the future.
-
-            See the documentation for guidance on extending this image:
-            https://github.com/docker-library/docs/tree/master/jetty
-        ********************************************************************
-    EOWARN
-fi
-
-if ! command -v -- &quot;$1&quot; &gt;/dev/null 2&gt;&amp;1 ; then
-    set -- java -jar &quot;$JETTY_HOME/start.jar&quot; &quot;$@&quot;
-fi
-
-if [ -n &quot;$TMPDIR&quot; ] ; then
-    case &quot;$JAVA_OPTIONS&quot; in
-        *-Djava.io.tmpdir=*) ;;
-        *) JAVA_OPTIONS=&quot;-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS&quot; ;;
-    esac
-fi
-
-if [ &quot;$1&quot; = &quot;java&quot; -a -n &quot;$JAVA_OPTIONS&quot; ] ; then
-    shift
-    set -- java $JAVA_OPTIONS &quot;$@&quot;
-fi
-
-exec &quot;$@&quot;
-</code></pre><p><strong>注意：docker-entrypoint.sh要和Dockerfile同一目录，且需要设置可执行权限。
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/sh</span></div><div class="line"></div><div class="line">   <span class="built_in">set</span> <span class="_">-e</span></div><div class="line"></div><div class="line">   <span class="keyword">if</span> [ <span class="string">"<span class="variable">$1</span>"</span> = jetty.sh ]; <span class="keyword">then</span></div><div class="line">       <span class="keyword">if</span> ! <span class="built_in">command</span> -v bash &gt;/dev/null 2&gt;&amp;1 ; <span class="keyword">then</span></div><div class="line">           cat &gt;&amp;2 &lt;&lt;- <span class="string">'EOWARN'</span></div><div class="line">               ********************************************************************</div><div class="line">               ERROR: bash not found. Use of jetty.sh requires bash.</div><div class="line">               ********************************************************************</div><div class="line">           EOWARN</div><div class="line">           <span class="built_in">exit</span> 1</div><div class="line">       <span class="keyword">fi</span></div><div class="line">       cat &gt;&amp;2 &lt;&lt;- <span class="string">'EOWARN'</span></div><div class="line">           ********************************************************************</div><div class="line">           WARNING: Use of jetty.sh from this image is deprecated and may</div><div class="line">               be removed at some point <span class="keyword">in</span> the future.</div><div class="line"></div><div class="line">               See the documentation <span class="keyword">for</span> guidance on extending this image:</div><div class="line">               https://github.com/docker-library/docs/tree/master/jetty</div><div class="line">           ********************************************************************</div><div class="line">       EOWARN</div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="keyword">if</span> ! <span class="built_in">command</span> -v -- <span class="string">"<span class="variable">$1</span>"</span> &gt;/dev/null 2&gt;&amp;1 ; <span class="keyword">then</span></div><div class="line">       <span class="built_in">set</span> -- java -jar <span class="string">"<span class="variable">$JETTY_HOME</span>/start.jar"</span> <span class="string">"<span class="variable">$@</span>"</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="keyword">if</span> [ -n <span class="string">"<span class="variable">$TMPDIR</span>"</span> ] ; <span class="keyword">then</span></div><div class="line">       <span class="keyword">case</span> <span class="string">"<span class="variable">$JAVA_OPTIONS</span>"</span> <span class="keyword">in</span></div><div class="line">           *-Djava.io.tmpdir=*) ;;</div><div class="line">           *) JAVA_OPTIONS=<span class="string">"-Djava.io.tmpdir=<span class="variable">$TMPDIR</span> <span class="variable">$JAVA_OPTIONS</span>"</span> ;;</div><div class="line">       <span class="keyword">esac</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="keyword">if</span> [ <span class="string">"<span class="variable">$1</span>"</span> = <span class="string">"java"</span> <span class="_">-a</span> -n <span class="string">"<span class="variable">$JAVA_OPTIONS</span>"</span> ] ; <span class="keyword">then</span></div><div class="line">       <span class="built_in">shift</span></div><div class="line">       <span class="built_in">set</span> -- java <span class="variable">$JAVA_OPTIONS</span> <span class="string">"<span class="variable">$@</span>"</span></div><div class="line">   <span class="keyword">fi</span></div><div class="line"></div><div class="line">   <span class="built_in">exec</span> <span class="string">"<span class="variable">$@</span>"</span></div></pre></td></tr></table></figure>
+<p><strong>注意：docker-entrypoint.sh要和Dockerfile同一目录，且需要设置可执行权限。
 </strong></p>
-<h3 id="build镜像"><a href="#build镜像" class="headerlink" title="build镜像"></a>build镜像</h3><pre><code>docker buile -t jetty:9-oraclejdk8 .
-</code></pre><h3 id="测试镜像"><a href="#测试镜像" class="headerlink" title="测试镜像"></a>测试镜像</h3><pre><code>docker run --rm jetty:9-oraclejdk8 --list-config
-</code></pre><h3 id="启动镜像"><a href="#启动镜像" class="headerlink" title="启动镜像"></a>启动镜像</h3><p>具体如何启动部署镜像，请参考官方说明文档。<a href="https://hub.docker.com/_/jetty/" target="_blank" rel="external">传送门</a></p>
-<h3 id="保存镜像"><a href="#保存镜像" class="headerlink" title="保存镜像"></a>保存镜像</h3><pre><code>docker save -o jetty.tar jetty:9-oraclejdk8
-</code></pre><h3 id="加载镜像"><a href="#加载镜像" class="headerlink" title="加载镜像"></a>加载镜像</h3><pre><code>docker -i jetty.tar
-</code></pre>
+<h3 id="build镜像"><a href="#build镜像" class="headerlink" title="build镜像"></a>build镜像</h3><blockquote>
+<p>docker buile -t jetty:9-oraclejdk8 .</p>
+</blockquote>
+<h3 id="测试镜像"><a href="#测试镜像" class="headerlink" title="测试镜像"></a>测试镜像</h3><blockquote>
+<p>docker run –rm jetty:9-oraclejdk8 –list-config</p>
+</blockquote>
+<h3 id="启动镜像"><a href="#启动镜像" class="headerlink" title="启动镜像"></a>启动镜像</h3><p>具体如何启动部署镜像，请参考官方说明文档。<a href="https://hub.docker.com/_/jetty/" target="_blank" rel="external">传送门</a></p>
+<h3 id="保存镜像"><a href="#保存镜像" class="headerlink" title="保存镜像"></a>保存镜像</h3><blockquote>
+<p>docker save -o jetty.tar jetty:9-oraclejdk8</p>
+</blockquote>
+<h3 id="加载镜像"><a href="#加载镜像" class="headerlink" title="加载镜像"></a>加载镜像</h3><blockquote>
+<p>docker -i jetty.tar</p>
+</blockquote>
+
       
     </div>
 

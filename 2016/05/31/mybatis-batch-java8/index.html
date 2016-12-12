@@ -87,39 +87,18 @@
 
 
 <meta name="description" content="mybatis批量操作mybatis如何批量插入呢？常用的做法如下代码所示：
-// UserDao.java
-/**
- * 批量插入
- */
-int batchInsert(@Param(&amp;quot;users&amp;quot;) List&amp;lt;User&amp;gt; users);
-
-// UserDao.xml
-&amp;lt;insert id=&amp;quot;batchInsert&amp;quot;&amp;gt;">
+1234567891011121314// UserDao.java/**    * 批量插入    */   int batchInsert(@Param(&quot;users&quot;) List&amp;lt;User&amp;gt; users);      // UserDao.xml   &amp;lt;insert id=&quot;batchInsert">
 <meta property="og:type" content="article">
 <meta property="og:title" content="创造Lambda风格的mybatis批量操作">
 <meta property="og:url" content="https://zacard.net/2016/05/31/mybatis-batch-java8/index.html">
 <meta property="og:site_name" content="Zacard's Notes">
 <meta property="og:description" content="mybatis批量操作mybatis如何批量插入呢？常用的做法如下代码所示：
-// UserDao.java
-/**
- * 批量插入
- */
-int batchInsert(@Param(&amp;quot;users&amp;quot;) List&amp;lt;User&amp;gt; users);
-
-// UserDao.xml
-&amp;lt;insert id=&amp;quot;batchInsert&amp;quot;&amp;gt;">
-<meta property="og:updated_time" content="2016-08-13T05:28:09.000Z">
+1234567891011121314// UserDao.java/**    * 批量插入    */   int batchInsert(@Param(&quot;users&quot;) List&amp;lt;User&amp;gt; users);      // UserDao.xml   &amp;lt;insert id=&quot;batchInsert">
+<meta property="og:updated_time" content="2016-12-12T16:14:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="创造Lambda风格的mybatis批量操作">
 <meta name="twitter:description" content="mybatis批量操作mybatis如何批量插入呢？常用的做法如下代码所示：
-// UserDao.java
-/**
- * 批量插入
- */
-int batchInsert(@Param(&amp;quot;users&amp;quot;) List&amp;lt;User&amp;gt; users);
-
-// UserDao.xml
-&amp;lt;insert id=&amp;quot;batchInsert&amp;quot;&amp;gt;">
+1234567891011121314// UserDao.java/**    * 批量插入    */   int batchInsert(@Param(&quot;users&quot;) List&amp;lt;User&amp;gt; users);      // UserDao.xml   &amp;lt;insert id=&quot;batchInsert">
 
 
 
@@ -416,102 +395,20 @@ int batchInsert(@Param(&amp;quot;users&amp;quot;) List&amp;lt;User&amp;gt; users
 
       
         <h3 id="mybatis批量操作"><a href="#mybatis批量操作" class="headerlink" title="mybatis批量操作"></a>mybatis批量操作</h3><p>mybatis如何批量插入呢？常用的做法如下代码所示：</p>
-<pre><code>// UserDao.java
-/**
- * 批量插入
- */
-int batchInsert(@Param(&quot;users&quot;) List&lt;User&gt; users);
-
-// UserDao.xml
-&lt;insert id=&quot;batchInsert&quot;&gt;
-    INSERT INTO user (name,password) VALUES
-    &lt;foreach collection=&quot;users&quot; item=&quot;user&quot; index=&quot;index&quot; separator=&quot;,&quot;&gt;
-        (#{user.name},#{user.password})
-    &lt;/foreach&gt;
-&lt;/insert&gt;
-</code></pre><p>但是，这样有个影藏的bug：当user集合超过一定数量，会导致动态拼接的sql过长而导致执行报错。并且，批量更新就不能使用这种形式了。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">// UserDao.java</div><div class="line"></div><div class="line">/**</div><div class="line">    * 批量插入</div><div class="line">    */</div><div class="line">   int batchInsert(@Param("users") List&lt;User&gt; users);</div><div class="line">   </div><div class="line">   // UserDao.xml</div><div class="line">   &lt;insert id="batchInsert"&gt;</div><div class="line">       INSERT INTO user (name,password) VALUES</div><div class="line">       &lt;foreach collection="users" item="user" index="index" separator=","&gt;</div><div class="line">           (#&#123;user.name&#125;,#&#123;user.password&#125;)</div><div class="line">       &lt;/foreach&gt;</div><div class="line">   &lt;/insert&gt;</div></pre></td></tr></table></figure>
+<p>但是，这样有个影藏的bug：当user集合超过一定数量，会导致动态拼接的sql过长而导致执行报错。并且，批量更新就不能使用这种形式了。</p>
 <a id="more"></a>
 <h3 id="使用mybatis批量提交方式"><a href="#使用mybatis批量提交方式" class="headerlink" title="使用mybatis批量提交方式"></a>使用mybatis批量提交方式</h3><p>是否有一种通用的写法实现批量操作呢？查看github中mybatis的官方wiki，里面有批量操作的示例（<a href="https://github.com/mybatis/mybatis-3/wiki/FAQ" target="_blank" rel="external">传送门</a>）:</p>
-<pre><code>// Mapper.xml
-&lt;insert id=&quot;insertName&quot;&gt;
-      insert into names (name) values (#{value})
-&lt;/insert&gt;
-
-// java code
-List&lt;String&gt; names = new ArrayList&lt;String&gt;();
-names.add(&quot;Fred&quot;);
-names.add(&quot;Barney&quot;);
-names.add(&quot;Betty&quot;);
-names.add(&quot;Wilma&quot;);
-
-SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-try {
-      NameMapper mapper = sqlSession.getMapper(NameMapper.class);
-      for (String name : names) {
-        mapper.insertName(name);
-      }
-      sqlSession.commit();
-} finally {
-      sqlSession.close();
-}
-</code></pre><p>这种java代码形式的批量操作更加通用且直观。但是需要自己管理sqlsession，这部分自我管理sqlsession的代码不但容易忘记（特别是finally中的sqlsession.close）,而且违反了DRY原则，代码也显得冗长。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Mapper.xml</span></div><div class="line">&lt;insert id=<span class="string">"insertName"</span>&gt;</div><div class="line"> 		<span class="function">insert into <span class="title">names</span> <span class="params">(name)</span> <span class="title">values</span> <span class="params">(#&#123;value&#125;)</span></span></div><div class="line">&lt;/insert&gt;</div><div class="line"></div><div class="line"><span class="comment">// java code</span></div><div class="line">List&lt;String&gt; names = <span class="keyword">new</span> ArrayList&lt;String&gt;();</div><div class="line">names.add(<span class="string">"Fred"</span>);</div><div class="line">names.add(<span class="string">"Barney"</span>);</div><div class="line">names.add(<span class="string">"Betty"</span>);</div><div class="line">names.add(<span class="string">"Wilma"</span>);</div><div class="line"></div><div class="line">SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);</div><div class="line"><span class="keyword">try</span> &#123;</div><div class="line"> 		NameMapper mapper = sqlSession.getMapper(NameMapper.class);</div><div class="line"> 		<span class="keyword">for</span> (String name : names) &#123;</div><div class="line">   		mapper.insertName(name);</div><div class="line"> 		&#125;</div><div class="line"> 		sqlSession.commit();</div><div class="line">&#125; <span class="keyword">finally</span> &#123;</div><div class="line"> 		sqlSession.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这种java代码形式的批量操作更加通用且直观。但是需要自己管理sqlsession，这部分自我管理sqlsession的代码不但容易忘记（特别是finally中的sqlsession.close）,而且违反了DRY原则，代码也显得冗长。</p>
 <h3 id="使用java8-lambda改造"><a href="#使用java8-lambda改造" class="headerlink" title="使用java8 lambda改造"></a>使用java8 lambda改造</h3><p>首先对于sqlsession的资源管理可以使用java7的特性，try-with-resources管理。例如以下代码：</p>
-<pre><code>List&lt;String&gt; names = new ArrayList&lt;String&gt;();
-names.add(&quot;Fred&quot;);
-names.add(&quot;Barney&quot;);
-names.add(&quot;Betty&quot;);
-names.add(&quot;Wilma&quot;);
-
-try (SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH)) {
-    NameMapper mapper = sqlSession.getMapper(NameMapper.class);
-      for (String name : names) {
-        mapper.insertName(name);
-      }
-    sqlSession.commit();
-} catch (Exception e) {
-    logger.error(&quot;批量操作失败&quot;, e);
-}
-</code></pre><p>然而，获取sqlsession和sql.commit等部分仍然是重复代码。调用者可能并不关心这些实现细节。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">List&lt;String&gt; names = <span class="keyword">new</span> ArrayList&lt;String&gt;();</div><div class="line">names.add(<span class="string">"Fred"</span>);</div><div class="line">names.add(<span class="string">"Barney"</span>);</div><div class="line">names.add(<span class="string">"Betty"</span>);</div><div class="line">names.add(<span class="string">"Wilma"</span>);</div><div class="line"></div><div class="line">      <span class="keyword">try</span> (SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH)) &#123;</div><div class="line">          NameMapper mapper = sqlSession.getMapper(NameMapper.class);</div><div class="line">			<span class="keyword">for</span> (String name : names) &#123;</div><div class="line">  			mapper.insertName(name);</div><div class="line">			&#125;</div><div class="line">          sqlSession.commit();</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          logger.error(<span class="string">"批量操作失败"</span>, e);</div><div class="line">      &#125;</div></pre></td></tr></table></figure>
+<p>然而，获取sqlsession和sql.commit等部分仍然是重复代码。调用者可能并不关心这些实现细节。</p>
 <p>将批量操作独立为一个工具类，并使用java8 lambda改造：</p>
-<pre><code>/**
- * MyBatis 批量操作
- *
-  * @author zacard
-  * @since 2016-05-31 09:17
- */
-@Component
-public class MyBatisBatch {
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">    * MyBatis 批量操作</div><div class="line">    *</div><div class="line">	 * <span class="doctag">@author</span> zacard</div><div class="line">	 * <span class="doctag">@since</span> 2016-05-31 09:17</div><div class="line">    */</div><div class="line">   <span class="meta">@Component</span></div><div class="line">   <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBatisBatch</span> </span>&#123;</div><div class="line">   </div><div class="line">       <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(MyBatisBatch.class);</div><div class="line">   </div><div class="line">       <span class="meta">@Autowired</span></div><div class="line">       <span class="keyword">private</span> SqlSessionFactory xSqlSessionFactory;</div><div class="line">   </div><div class="line">       <span class="keyword">public</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">doBatch</span><span class="params">(Class&lt;T&gt; daoClass, Consumer&lt;T&gt; consumer)</span></span>&#123;</div><div class="line">           Objects.requireNonNull(consumer);</div><div class="line">           <span class="keyword">if</span> (xSqlSessionFactory == <span class="keyword">null</span>) &#123;</div><div class="line">               logger.error(<span class="string">"无法获取mybatis sqlSessionFactory,请检查mybatis配置"</span>);</div><div class="line">               <span class="keyword">throw</span> XExceptionFactory.create(<span class="string">"mybatis配置错误"</span>));</div><div class="line">           &#125;</div><div class="line">           <span class="keyword">try</span> (SqlSession sqlSession = xSqlSessionFactory.openSession(ExecutorType.BATCH)) &#123;</div><div class="line">               T mapper = sqlSession.getMapper(daoClass);</div><div class="line">               consumer.accept(mapper);</div><div class="line">               sqlSession.commit();</div><div class="line">           &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">               logger.error(<span class="string">"批量操作失败"</span>, e);</div><div class="line">               <span class="keyword">throw</span> XExceptionFactory.create(<span class="string">"批量操作失败"</span>);</div><div class="line">           &#125;</div><div class="line">       &#125;</div></pre></td></tr></table></figure>
+<p>客户端使用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">   List&lt;Long&gt; userIds = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">   userIds.add(<span class="number">1L</span>);</div><div class="line">   userIds.add(<span class="number">2L</span>);</div><div class="line">   userIds.add(<span class="number">3L</span>);</div><div class="line"></div><div class="line">myBatisBatch.doBatch(UserDao.class, userDao -&gt;</div><div class="line">           userIds.forEach(userId -&gt; userDao.insert(userId))</div><div class="line">   );</div></pre></td></tr></table></figure>
 
-    private static final Logger logger = LoggerFactory.getLogger(MyBatisBatch.class);
-
-    @Autowired
-    private SqlSessionFactory xSqlSessionFactory;
-
-    public &lt;T&gt; void doBatch(Class&lt;T&gt; daoClass, Consumer&lt;T&gt; consumer){
-        Objects.requireNonNull(consumer);
-        if (xSqlSessionFactory == null) {
-            logger.error(&quot;无法获取mybatis sqlSessionFactory,请检查mybatis配置&quot;);
-            throw XExceptionFactory.create(&quot;mybatis配置错误&quot;));
-        }
-        try (SqlSession sqlSession = xSqlSessionFactory.openSession(ExecutorType.BATCH)) {
-            T mapper = sqlSession.getMapper(daoClass);
-            consumer.accept(mapper);
-            sqlSession.commit();
-        } catch (Exception e) {
-            logger.error(&quot;批量操作失败&quot;, e);
-            throw XExceptionFactory.create(&quot;批量操作失败&quot;);
-        }
-    }
-</code></pre><p>客户端使用示例：</p>
-<pre><code>List&lt;Long&gt; userIds = new ArrayList&lt;&gt;();
-userIds.add(1L);
-userIds.add(2L);
-userIds.add(3L);
-
-myBatisBatch.doBatch(UserDao.class, userDao -&gt;
-        userIds.forEach(userId -&gt; userDao.insert(userId))
-);
-</code></pre>
       
     </div>
 

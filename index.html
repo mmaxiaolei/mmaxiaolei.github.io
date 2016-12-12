@@ -1631,71 +1631,7 @@
       
         
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。</p>
-<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><pre><code>FROM oraclejdk8
-MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;
-
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-
-
-ENV JETTY_HOME /usr/local/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-RUN mkdir -p &quot;$JETTY_HOME&quot;
-WORKDIR $JETTY_HOME
-
-ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p &quot;$JETTY_BASE&quot;
-
-ENV JETTY_VERSION 9.3.10.v20160621
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
-
-# GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
-ENV JETTY_GPG_KEYS \
-        # 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;
-        B59B67FD7904984367F931800818D9D68FB67BAC \
-        # 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;
-        5DE533CB43DAF8BC3E372283E7AE839CD7C58886
-
-RUN set -xe \
-        # Install required packages for build time. Will be removed when build finishes.
-        &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \
-
-        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL&quot; -o jetty.tar.gz \
-        &amp;&amp; curl -SL &quot;$JETTY_TGZ_URL.asc&quot; -o jetty.tar.gz.asc \
-        &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
-        &amp;&amp; for key in $JETTY_GPG_KEYS; do \
-                gpg --keyserver ha.pool.sks-keyservers.net --recv-keys &quot;$key&quot;; done \
-        &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
-        &amp;&amp; rm -r &quot;$GNUPGHOME&quot; \
-        &amp;&amp; tar -xvzf jetty.tar.gz \
-        &amp;&amp; mv jetty-distribution-$JETTY_VERSION/* ./ \
-        &amp;&amp; sed -i &apos;/jetty-logging/d&apos; etc/jetty.conf \
-        &amp;&amp; rm -fr demo-base javadoc \
-        &amp;&amp; rm jetty.tar.gz* \
-        &amp;&amp; rm -fr jetty-distribution-$JETTY_VERSION/ \
-
-        # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
-        &amp;&amp; cd $JETTY_BASE \
-        &amp;&amp; modules=&quot;$(grep -- ^--module= &quot;$JETTY_HOME/start.ini&quot; | cut -d= -f2 | paste -d, -s)&quot; \
-        &amp;&amp; java -jar &quot;$JETTY_HOME/start.jar&quot; --add-to-startd=&quot;$modules,setuid&quot; \
-
-        # Remove installed packages and various cleanup
-        &amp;&amp; apk del .build-deps \
-        &amp;&amp; rm -fr .build-deps \
-        &amp;&amp; rm -rf /tmp/hsperfdata_root
-
-WORKDIR $JETTY_BASE
-
-ENV TMPDIR /tmp/jetty
-RUN set -xe \
-        &amp;&amp; mkdir -p &quot;$TMPDIR&quot; \
-        &amp;&amp; chown -R jetty:jetty &quot;$TMPDIR&quot; &quot;$JETTY_BASE&quot;
-
-COPY docker-entrypoint.sh /
-
-EXPOSE 8080
-ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]
-CMD [&quot;java&quot;,&quot;-jar&quot;,&quot;/usr/local/jetty/start.jar&quot;]
-</code></pre>
+<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">FROM oraclejdk8</div><div class="line">   MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;</div><div class="line"></div><div class="line">   <span class="comment"># add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added</span></div><div class="line">   RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-</div><div class="line"></div><div class="line">   ENV JETTY_HOME /usr/<span class="built_in">local</span>/jetty</div><div class="line">   ENV PATH <span class="variable">$JETTY_HOME</span>/bin:<span class="variable">$PATH</span></div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_HOME</span>"</span></div><div class="line">   WORKDIR <span class="variable">$JETTY_HOME</span></div><div class="line"></div><div class="line">   ENV JETTY_BASE /var/lib/jetty</div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   ENV JETTY_VERSION 9.3.10.v20160621</div><div class="line">   ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/<span class="variable">$JETTY_VERSION</span>/jetty-distribution-<span class="variable">$JETTY_VERSION</span>.tar.gz</div><div class="line"></div><div class="line">   <span class="comment"># GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)</span></div><div class="line">   ENV JETTY_GPG_KEYS \</div><div class="line">           <span class="comment"># 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;</span></div><div class="line">           B59B67FD7904984367F931800818D9D68FB67BAC \</div><div class="line">           <span class="comment"># 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;</span></div><div class="line">           5DE533CB43DAF8BC3E372283E7AE839CD7C58886</div><div class="line"></div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           <span class="comment"># Install required packages for build time. Will be removed when build finishes.</span></div><div class="line">           &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \</div><div class="line"></div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>"</span> -o jetty.tar.gz \</div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>.asc"</span> -o jetty.tar.gz.asc \</div><div class="line">           &amp;&amp; <span class="built_in">export</span> GNUPGHOME=<span class="string">"<span class="variable">$(mktemp -d)</span>"</span> \</div><div class="line">           &amp;&amp; <span class="keyword">for</span> key <span class="keyword">in</span> <span class="variable">$JETTY_GPG_KEYS</span>; <span class="keyword">do</span> \</div><div class="line">                   gpg --keyserver ha.pool.sks-keyservers.net --recv-keys <span class="string">"<span class="variable">$key</span>"</span>; <span class="keyword">done</span> \</div><div class="line">           &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \</div><div class="line">           &amp;&amp; rm -r <span class="string">"<span class="variable">$GNUPGHOME</span>"</span> \</div><div class="line">           &amp;&amp; tar -xvzf jetty.tar.gz \</div><div class="line">           &amp;&amp; mv jetty-distribution-<span class="variable">$JETTY_VERSION</span>/* ./ \</div><div class="line">           &amp;&amp; sed -i <span class="string">'/jetty-logging/d'</span> etc/jetty.conf \</div><div class="line">           &amp;&amp; rm -fr demo-base javadoc \</div><div class="line">           &amp;&amp; rm jetty.tar.gz* \</div><div class="line">           &amp;&amp; rm -fr jetty-distribution-<span class="variable">$JETTY_VERSION</span>/ \</div><div class="line"></div><div class="line">           <span class="comment"># Get the list of modules in the default start.ini and build new base with those modules, then add setuid</span></div><div class="line">           &amp;&amp; <span class="built_in">cd</span> <span class="variable">$JETTY_BASE</span> \</div><div class="line">           &amp;&amp; modules=<span class="string">"<span class="variable">$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)</span>"</span> \</div><div class="line">           &amp;&amp; java -jar <span class="string">"<span class="variable">$JETTY_HOME</span>/start.jar"</span> --add-to-startd=<span class="string">"<span class="variable">$modules</span>,setuid"</span> \</div><div class="line"></div><div class="line">           <span class="comment"># Remove installed packages and various cleanup</span></div><div class="line">           &amp;&amp; apk del .build-deps \</div><div class="line">           &amp;&amp; rm -fr .build-deps \</div><div class="line">           &amp;&amp; rm -rf /tmp/hsperfdata_root</div><div class="line"></div><div class="line">   WORKDIR <span class="variable">$JETTY_BASE</span></div><div class="line"></div><div class="line">   ENV TMPDIR /tmp/jetty</div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           &amp;&amp; mkdir -p <span class="string">"<span class="variable">$TMPDIR</span>"</span> \</div><div class="line">           &amp;&amp; chown -R jetty:jetty <span class="string">"<span class="variable">$TMPDIR</span>"</span> <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   COPY docker-entrypoint.sh /</div><div class="line"></div><div class="line">   EXPOSE 8080</div><div class="line">   ENTRYPOINT [<span class="string">"/docker-entrypoint.sh"</span>]</div><div class="line">   CMD [<span class="string">"java"</span>,<span class="string">"-jar"</span>,<span class="string">"/usr/local/jetty/start.jar"</span>]</div></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/08/12/docker-7-jetty/#more" rel="contents">
@@ -1848,28 +1784,13 @@ CMD [&quot;java&quot;,&quot;-jar&quot;,&quot;/usr/local/jetty/start.jar&quot;]
 <p>首先，操作对象通过引用传递这个大家应该没有什么争议。但是方法传参都是通过值传递，估计大家还有些疑虑。</p>
 <h4 id="代码验证"><a href="#代码验证" class="headerlink" title="代码验证"></a>代码验证</h4><p>我们知道，如果是值传递，那么实际上传的是一份拷贝。引用传递的话一般传递的是内存地址（看具体的jvm实现）。<br>所以，值传递是无法修改原值的，而引用传递是可以修改原值。</p>
 <p>请看以下代码例子:</p>
-<pre><code>@Test
-public void testPassedByValueOrReference() {
-    char[] c1 = {&apos;a&apos;,&apos;b&apos;};
-    change1(c1);
-    System.out.println(&quot;c1 after change1:&quot; + Arrays.toString(c1));
-    change2(c1);
-    System.out.println(&quot;c1 after change2:&quot; + Arrays.toString(c1));
-}
-
-private void change1(char[] c1) {
-    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
-    c1 = c2;
-}
-
-private void change2(char[] c1) {
-    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
-    c1[0] = c2[0];
-}
-</code></pre><p>输出：</p>
-<pre><code>c1 after change1:[a, b]
-c1 after change2:[e, b]
-</code></pre><p>我们知道，数组是个对象。传递给2个不同的方法，确出现了不一致的行为，既有点像值传递，有好像是引用传递。我们来看看这2个方法在内存中到底做了什么：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testPassedByValueOrReference</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c1 = &#123;<span class="string">'a'</span>,<span class="string">'b'</span>&#125;;</div><div class="line">    change1(c1);</div><div class="line">    System.out.println(<span class="string">"c1 after change1:"</span> + Arrays.toString(c1));</div><div class="line">    change2(c1);</div><div class="line">    System.out.println(<span class="string">"c1 after change2:"</span> + Arrays.toString(c1));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">change1</span><span class="params">(<span class="keyword">char</span>[] c1)</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c2 = &#123;<span class="string">'e'</span>,<span class="string">'f'</span>&#125;;</div><div class="line">    c1 = c2;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">change2</span><span class="params">(<span class="keyword">char</span>[] c1)</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c2 = &#123;<span class="string">'e'</span>,<span class="string">'f'</span>&#125;;</div><div class="line">    c1[<span class="number">0</span>] = c2[<span class="number">0</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>输出：</p>
+<blockquote>
+<p>c1 after change1:[a, b]</p>
+<p>c1 after change2:[e, b]</p>
+</blockquote>
+<p>我们知道，数组是个对象。传递给2个不同的方法，确出现了不一致的行为，既有点像值传递，有好像是引用传递。我们来看看这2个方法在内存中到底做了什么：</p>
           <!--noindex-->
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/08/09/java-pass-by-value-or-reference/#more" rel="contents">

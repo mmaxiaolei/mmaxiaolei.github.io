@@ -97,7 +97,7 @@ Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就�
 
 Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/hash-collision.gif">
-<meta property="og:updated_time" content="2016-08-31T09:13:27.000Z">
+<meta property="og:updated_time" content="2016-12-12T15:55:43.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hash碰撞">
 <meta name="twitter:description" content="Hash定义摘自百度百科：
@@ -437,43 +437,13 @@ Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就�
 <h2 id="如何抵御Hash碰撞攻击"><a href="#如何抵御Hash碰撞攻击" class="headerlink" title="如何抵御Hash碰撞攻击"></a>如何抵御Hash碰撞攻击</h2><p>这时候就需要一个算法良好的Hash函数，使最终的Hash值尽量的分布均匀。</p>
 <p>目前主流的是time33算法及其变种。</p>
 <p>time33算法代码示例：</p>
-<pre><code>public int time33(char[] str) {
-    int hash = 0;
-    for (char c : str) {
-        hash = hash * 33 + c;
-    }
-    return hash;
-}
-</code></pre><p>为什么要用33这个倍数因子呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">time33</span><span class="params">(<span class="keyword">char</span>[] str)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> hash = <span class="number">0</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">char</span> c : str) &#123;</div><div class="line">        hash = hash * <span class="number">33</span> + c;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> hash;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>为什么要用33这个倍数因子呢？</p>
 <p>因为1到256之间的所有奇数，都能达到一个可接受的哈希分布，平均分布大概是86%。而其中33，17，31，63，127，129这几个数在面对大量的哈希运算时有一个更大的优势，就是这些数字能将乘法用位运算配合加减法替换，这样运算速度会更高。并不是所有基于time33的算法都使用33作为倍数，如Ngix使用的是time31，Tokyo Cabinet使用的是time37。</p>
 <p>P.S. jdk的String.hashCode使用的是time31.而common-lang3中的HashCodeBuilder默认使用的是time37.</p>
 <p>String.hashCode代码如下：</p>
-<pre><code>/**
- * Returns a hash code for this string. The hash code for a
- * {@code String} object is computed as
- * &lt;blockquote&gt;&lt;pre&gt;
- * s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]
- * &lt;/pre&gt;&lt;/blockquote&gt;
- * using {@code int} arithmetic, where {@code s[i]} is the
- * &lt;i&gt;i&lt;/i&gt;th character of the string, {@code n} is the length of
- * the string, and {@code ^} indicates exponentiation.
- * (The hash value of the empty string is zero.)
- *
- * @return  a hash code value for this object.
- */
-public int hashCode() {
-    int h = hash;
-    if (h == 0 &amp;&amp; value.length &gt; 0) {
-        char val[] = value;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Returns a hash code for this string. The hash code for a</div><div class="line"> * &#123;<span class="doctag">@code</span> String&#125; object is computed as</div><div class="line"> * &lt;blockquote&gt;&lt;pre&gt;</div><div class="line"> * s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]</div><div class="line"> * &lt;/pre&gt;&lt;/blockquote&gt;</div><div class="line"> * using &#123;<span class="doctag">@code</span> int&#125; arithmetic, where &#123;<span class="doctag">@code</span> s[i]&#125; is the</div><div class="line"> * &lt;i&gt;i&lt;/i&gt;th character of the string, &#123;<span class="doctag">@code</span> n&#125; is the length of</div><div class="line"> * the string, and &#123;<span class="doctag">@code</span> ^&#125; indicates exponentiation.</div><div class="line"> * (The hash value of the empty string is zero.)</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span>  a hash code value for this object.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> h = hash;</div><div class="line">    <span class="keyword">if</span> (h == <span class="number">0</span> &amp;&amp; value.length &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">char</span> val[] = value;</div><div class="line"></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; value.length; i++) &#123;</div><div class="line">            h = <span class="number">31</span> * h + val[i];</div><div class="line">        &#125;</div><div class="line">        hash = h;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> h;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 
-        for (int i = 0; i &lt; value.length; i++) {
-            h = 31 * h + val[i];
-        }
-        hash = h;
-    }
-    return h;
-}
-</code></pre>
       
     </div>
 

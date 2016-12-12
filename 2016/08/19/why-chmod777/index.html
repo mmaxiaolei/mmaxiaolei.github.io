@@ -102,7 +102,7 @@ Unix权限设计首先Unix系统的权限分为三种，分别为拥有者(owner
 每个项目前面那一串字母和横杠就是权限。第一">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/819111111.png">
 <meta property="og:image" content="https://sfault-image.b0.upaiyun.com/113/263/113263737-57ad2eec7ba6e_articlex">
-<meta property="og:updated_time" content="2016-08-19T12:34:05.000Z">
+<meta property="og:updated_time" content="2016-12-12T15:57:05.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="chmod777原理">
 <meta name="twitter:description" content="背景很多Linux新手发现某个文件没有相关权限，一言不合就是chmod 777。首先说一句，chmod 777应该杜绝使用，尤其生产环境。
@@ -433,19 +433,8 @@ Unix权限设计首先Unix系统的权限分为三种，分别为拥有者(owner
 </ul>
 <p>这么做主要有2个好处：节省空间和提升运算效率。</p>
 <p>Unix是上个世纪60年代的产物，当时的硬件资源非常宝贵。所以只用3bit来保存权限。并且二进制的位运算效率特别高，如下例子：</p>
-<pre><code>public static final int READ = 4；
-int auth = 5;//101，拥有读和执行权限
-
-/**
- *    101 (5)
- *  &amp; 100 (4)
- *  = 100 (4) 
- *
- */ 
-if(auth &amp; READ){
-    doRead();//有读权限，执行读操作
-}
-</code></pre><p>这个权限的判断效率不仅简洁而且高效。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> READ = <span class="number">4</span>；</div><div class="line"><span class="keyword">int</span> auth = <span class="number">5</span>;<span class="comment">//101，拥有读和执行权限</span></div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> *    101 (5)</div><div class="line"> *  &amp; 100 (4)</div><div class="line"> *  = 100 (4) </div><div class="line"> *</div><div class="line"> */ </div><div class="line"><span class="keyword">if</span>(auth &amp; READ)&#123;</div><div class="line">	doRead();<span class="comment">//有读权限，执行读操作</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个权限的判断效率不仅简洁而且高效。</p>
 
       
     </div>

@@ -102,7 +102,7 @@
 首先，操作对象通过引用传递这个大家应该没有什么争议。但是方法传">
 <meta property="og:image" content="https://sfault-image.b0.upaiyun.com/330/874/3308747821-5451b0d6bd057_articlex">
 <meta property="og:image" content="https://sfault-image.b0.upaiyun.com/432/844/432844578-5451bef61154b_articlex">
-<meta property="og:updated_time" content="2016-08-12T01:51:15.000Z">
+<meta property="og:updated_time" content="2016-12-12T16:08:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="java是值传递还是引用传递">
 <meta name="twitter:description" content="java到底是值传递还是引用传递
@@ -413,28 +413,13 @@
 <p>首先，操作对象通过引用传递这个大家应该没有什么争议。但是方法传参都是通过值传递，估计大家还有些疑虑。</p>
 <h4 id="代码验证"><a href="#代码验证" class="headerlink" title="代码验证"></a>代码验证</h4><p>我们知道，如果是值传递，那么实际上传的是一份拷贝。引用传递的话一般传递的是内存地址（看具体的jvm实现）。<br>所以，值传递是无法修改原值的，而引用传递是可以修改原值。</p>
 <p>请看以下代码例子:</p>
-<pre><code>@Test
-public void testPassedByValueOrReference() {
-    char[] c1 = {&apos;a&apos;,&apos;b&apos;};
-    change1(c1);
-    System.out.println(&quot;c1 after change1:&quot; + Arrays.toString(c1));
-    change2(c1);
-    System.out.println(&quot;c1 after change2:&quot; + Arrays.toString(c1));
-}
-
-private void change1(char[] c1) {
-    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
-    c1 = c2;
-}
-
-private void change2(char[] c1) {
-    char[] c2 = {&apos;e&apos;,&apos;f&apos;};
-    c1[0] = c2[0];
-}
-</code></pre><p>输出：</p>
-<pre><code>c1 after change1:[a, b]
-c1 after change2:[e, b]
-</code></pre><p>我们知道，数组是个对象。传递给2个不同的方法，确出现了不一致的行为，既有点像值传递，有好像是引用传递。我们来看看这2个方法在内存中到底做了什么：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testPassedByValueOrReference</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c1 = &#123;<span class="string">'a'</span>,<span class="string">'b'</span>&#125;;</div><div class="line">    change1(c1);</div><div class="line">    System.out.println(<span class="string">"c1 after change1:"</span> + Arrays.toString(c1));</div><div class="line">    change2(c1);</div><div class="line">    System.out.println(<span class="string">"c1 after change2:"</span> + Arrays.toString(c1));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">change1</span><span class="params">(<span class="keyword">char</span>[] c1)</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c2 = &#123;<span class="string">'e'</span>,<span class="string">'f'</span>&#125;;</div><div class="line">    c1 = c2;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">change2</span><span class="params">(<span class="keyword">char</span>[] c1)</span> </span>&#123;</div><div class="line">    <span class="keyword">char</span>[] c2 = &#123;<span class="string">'e'</span>,<span class="string">'f'</span>&#125;;</div><div class="line">    c1[<span class="number">0</span>] = c2[<span class="number">0</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>输出：</p>
+<blockquote>
+<p>c1 after change1:[a, b]</p>
+<p>c1 after change2:[e, b]</p>
+</blockquote>
+<p>我们知道，数组是个对象。传递给2个不同的方法，确出现了不一致的行为，既有点像值传递，有好像是引用传递。我们来看看这2个方法在内存中到底做了什么：</p>
 <a id="more"></a>
 <p><strong><code>change1()</code>方法在内存中的执行过程:</strong></p>
 <p><img src="https://sfault-image.b0.upaiyun.com/330/874/3308747821-5451b0d6bd057_articlex" alt=""></p>
