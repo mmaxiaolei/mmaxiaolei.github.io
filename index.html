@@ -396,33 +396,18 @@
 
       
         
-          
-            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。</p>
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。</p>
 <h2 id="遇到的坑一"><a href="#遇到的坑一" class="headerlink" title="遇到的坑一"></a>遇到的坑一</h2><p>第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。</p>
-<p>具体原因就是内部类使用<code>_</code>连接符代替实际应该使用的<code>$</code>。具体看如下代码(<a href="https://github.com/alibaba/dubbo/blob/master/dubbo-filter/dubbo-filter-validation/src/main/java/com/alibaba/dubbo/validation/support/jvalidation/JValidator.java" target="_blank" rel="external">传送门</a>)：</p>
+<p>具体原因就是内部类使用<code>_</code>连接符代替实际应该使用的<code>$</code>。具体看如下代码(<a href="https://github.com/alibaba/dubbo/blob/master/dubbo-filter/dubbo-filter-validation/src/main/java/com/alibaba/dubbo/validation/support/jvalidation/JValidator.java">传送门</a>)：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(String methodName, Class&lt;?&gt;[] parameterTypes, Object[] arguments)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">           String methodClassName = clazz.getName() + <span class="string">"_"</span> + toUpperMethoName(methodName);</div><div class="line">           Class&lt;?&gt; methodClass = <span class="keyword">null</span>;</div><div class="line">           <span class="keyword">try</span> &#123;</div><div class="line">               methodClass = Class.forName(methodClassName, <span class="keyword">false</span>, Thread.currentThread().getContextClassLoader());</div><div class="line">           &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</div><div class="line">           &#125;</div><div class="line">           <span class="comment">// 以下代码略</span></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
 <p>这段代码的作用就是加载dubbo service中的分组校验group的内部类，再根据具体的group进行参数校验。但是内部类的连接符却用了<code>_</code>连接。按理说这个问题应该很容易被发现且很容易被测试出来，不应该出现在<code>dubbo</code>身上。</p>
-<p>于是抱着怀疑的的心态查看该类的提交记录。果然，作者是故意这么改的(<a href="https://github.com/alibaba/dubbo/commit/e4dea029546efe9e7a6184ad528560e62303ce02" target="_blank" rel="external">传送门</a>)：</p>
-<blockquote>
-<p>JValidator在类名生成的类名有$，有frozen class异常</p>
-</blockquote>
-<p>个人不是很理解这句话。。。且这么改留下了一个明显的bug。可能由于当时dubbo已经不再维护，作者也没有对此修改有进一步的说明。只好将此处的修改还原为使用<code>$</code>连接。实际测试与使用都没有出现异常，就此作罢。</p>
-<h2 id="遇到的坑二"><a href="#遇到的坑二" class="headerlink" title="遇到的坑二"></a>遇到的坑二</h2><p>随着系统的愈加复杂，出现了dubbo调用dubbo的情况。当前端web系统的controller调用dubboService1的时候，会在controller端进行参数校验，这个时候如果校验失败，能正常抛出错误，因为根本都还没有发起RPC调用。但是当dubboService1调用dubboService2的时候，也会在dubboService1端进行参数校验，这个时候如果校验失败，会抛出异常，dubboService1会试图将此异常序列化并传回controller端。如果此异常中包含不可系列化的属性，将会抛出<strong>无法序列化异常</strong>。这个就是dubbo默认的参数校验会存在的问题。例如以下错误:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">java.lang.RuntimeException: Serialized class com.example.dubboService2_method1 must implement java.io.Serializable</div><div class="line">Java field: private final java.lang.Object org.hibernate.validator.internal.engine.ConstraintViolationImpl.rootBean</div></pre></td></tr></table></figure>
-<p><strong>解决办法：</strong>dubbo提供了自定义参数校验的扩展点，并且我们只要自定义一个可正常序列化的异常即可。例如以下代码：</p>
-<p>DubboValidation.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DubboValidation</span> <span class="keyword">extends</span> <span class="title">JValidation</span> </span>&#123;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">DubboValidation</span><span class="params">()</span> </span>&#123;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">protected</span> Validator <span class="title">createValidator</span><span class="params">(URL url)</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> <span class="keyword">new</span> DubboValidator(url);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-<p>DubboValidator.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DubboValidator</span> <span class="keyword">extends</span> <span class="title">JValidator</span> </span>&#123;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">DubboValidator</span><span class="params">(URL url)</span> </span>&#123;</div><div class="line">           <span class="keyword">super</span>(url);</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(String methodName, Class&lt;?&gt;[] parameterTypes, Object[] arguments)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">           <span class="keyword">try</span>&#123;</div><div class="line">               <span class="keyword">super</span>.validate(methodName, parameterTypes, arguments);</div><div class="line">           &#125;<span class="keyword">catch</span> (Exception e)&#123;</div><div class="line">               <span class="keyword">throw</span> <span class="keyword">new</span> MyBusinessException(<span class="string">"DUBBO参数校验失败"</span>, e.getMessage());</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-<p>MyBUsinessException.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBusinessException</span> <span class="keyword">extends</span> <span class="title">RpcException</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String DEFAULT_FAULT_CODE = <span class="string">"X0001"</span>;</div><div class="line"></div><div class="line">       <span class="keyword">private</span> String xCode;</div><div class="line">       <span class="keyword">private</span> String message;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">MyBusinessException</span><span class="params">(String message)</span></span>&#123;</div><div class="line">           <span class="keyword">this</span>(DEFAULT_FAULT_CODE, message);</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">MyBusinessException</span><span class="params">(String xCode, String message)</span> </span>&#123;</div><div class="line">           <span class="keyword">this</span>(xCode, message, <span class="keyword">new</span> Throwable());</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">MyBusinessException</span><span class="params">(String xCode, String message, String internalMessage)</span> </span>&#123;</div><div class="line">           <span class="keyword">this</span>(xCode, message, internalMessage, <span class="keyword">null</span>);</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">MyBusinessException</span><span class="params">(String code, String message, Throwable throwable)</span> </span>&#123;</div><div class="line">           <span class="keyword">this</span>(code, message, throwable.getMessage(), throwable);</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="title">MyBusinessException</span><span class="params">(String xCode, String message, String internalMessage, Throwable throwable)</span> </span>&#123;</div><div class="line">           <span class="keyword">super</span>(RpcException.BIZ_EXCEPTION, <span class="string">"["</span> + xCode + <span class="string">"] - "</span> + message + internalMessage, throwable);</div><div class="line">           <span class="keyword">this</span>.message = message;</div><div class="line">           <span class="keyword">this</span>.xCode = xCode;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> String <span class="title">getXCode</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> xCode;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setXCode</span><span class="params">(String xCode)</span> </span>&#123;</div><div class="line">           <span class="keyword">this</span>.xCode = xCode;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> String <span class="title">getMessageWithoutCode</span><span class="params">()</span></span>&#123;</div><div class="line">           <span class="keyword">return</span> message;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="meta">@Override</span></div><div class="line">       <span class="function"><span class="keyword">public</span> String <span class="title">getMessage</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> <span class="string">"["</span> + xCode + <span class="string">"]"</span> + <span class="string">" - "</span> + message;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage</span><span class="params">(String message)</span> </span>&#123;</div><div class="line">           <span class="keyword">this</span>.message = message;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-<p>同时需要在<code>classpath:META-INF/</code>下新建如下目录：<code>dubbo/</code>,并且新建一个文件<code>com.alibaba.dubbo.validation.Validation</code>,然后写入以下内容：</p>
-<blockquote>
-<p>dubboValidation=com.xkeshi.webkits.dubbovalidation.DubboValidation</p>
-</blockquote>
-<p>其实以上就是<code>java spi</code>的类加载方式。</p>
-
-          
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/12/12/dubbo-parameter-validate/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1348,77 +1333,7 @@
 <p>红黑树的规定：</p>
 <p>1.一个节点只能是红色或者黑色<br>2.根节点是黑色<br>3.每个叶节点（null节点/空节点）为黑色<br>4.如果一个节点为红色，则他们的2个子节点都为黑色<br>5.从任意节点到其每个叶节点</p>
 <p>红黑树结构java代码示例：（TreeMap中的内部类Entry）</p>
-<pre><code>/**
- * 红黑树节点结构
- */
-static final class Entry&lt;K, V&gt; implements Map.Entry&lt;K, V&gt; {
-    K key; // 红黑树的排序字段
-    V value; // 节点存储的值
-    Entry&lt;K, V&gt; left; // 左子树节点
-    Entry&lt;K, V&gt; right; // 右子树节点
-    Entry&lt;K, V&gt; parent; // 父节点
-    boolean color = BLACK; // 节点颜色，默认为黑
-
-    /**
-     * Make a new cell with given key, value, and parent, and with
-     * {@code null} child links, and BLACK color.
-     */
-    Entry(K key, V value, Entry&lt;K, V&gt; parent) {
-        this.key = key;
-        this.value = value;
-        this.parent = parent;
-    }
-
-    /**
-     * Returns the key.
-     *
-     * @return the key
-     */
-    public K getKey() {
-        return key;
-    }
-
-    /**
-     * Returns the value associated with the key.
-     *
-     * @return the value associated with the key
-     */
-    public V getValue() {
-        return value;
-    }
-
-    /**
-     * Replaces the value currently associated with the key with the given
-     * value.
-     *
-     * @return the value associated with the key before this method was
-     * called
-     */
-    public V setValue(V value) {
-        V oldValue = this.value;
-        this.value = value;
-        return oldValue;
-    }
-
-    public boolean equals(Object o) {
-        if (!(o instanceof Map.Entry))
-            return false;
-        Map.Entry&lt;?, ?&gt; e = (Map.Entry&lt;?, ?&gt;) o;
-
-        return valEquals(key, e.getKey()) &amp;&amp; valEquals(value, e.getValue());
-    }
-
-    public int hashCode() {
-        int keyHash = (key == null ? 0 : key.hashCode());
-        int valueHash = (value == null ? 0 : value.hashCode());
-        return keyHash ^ valueHash;
-    }
-
-    public String toString() {
-        return key + &quot;=&quot; + value;
-    }
-}
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</div><div class="line"> * 红黑树节点结构</div><div class="line"> */</span></div><div class="line">   <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>, <span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>, <span class="title">V</span>&gt; </span>&#123;</div><div class="line">       K key; <span class="comment">// 红黑树的排序字段</span></div><div class="line">       V value; <span class="comment">// 节点存储的值</span></div><div class="line">       Entry&lt;K, V&gt; left; <span class="comment">// 左子树节点</span></div><div class="line">       Entry&lt;K, V&gt; right; <span class="comment">// 右子树节点</span></div><div class="line">       Entry&lt;K, V&gt; parent; <span class="comment">// 父节点</span></div><div class="line">       <span class="keyword">boolean</span> color = BLACK; <span class="comment">// 节点颜色，默认为黑</span></div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Make a new cell with given key, value, and parent, and with</div><div class="line">        * &#123;<span class="doctag">@code</span> null&#125; child links, and BLACK color.</div><div class="line">        */</span></div><div class="line">       Entry(K key, V value, Entry&lt;K, V&gt; parent) &#123;</div><div class="line">           <span class="keyword">this</span>.key = key;</div><div class="line">           <span class="keyword">this</span>.value = value;</div><div class="line">           <span class="keyword">this</span>.parent = parent;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Returns the key.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the key</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> K <span class="title">getKey</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> key;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Returns the value associated with the key.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the value associated with the key</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> V <span class="title">getValue</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> value;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Replaces the value currently associated with the key with the given</div><div class="line">        * value.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the value associated with the key before this method was</div><div class="line">        * called</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> V <span class="title">setValue</span><span class="params">(V value)</span> </span>&#123;</div><div class="line">           V oldValue = <span class="keyword">this</span>.value;</div><div class="line">           <span class="keyword">this</span>.value = value;</div><div class="line">           <span class="keyword">return</span> oldValue;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</div><div class="line">           <span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Map.Entry))</div><div class="line">               <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">           Map.Entry&lt;?, ?&gt; e = (Map.Entry&lt;?, ?&gt;) o;</div><div class="line"></div><div class="line">           <span class="keyword">return</span> valEquals(key, e.getKey()) &amp;&amp; valEquals(value, e.getValue());</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">int</span> keyHash = (key == <span class="keyword">null</span> ? <span class="number">0</span> : key.hashCode());</div><div class="line">           <span class="keyword">int</span> valueHash = (value == <span class="keyword">null</span> ? <span class="number">0</span> : value.hashCode());</div><div class="line">           <span class="keyword">return</span> keyHash ^ valueHash;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> key + <span class="string">"="</span> + value;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/08/26/treeMap-theory/#more" rel="contents">

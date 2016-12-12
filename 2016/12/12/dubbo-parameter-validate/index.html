@@ -98,7 +98,7 @@
 遇到的坑一第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。
 具体原因就是内部类使用_连接符代替实际应该使用的$。具体看如下代码(传送门)：
 123456789public void validate(String methodName, Class&amp;lt;?&amp;gt;[] parameterTyp">
-<meta property="og:updated_time" content="2016-12-12T15:42:40.000Z">
+<meta property="og:updated_time" content="2016-12-12T15:45:50.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="dubbo参数校验遇到的坑">
 <meta name="twitter:description" content="背景目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。
@@ -405,6 +405,7 @@
 <p>具体原因就是内部类使用<code>_</code>连接符代替实际应该使用的<code>$</code>。具体看如下代码(<a href="https://github.com/alibaba/dubbo/blob/master/dubbo-filter/dubbo-filter-validation/src/main/java/com/alibaba/dubbo/validation/support/jvalidation/JValidator.java" target="_blank" rel="external">传送门</a>)：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(String methodName, Class&lt;?&gt;[] parameterTypes, Object[] arguments)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">           String methodClassName = clazz.getName() + <span class="string">"_"</span> + toUpperMethoName(methodName);</div><div class="line">           Class&lt;?&gt; methodClass = <span class="keyword">null</span>;</div><div class="line">           <span class="keyword">try</span> &#123;</div><div class="line">               methodClass = Class.forName(methodClassName, <span class="keyword">false</span>, Thread.currentThread().getContextClassLoader());</div><div class="line">           &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</div><div class="line">           &#125;</div><div class="line">           <span class="comment">// 以下代码略</span></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
 <p>这段代码的作用就是加载dubbo service中的分组校验group的内部类，再根据具体的group进行参数校验。但是内部类的连接符却用了<code>_</code>连接。按理说这个问题应该很容易被发现且很容易被测试出来，不应该出现在<code>dubbo</code>身上。</p>
+<a id="more"></a>
 <p>于是抱着怀疑的的心态查看该类的提交记录。果然，作者是故意这么改的(<a href="https://github.com/alibaba/dubbo/commit/e4dea029546efe9e7a6184ad528560e62303ce02" target="_blank" rel="external">传送门</a>)：</p>
 <blockquote>
 <p>JValidator在类名生成的类名有$，有frozen class异常</p>
