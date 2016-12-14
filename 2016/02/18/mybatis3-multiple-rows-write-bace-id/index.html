@@ -100,7 +100,7 @@ Support insert multiple rows and write-back id
 Support insert multiple rows and write-back id
 
 批量插入支持id回写了！我们知道，以往如果批量插入，需要获取插入后的ids，是需要根据特定条件反查的。但是，有了这个特性了，完全省去了这一多余查询过程。">
-<meta property="og:updated_time" content="2016-02-18T13:27:42.000Z">
+<meta property="og:updated_time" content="2016-12-14T08:59:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于mybatis3.3.1批量插入回写id的实践">
 <meta name="twitter:description" content="背景今日，注意到mybatis3.3.1正式发布，果断查看了更新内容（传送门）。大致浏览了下，其中有一项喜人的改进：
@@ -411,122 +411,24 @@ Support insert multiple rows and write-back id
 <a id="more"></a>
 <h3 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h3><p>迫不及待的试了一把。代码如下：</p>
 <p>pom依赖：</p>
-<pre><code>&lt;dependency&gt;
-    &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
-    &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
-    &lt;version&gt;3.3.1&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
-    &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;
-    &lt;version&gt;1.2.4&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre><p>mapper interface:</p>
-<pre><code>public interface AccountDAO {
-
-    /**
-     * 批量插入账户
-     *
-     * @param accounts 账户集合
-     * @return 成功插入数量
-     */
-    int batchInsert(List&lt;Account&gt; accounts);
-
-}
-</code></pre><p>mapper xml:</p>
-<pre><code> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot; &gt;
-&lt;mapper namespace=&quot;com.xkeshi.shop.dao.AccountDAO&quot;&gt;
-
-    &lt;insert id=&quot;batchInsert&quot; useGeneratedKeys=&quot;true&quot; keyProperty=&quot;id&quot;&gt;
-        INSERT INTO account
-        (username, password)
-        VALUES
-        &lt;foreach collection=&quot;accounts&quot; item=&quot;account&quot; index=&quot;index&quot; separator=&quot;,&quot; &gt;
-            (#{account.username},#{account.password})
-        &lt;/foreach&gt;
-    &lt;/insert&gt;      
-&lt;/mapper&gt;
-</code></pre><p>测试类：</p>
-<pre><code>@ContextConfiguration(locations = {&quot;classpath*:spring-test.xml&quot; })
-@Transactional
-public class AccountDAOTest extends AbstractTestNGSpringContextTests {
-
-    @Autowired
-    private AccountDAO accountDAO;
-
-    public void testBatchInsert() {
-        List&lt;Account&gt; accounts = new ArrayList&lt;&gt;();
-        for (int i = 0; i &lt; 3; i++) {
-            Account account = new Account();
-            account.setUsername(&quot;测试&quot; + i);
-            account.setPassword(&quot;888&quot;);
-
-            accounts.add(account);
-        }
-
-        int result = accountDAO.batchInsert(accounts);
-        Assert.assertEquals(3, result);
-        for (Account account : accounts) {
-            Assert.assertNotNull(account.getId());
-        }
-    }
-}
-</code></pre><p>然而，测试类结果直接报错：</p>
-<pre><code>org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis.executor.ExecutorException: Error getting generated key or setting result to parameter object. Cause: org.apache.ibatis.binding.BindingException: Parameter &apos;id&apos; not found. Available parameters are [accounts, param1]
-</code></pre><p>跟踪这项修改的提交记录（<a href="https://github.com/abel533/mybatis-3/commit/f09e26829f927721ca7e7f0297c2334c9d697eea" target="_blank" rel="external">传送门</a>）<br>发现src/main/java/org/apache/ibatis/executor/keygen/Jdbc3KeyGenerator.java<br>的修改记录：</p>
-<pre><code>private Collection&lt;Object&gt; getParameters(Object parameter) {
-    Collection&lt;Object&gt; parameters = null;
-    if (parameter instanceof Collection) {
-        parameters = (Collection) parameter;
-    } else if (parameter instanceof Map) {
-        Map parameterMap = (Map) parameter;
-        // when you insert a List(or Array).
-        // If you want retrieve the auto-increment value or default value.
-        // You should not to use @Param annotations, You must use a single parameter(List or Array).
-        if (parameterMap.containsKey(&quot;collection&quot;)) {
-            parameters = (Collection) parameterMap.get(&quot;collection&quot;);
-        } else if (parameterMap.containsKey(&quot;list&quot;)) {
-            parameters = (List) parameterMap.get(&quot;list&quot;);
-        } else if (parameterMap.containsKey(&quot;array&quot;)) {
-            parameters = Arrays.asList((Object[]) parameterMap.get(&quot;array&quot;));
-        }
-    }
-    if (parameters == null) {
-        parameters = new ArrayList&lt;Object&gt;();
-        parameters.add(parameter);
-    }
-    return parameters;
-}
-</code></pre><p>也就是说入参的集合名称必须叫<strong>“collection”、“list”、“array”</strong>才会生效哦！</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">          &lt;groupId&gt;org.mybatis&lt;/groupId&gt;</div><div class="line">          &lt;artifactId&gt;mybatis&lt;/artifactId&gt;</div><div class="line">          &lt;version&gt;3.3.1&lt;/version&gt;</div><div class="line">      &lt;/dependency&gt;</div><div class="line">      &lt;dependency&gt;</div><div class="line">          &lt;groupId&gt;org.mybatis&lt;/groupId&gt;</div><div class="line">          &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;</div><div class="line">          &lt;version&gt;1.2.4&lt;/version&gt;</div><div class="line">      &lt;/dependency&gt;</div></pre></td></tr></table></figure>
+<p>mapper interface:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AccountDAO</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 批量插入账户</div><div class="line">     *</div><div class="line">     * <span class="doctag">@param</span> accounts 账户集合</div><div class="line">     * <span class="doctag">@return</span> 成功插入数量</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">int</span> <span class="title">batchInsert</span><span class="params">(List&lt;Account&gt; accounts)</span></span>;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>mapper xml:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</div><div class="line">   &lt;!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" &gt;</div><div class="line">   &lt;mapper namespace="com.xkeshi.shop.dao.AccountDAO"&gt;</div><div class="line">   </div><div class="line">       &lt;insert id="batchInsert" useGeneratedKeys="true" keyProperty="id"&gt;</div><div class="line">           INSERT INTO account</div><div class="line">           (username, password)</div><div class="line">           VALUES</div><div class="line">           &lt;foreach collection="accounts" item="account" index="index" separator="," &gt;</div><div class="line">               (#&#123;account.username&#125;,#&#123;account.password&#125;)</div><div class="line">           &lt;/foreach&gt;</div><div class="line">       &lt;/insert&gt;      </div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure>
+<p>测试类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@ContextConfiguration</span>(locations = &#123;<span class="string">"classpath*:spring-test.xml"</span> &#125;)</div><div class="line"><span class="meta">@Transactional</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AccountDAOTest</span> <span class="keyword">extends</span> <span class="title">AbstractTestNGSpringContextTests</span> </span>&#123;</div><div class="line">   </div><div class="line">       <span class="meta">@Autowired</span></div><div class="line">       <span class="keyword">private</span> AccountDAO accountDAO;</div><div class="line">   </div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testBatchInsert</span><span class="params">()</span> </span>&#123;</div><div class="line">           List&lt;Account&gt; accounts = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">           <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</div><div class="line">               Account account = <span class="keyword">new</span> Account();</div><div class="line">               account.setUsername(<span class="string">"测试"</span> + i);</div><div class="line">               account.setPassword(<span class="string">"888"</span>);</div><div class="line">   </div><div class="line">               accounts.add(account);</div><div class="line">           &#125;</div><div class="line">   </div><div class="line">           <span class="keyword">int</span> result = accountDAO.batchInsert(accounts);</div><div class="line">           Assert.assertEquals(<span class="number">3</span>, result);</div><div class="line">           <span class="keyword">for</span> (Account account : accounts) &#123;</div><div class="line">               Assert.assertNotNull(account.getId());</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>然而，测试类结果直接报错：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis.executor.ExecutorException: Error getting generated key or setting result to parameter object. Cause: org.apache.ibatis.binding.BindingException: Parameter <span class="string">'id'</span> not found. Available parameters are [accounts, param1]</div></pre></td></tr></table></figure>
+<p>跟踪这项修改的提交记录（<a href="https://github.com/abel533/mybatis-3/commit/f09e26829f927721ca7e7f0297c2334c9d697eea" target="_blank" rel="external">传送门</a>）<br>发现src/main/java/org/apache/ibatis/executor/keygen/Jdbc3KeyGenerator.java<br>的修改记录：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Collection&lt;Object&gt; <span class="title">getParameters</span><span class="params">(Object parameter)</span> </span>&#123;</div><div class="line">       Collection&lt;Object&gt; parameters = <span class="keyword">null</span>;</div><div class="line">       <span class="keyword">if</span> (parameter <span class="keyword">instanceof</span> Collection) &#123;</div><div class="line">           parameters = (Collection) parameter;</div><div class="line">       &#125; <span class="keyword">else</span> <span class="keyword">if</span> (parameter <span class="keyword">instanceof</span> Map) &#123;</div><div class="line">           Map parameterMap = (Map) parameter;</div><div class="line">           <span class="comment">// when you insert a List(or Array).</span></div><div class="line">           <span class="comment">// If you want retrieve the auto-increment value or default value.</span></div><div class="line">           <span class="comment">// You should not to use @Param annotations, You must use a single parameter(List or Array).</span></div><div class="line">           <span class="keyword">if</span> (parameterMap.containsKey(<span class="string">"collection"</span>)) &#123;</div><div class="line">               parameters = (Collection) parameterMap.get(<span class="string">"collection"</span>);</div><div class="line">           &#125; <span class="keyword">else</span> <span class="keyword">if</span> (parameterMap.containsKey(<span class="string">"list"</span>)) &#123;</div><div class="line">               parameters = (List) parameterMap.get(<span class="string">"list"</span>);</div><div class="line">           &#125; <span class="keyword">else</span> <span class="keyword">if</span> (parameterMap.containsKey(<span class="string">"array"</span>)) &#123;</div><div class="line">               parameters = Arrays.asList((Object[]) parameterMap.get(<span class="string">"array"</span>));</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">if</span> (parameters == <span class="keyword">null</span>) &#123;</div><div class="line">           parameters = <span class="keyword">new</span> ArrayList&lt;Object&gt;();</div><div class="line">           parameters.add(parameter);</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">return</span> parameters;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>也就是说入参的集合名称必须叫<strong>“collection”、“list”、“array”</strong>才会生效哦！</p>
 <p>修改代码，mapper interface：</p>
-<pre><code>public interface AccountDAO {
-
-    /**
-     * 批量插入账户
-     *
-     * @param accounts 账户集合
-     * @return 成功插入数量
-     */
-    int batchInsert(List&lt;Account&gt; list);
-
-}
-</code></pre><p>mapper xml:</p>
-<pre><code> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot; &gt;
-&lt;mapper namespace=&quot;com.xkeshi.shop.dao.AccountDAO&quot;&gt;
-
-    &lt;insert id=&quot;batchInsert&quot; useGeneratedKeys=&quot;true&quot; keyProperty=&quot;id&quot;&gt;
-        INSERT INTO account
-        (username, password)
-        VALUES
-        &lt;foreach collection=&quot;list&quot; item=&quot;account&quot; index=&quot;index&quot; separator=&quot;,&quot; &gt;
-            (#{account.username},#{account.password})
-        &lt;/foreach&gt;
-    &lt;/insert&gt;      
-&lt;/mapper&gt;
-</code></pre><p>重新运行测试类，成功！</p>
-<h3 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h3><p>mybatis这项修改的原理就是，当集合或者数组的parameter名称为<strong>“collection”、“list”、“array”</strong>，同时设置了useGeneratedKeys=”true” ，这回把生成的id值回写到对应集合或者数组中的实体中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AccountDAO</span> </span>&#123;</div><div class="line">   </div><div class="line">       <span class="comment">/**</span></div><div class="line">        * 批量插入账户</div><div class="line">        *</div><div class="line">        * <span class="doctag">@param</span> accounts 账户集合</div><div class="line">        * <span class="doctag">@return</span> 成功插入数量</div><div class="line">        */</div><div class="line">       <span class="function"><span class="keyword">int</span> <span class="title">batchInsert</span><span class="params">(List&lt;Account&gt; list)</span></span>;</div><div class="line">       </div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>mapper xml:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</div><div class="line">   &lt;!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" &gt;</div><div class="line">   &lt;mapper namespace="com.xkeshi.shop.dao.AccountDAO"&gt;</div><div class="line">   </div><div class="line">       &lt;insert id="batchInsert" useGeneratedKeys="true" keyProperty="id"&gt;</div><div class="line">           INSERT INTO account</div><div class="line">           (username, password)</div><div class="line">           VALUES</div><div class="line">           &lt;foreach collection="list" item="account" index="index" separator="," &gt;</div><div class="line">               (#&#123;account.username&#125;,#&#123;account.password&#125;)</div><div class="line">           &lt;/foreach&gt;</div><div class="line">       &lt;/insert&gt;      </div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure>
+<p>重新运行测试类，成功！</p>
+<h3 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h3><p>mybatis这项修改的原理就是，当集合或者数组的parameter名称为<strong>“collection”、“list”、“array”</strong>，同时设置了useGeneratedKeys=”true” ，就会把生成的id值回写到对应集合或者数组中的实体中。</p>
 <p>但是通过parameter名称区别是否回写总是不太优雅，个人感觉应该新增一个注解，添加在相应的集合或者数组上，标示这是一个批量插入的实体，是需要回写id到这里的。</p>
 <p>总而言之，这是一个方便大家的改动，enjoy吧~</p>
 
