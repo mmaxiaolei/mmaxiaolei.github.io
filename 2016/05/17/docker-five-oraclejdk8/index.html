@@ -102,7 +102,7 @@ Dockerfile描述# AlpineLinux with a glibc-2.21 and Oracle Java 8
 FROM alpine:3.3
 
 MAINTAINER">
-<meta property="og:updated_time" content="2016-08-12T23:26:24.000Z">
+<meta property="og:updated_time" content="2017-02-23T06:30:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Docker学习系列五：构建oracle-jdk8镜像">
 <meta name="twitter:description" content="前言由于docker官方的jdk镜像都是openjdk，与我们实际开发上线的jdk环境不符。因此需要构建一个oracle-jdk8的基础镜像。
@@ -482,7 +482,7 @@ RUN apk upgrade --update &amp;&amp; \
 </code></pre><p>p.s:由于此镜像需要下载一些基础包和jdk，可能需要比较长的build时间，同时可能需要翻墙~</p>
 <h4 id="测试镜像"><a href="#测试镜像" class="headerlink" title="测试镜像"></a>测试镜像</h4><pre><code>docker run -ti --rm oraclejdk8 java -version
 </code></pre><h4 id="保存镜像"><a href="#保存镜像" class="headerlink" title="保存镜像"></a>保存镜像</h4><pre><code>docker save -o jdk8.tar oraclejdk8
-</code></pre><h4 id="加载镜像"><a href="#加载镜像" class="headerlink" title="加载镜像"></a>加载镜像</h4><pre><code>docker -i jdk8.tar
+</code></pre><h4 id="加载镜像"><a href="#加载镜像" class="headerlink" title="加载镜像"></a>加载镜像</h4><pre><code>docker load -i jdk8.tar
 </code></pre>
       
     </div>
@@ -622,7 +622,7 @@ RUN apk upgrade --update &amp;&amp; \
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">41</span>
+              <span class="site-state-item-count">42</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -639,7 +639,7 @@ RUN apk upgrade --update &amp;&amp; \
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">66</span>
+                <span class="site-state-item-count">67</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -738,7 +738,7 @@ RUN apk upgrade --update &amp;&amp; \
         <div class="copyright" >
   
   &copy;  2015 - 
-  <span itemprop="copyrightYear">2016</span>
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
