@@ -91,16 +91,16 @@
 具体原因就是内部类使用_连接符代替实际应该使用的$。具体看如下代码(传送门)：
 123456789public void validate(String methodName, Class&amp;lt;?&amp;gt;[] parameterTyp">
 <meta property="og:type" content="article">
-<meta property="og:title" content="dubbo参数校验遇到的坑">
+<meta property="og:title" content="dubbo遇到的坑">
 <meta property="og:url" content="https://zacard.net/2016/12/12/dubbo-parameter-validate/index.html">
 <meta property="og:site_name" content="Zacard's Notes">
 <meta property="og:description" content="背景目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。
 遇到的坑一第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。
 具体原因就是内部类使用_连接符代替实际应该使用的$。具体看如下代码(传送门)：
 123456789public void validate(String methodName, Class&amp;lt;?&amp;gt;[] parameterTyp">
-<meta property="og:updated_time" content="2016-12-12T15:45:50.000Z">
+<meta property="og:updated_time" content="2017-06-21T02:55:49.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="dubbo参数校验遇到的坑">
+<meta name="twitter:title" content="dubbo遇到的坑">
 <meta name="twitter:description" content="背景目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。
 遇到的坑一第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。
 具体原因就是内部类使用_连接符代替实际应该使用的$。具体看如下代码(传送门)：
@@ -138,7 +138,7 @@
 
 
 
-  <title> dubbo参数校验遇到的坑 | Zacard's Notes </title>
+  <title> dubbo遇到的坑 | Zacard's Notes </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -326,7 +326,7 @@
             
             
               
-                dubbo参数校验遇到的坑
+                dubbo遇到的坑
               
             
           </h1>
@@ -425,6 +425,7 @@
 <p>dubboValidation=com.xkeshi.webkits.dubbovalidation.DubboValidation</p>
 </blockquote>
 <p>其实以上就是<code>java spi</code>的类加载方式。</p>
+<h2 id="遇到的坑三"><a href="#遇到的坑三" class="headerlink" title="遇到的坑三"></a>遇到的坑三</h2><p>dubbo provider服务提供者不要有方法重载！不然默认的dubbo协议说使用的Hessian序列化方式将有可能无法正确找到重载的方法！</p>
 
       
     </div>
@@ -515,7 +516,7 @@
   <div class="comments" id="comments">
     
       <div class="ds-thread" data-thread-key="2016/12/12/dubbo-parameter-validate/"
-           data-title="dubbo参数校验遇到的坑" data-url="https://zacard.net/2016/12/12/dubbo-parameter-validate/">
+           data-title="dubbo遇到的坑" data-url="https://zacard.net/2016/12/12/dubbo-parameter-validate/">
       </div>
     
   </div>
@@ -655,7 +656,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遇到的坑一"><span class="nav-number">2.</span> <span class="nav-text">遇到的坑一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遇到的坑二"><span class="nav-number">3.</span> <span class="nav-text">遇到的坑二</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遇到的坑一"><span class="nav-number">2.</span> <span class="nav-text">遇到的坑一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遇到的坑二"><span class="nav-number">3.</span> <span class="nav-text">遇到的坑二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遇到的坑三"><span class="nav-number">4.</span> <span class="nav-text">遇到的坑三</span></a></li></ol></div>
             
 
           </div>
