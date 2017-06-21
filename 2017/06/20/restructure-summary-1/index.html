@@ -86,22 +86,22 @@
 
 
 
-<meta name="description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验终结。这里主要讲下分解关联查询。
+<meta name="description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验。这里主要讲下分解关联查询。
 例子例如一个查询标签为‘mysql’的所有文章的关联查询sql：
-1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idw">
+1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idwhe">
 <meta property="og:type" content="article">
 <meta property="og:title" content="业务重构总结之分解关联查询">
 <meta property="og:url" content="https://zacard.net/2017/06/20/restructure-summary-1/index.html">
 <meta property="og:site_name" content="Zacard's Notes">
-<meta property="og:description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验终结。这里主要讲下分解关联查询。
+<meta property="og:description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验。这里主要讲下分解关联查询。
 例子例如一个查询标签为‘mysql’的所有文章的关联查询sql：
-1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idw">
-<meta property="og:updated_time" content="2017-06-21T06:29:14.000Z">
+1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idwhe">
+<meta property="og:updated_time" content="2017-06-21T06:31:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="业务重构总结之分解关联查询">
-<meta name="twitter:description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验终结。这里主要讲下分解关联查询。
+<meta name="twitter:description" content="背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验。这里主要讲下分解关联查询。
 例子例如一个查询标签为‘mysql’的所有文章的关联查询sql：
-1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idw">
+1234select * from tag	join tag_post on tag_post.tag_id = tag.id	join post on tag_post.post_id = post.idwhe">
 
 
 
@@ -397,11 +397,11 @@
       
 
       
-        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验终结。这里主要讲下<strong>分解关联查询</strong>。</p>
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验。这里主要讲下<strong>分解关联查询</strong>。</p>
 <h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>例如一个查询标签为‘mysql’的所有文章的关联查询sql：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tag</div><div class="line">	<span class="keyword">join</span> tag_post <span class="keyword">on</span> tag_post.tag_id = tag.id</div><div class="line">	<span class="keyword">join</span> post <span class="keyword">on</span> tag_post.post_id = post.id</div><div class="line"><span class="keyword">where</span> tag.tag = <span class="string">'mysql'</span>;</div></pre></td></tr></table></figure>
 <p>分解成以下多个sql，在应用层做关联：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tag <span class="keyword">where</span> tag = <span class="string">'mysql'</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tag_post <span class="keyword">where</span> tag_id=<span class="number">1234</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> post <span class="keyword">where</span> post.id <span class="keyword">in</span> (<span class="number">123</span>,<span class="number">456</span>,...);</div></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> <span class="keyword">id</span> <span class="keyword">from</span> tag <span class="keyword">where</span> tag = <span class="string">'mysql'</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tag_post <span class="keyword">where</span> tag_id=<span class="number">1234</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> post <span class="keyword">where</span> post.id <span class="keyword">in</span> (<span class="number">123</span>,<span class="number">456</span>,...);</div></pre></td></tr></table></figure>
 <h2 id="分解关联查询的优点"><a href="#分解关联查询的优点" class="headerlink" title="分解关联查询的优点"></a>分解关联查询的优点</h2><h3 id="缓存的效率更高"><a href="#缓存的效率更高" class="headerlink" title="缓存的效率更高"></a>缓存的效率更高</h3><p>应用程序可以很方便的缓存单表查询的结果。例如例子中分解后的第1个查询，如果已经在缓存中，这可以跳过第1个查询。</p>
 <p>另外对于mysql的query cacha（查询缓存）来说，如果关联查询中的任意表发生了变化，就无法使用缓存，而拆分后，如果其中一个表很少改变，那么该表的缓存命中将很高。</p>
 <h3 id="减少数据库锁竞争"><a href="#减少数据库锁竞争" class="headerlink" title="减少数据库锁竞争"></a>减少数据库锁竞争</h3><p>查询分解后，执行单个查询可以减少锁的竞争，而关联查询将可能锁多个表。</p>
