@@ -98,7 +98,7 @@
 遇到的坑一第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。
 具体原因就是内部类使用_连接符代替实际应该使用的$。具体看如下代码(传送门)：
 123456789public void validate(String methodName, Class&amp;lt;?&amp;gt;[] parameterTyp">
-<meta property="og:updated_time" content="2017-06-21T02:55:49.000Z">
+<meta property="og:updated_time" content="2017-06-21T05:07:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="dubbo遇到的坑">
 <meta name="twitter:description" content="背景目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。
@@ -425,7 +425,7 @@
 <p>dubboValidation=com.xkeshi.webkits.dubbovalidation.DubboValidation</p>
 </blockquote>
 <p>其实以上就是<code>java spi</code>的类加载方式。</p>
-<h2 id="遇到的坑三"><a href="#遇到的坑三" class="headerlink" title="遇到的坑三"></a>遇到的坑三</h2><p>dubbo provider服务提供者不要有方法重载！不然默认的dubbo协议说使用的Hessian序列化方式将有可能无法正确找到重载的方法！</p>
+<h2 id="遇到的坑三"><a href="#遇到的坑三" class="headerlink" title="遇到的坑三"></a>遇到的坑三</h2><p>dubbo provider服务提供者不要有方法重载！不然默认的dubbo协议说使用的Hessian序列化方式将有可能无法正确找到重载的方法！（客户端开启参数校验的时候）</p>
 
       
     </div>
