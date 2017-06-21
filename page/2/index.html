@@ -294,6 +294,153 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/12/docker-7-jetty/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/12/docker-7-jetty/" itemprop="url">
+                  Docker学习系列七：构建jetty镜像
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-12T09:51:38+08:00">
+                2016-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/12/docker-7-jetty/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/12/docker-7-jetty/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>Docker hub官方已经维护了一套比较完善的jetty镜像，但是依赖的是openjdk。所以这里只是把jdk换成之前学习系列中构建过的oracle-jdk8。</p>
+<h3 id="Dockerfile描述"><a href="#Dockerfile描述" class="headerlink" title="Dockerfile描述"></a>Dockerfile描述</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">FROM oraclejdk8</div><div class="line">   MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;</div><div class="line"></div><div class="line">   <span class="comment"># add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added</span></div><div class="line">   RUN addgroup -S jetty &amp;&amp; adduser -D -S -H -G jetty jetty &amp;&amp; rm -rf /etc/group- /etc/passwd- /etc/shadow-</div><div class="line"></div><div class="line">   ENV JETTY_HOME /usr/<span class="built_in">local</span>/jetty</div><div class="line">   ENV PATH <span class="variable">$JETTY_HOME</span>/bin:<span class="variable">$PATH</span></div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_HOME</span>"</span></div><div class="line">   WORKDIR <span class="variable">$JETTY_HOME</span></div><div class="line"></div><div class="line">   ENV JETTY_BASE /var/lib/jetty</div><div class="line">   RUN mkdir -p <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   ENV JETTY_VERSION 9.3.10.v20160621</div><div class="line">   ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/<span class="variable">$JETTY_VERSION</span>/jetty-distribution-<span class="variable">$JETTY_VERSION</span>.tar.gz</div><div class="line"></div><div class="line">   <span class="comment"># GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)</span></div><div class="line">   ENV JETTY_GPG_KEYS \</div><div class="line">           <span class="comment"># 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt &lt;joakime@apache.org&gt;</span></div><div class="line">           B59B67FD7904984367F931800818D9D68FB67BAC \</div><div class="line">           <span class="comment"># 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) &lt;jesse.mcconnell@gmail.com&gt;</span></div><div class="line">           5DE533CB43DAF8BC3E372283E7AE839CD7C58886</div><div class="line"></div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           <span class="comment"># Install required packages for build time. Will be removed when build finishes.</span></div><div class="line">           &amp;&amp; apk add --no-cache --virtual .build-deps gnupg coreutils curl \</div><div class="line"></div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>"</span> -o jetty.tar.gz \</div><div class="line">           &amp;&amp; curl -SL <span class="string">"<span class="variable">$JETTY_TGZ_URL</span>.asc"</span> -o jetty.tar.gz.asc \</div><div class="line">           &amp;&amp; <span class="built_in">export</span> GNUPGHOME=<span class="string">"<span class="variable">$(mktemp -d)</span>"</span> \</div><div class="line">           &amp;&amp; <span class="keyword">for</span> key <span class="keyword">in</span> <span class="variable">$JETTY_GPG_KEYS</span>; <span class="keyword">do</span> \</div><div class="line">                   gpg --keyserver ha.pool.sks-keyservers.net --recv-keys <span class="string">"<span class="variable">$key</span>"</span>; <span class="keyword">done</span> \</div><div class="line">           &amp;&amp; gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \</div><div class="line">           &amp;&amp; rm -r <span class="string">"<span class="variable">$GNUPGHOME</span>"</span> \</div><div class="line">           &amp;&amp; tar -xvzf jetty.tar.gz \</div><div class="line">           &amp;&amp; mv jetty-distribution-<span class="variable">$JETTY_VERSION</span>/* ./ \</div><div class="line">           &amp;&amp; sed -i <span class="string">'/jetty-logging/d'</span> etc/jetty.conf \</div><div class="line">           &amp;&amp; rm -fr demo-base javadoc \</div><div class="line">           &amp;&amp; rm jetty.tar.gz* \</div><div class="line">           &amp;&amp; rm -fr jetty-distribution-<span class="variable">$JETTY_VERSION</span>/ \</div><div class="line"></div><div class="line">           <span class="comment"># Get the list of modules in the default start.ini and build new base with those modules, then add setuid</span></div><div class="line">           &amp;&amp; <span class="built_in">cd</span> <span class="variable">$JETTY_BASE</span> \</div><div class="line">           &amp;&amp; modules=<span class="string">"<span class="variable">$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)</span>"</span> \</div><div class="line">           &amp;&amp; java -jar <span class="string">"<span class="variable">$JETTY_HOME</span>/start.jar"</span> --add-to-startd=<span class="string">"<span class="variable">$modules</span>,setuid"</span> \</div><div class="line"></div><div class="line">           <span class="comment"># Remove installed packages and various cleanup</span></div><div class="line">           &amp;&amp; apk del .build-deps \</div><div class="line">           &amp;&amp; rm -fr .build-deps \</div><div class="line">           &amp;&amp; rm -rf /tmp/hsperfdata_root</div><div class="line"></div><div class="line">   WORKDIR <span class="variable">$JETTY_BASE</span></div><div class="line"></div><div class="line">   ENV TMPDIR /tmp/jetty</div><div class="line">   RUN <span class="built_in">set</span> -xe \</div><div class="line">           &amp;&amp; mkdir -p <span class="string">"<span class="variable">$TMPDIR</span>"</span> \</div><div class="line">           &amp;&amp; chown -R jetty:jetty <span class="string">"<span class="variable">$TMPDIR</span>"</span> <span class="string">"<span class="variable">$JETTY_BASE</span>"</span></div><div class="line"></div><div class="line">   COPY docker-entrypoint.sh /</div><div class="line"></div><div class="line">   EXPOSE 8080</div><div class="line">   ENTRYPOINT [<span class="string">"/docker-entrypoint.sh"</span>]</div><div class="line">   CMD [<span class="string">"java"</span>,<span class="string">"-jar"</span>,<span class="string">"/usr/local/jetty/start.jar"</span>]</div></pre></td></tr></table></figure>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/12/docker-7-jetty/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/09/java-pass-by-value-or-reference/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1779,164 +1926,6 @@ docker run --name jenkins -p 8882:8080 --link -d jetty:jetty jenkins;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/05/10/JSqlParser-examples/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/10/JSqlParser-examples/" itemprop="url">
-                  JSqlParser使用示例
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-10T11:15:37+08:00">
-                2016-05-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/05/10/JSqlParser-examples/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/10/JSqlParser-examples/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于业务需要，需要编写一个mybatis插件来统一处理一类sql，并且需要对sql动态处理。然而解析sql成为一件繁琐的工作，果断github上查找是否有sql解析的项目。一个300多star的sql解析构建项目：<a href="https://github.com/JSQLParser/JSqlParser"><strong>JSqlParser</strong></a>。</p>
-<p>由于JSqlParser的github主页的使用说明略简单，查看测试类，也没有覆盖常用的使用需求。于是，这里整理了一些个人实际使用的一些方法。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><h4 id="查询返回增加一列"><a href="#查询返回增加一列" class="headerlink" title="查询返回增加一列"></a>查询返回增加一列</h4><p>代码如下：</p>
-<pre><code>/**
- * 测试查询返回增加一列
- */
-@Test
-public void testAddSelectColumn() throws Exception {
-    Select select = (Select) CCJSqlParserUtil.parse(&quot;select name from user where id = 1&quot;);
-    SelectUtils.addExpression(select, new Column(&quot;mail&quot;));
-    Assert.assertEquals(select.toString(), &quot;SELECT name, mail FROM user WHERE id = 1&quot;);
-}
-</code></pre>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/10/JSqlParser-examples/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1982,7 +1971,7 @@ public void testAddSelectColumn() throws Exception {
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-count">43</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1999,7 +1988,7 @@ public void testAddSelectColumn() throws Exception {
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">70</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

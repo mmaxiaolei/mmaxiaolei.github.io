@@ -3,6 +3,13 @@
   
     
     <entry>
+      <title><![CDATA[业务重构总结之分解关联查询]]></title>
+      <url>%2F2017%2F06%2F20%2Frestructure-summary-1%2F</url>
+      <content type="text"><![CDATA[背景经历了一段漫长痛苦的重构期，整体的业务重构基本完成。这里总结下重构中遇到的一些问题和经验终结。这里主要讲下分解关联查询。 例子例如一个查询标签为‘mysql’的所有文章的关联查询sql： 1234select * from tag join tag_post on tag_post.tag_id = tag.id join post on tag_post.post_id = post.idwhere tag.tag = 'mysql'; 分解成以下多个sql，在应用层做关联： 123select * from tag where tag = 'mysql';select * from tag_post where tag_id=1234;select * from post where post.id in (123,456,...); 分解关联查询的优点缓存的效率更高应用程序可以很方便的缓存单表查询的结果。例如例子中分解后的第1个查询，如果已经在缓存中，这可以跳过第1个查询。 另外对于mysql的query cacha（查询缓存）来说，如果关联查询中的任意表发生了变化，就无法使用缓存，而拆分后，如果其中一个表很少改变，那么该表的缓存命中将很高。 减少数据库锁竞争查询分解后，执行单个查询可以减少锁的竞争，而关联查询将可能锁多个表。 微服务化友好应用层做关联，可以更容易的做数据库拆分，更容易做到高性能和可扩展。对于原本的单体应用做微服务化拆分与改造将非常便捷。 查询效率提升例如例子中的第3个查询，使用了in()代替了关联查询，可以让mysql按照id顺序进行查询，这比随机的关联要更高效。 减少冗余记录的查询在应用层做关联，意味着对某条记录只需查询一次，而在数据库关联查询，则可能需要重复地访问一部分数据。从这点看，这样还能减少网络和内测消耗。 关联更高效在应用层关联，往往比mysql中的嵌套循环关联更高效。]]></content>
+    </entry>
+
+    
+    <entry>
       <title><![CDATA[RocketMQ阅读笔记]]></title>
       <url>%2F2017%2F01%2F03%2Frocketmq-read-note%2F</url>
       <content type="text"><![CDATA[为何选择rocketmq选型时主要对比了kafka和rocketmq。两者还是存在较大差异的，kafka一开始的定位就是日志收集，对于订单、交易等可靠传输场景不能很好满足（消息丢失、消息重复消费等方面）。并且rocketmq是使用java编写的，相对于scala编写的kafka，我们有更大的定制与扩展的空间。 数据可靠性 rocketmq支持异步/同步刷盘,异步/同步复制 kafka异步刷盘，异步/同步复制 刷盘效率上应该是rocketmq更高。因为rocketmq的消息都写到一个文件中，而kafka的每个分区对应一个文件，rocketmq可以充分利用IO组commit机制批量传输数据。 性能对比 kafka单机协议TPS约在100w/s，消息大小为10字节 rocketmq单机写入TPS单实例约为7W/s,单机3个broker，可以跑到12w/s,消息大小为10字节 之所以kafka有如此高的TPS,是由于producer端会将多个小消息合并，批量发送至broker。rocketmq没有这做的原因： 由于使用java语言，如果producer端缓存过多消息，GC是个严重问题 producer端调用发送消息接口，消息为发送到broker就返回，此时producer宕机会导致消息丢失 producer通常为分布式部署，且每台机器都是多线程发送，单个producer产生的消息有限 单机支持的队列/分区数量 Kafka单机超过64个队列/分区，Load会发生明显的飙高现象，队列越多，load越高，发送消息响应时间变长。Kafka分区数无法过多的问题 rocketmq支持单机最高5w个队列，负载不会发送明显变化 队列/分区多的好处： 单机可以创建更多Topic，因为没有Topic都是有一批队列组成 消费者的集群规模和队列数成正比 消息投递实时性 kafka使用短轮询方式，实时性取决于轮询间隔时间，0.8以后支持长轮询 rockmq使用长轮询，同push方式实时性基本一致 消费失败重试 kafka不支持重试 rocketmq消费失败支持定时重试，每次重试间隔时间顺延 重试的场景比较适合依赖第三方的consumer，比较充值，consumer需要调用第三方运营商网关，充值失败可能是对方当前压力过大，稍后调用可能就会成功。 消息顺序 kafka支持消息顺序，但是在一台broker宕机后，就会产生消息乱序 rocketmq支持严格的消息顺序，当一台broker宕机后，发送消息会失败，但不会乱序 定时消息 kafka目前不支持定时消息 rocketmq支持定时消息 目前业务场景暂时用不到。 分布式事务消息 kafka目前不支持 rocketmq暂时没有开源事务消息 消息查询 kafka不支持消息查询 rocketmq支持根据消息表示查询，也可根据消息内容查询（发送消息时指定一个消息密钥，任意字符串，例如指定为订单编号） 这个对于消息定位非常有帮助。 消息回溯 kafka不支持 rocketmq可以按照时间回溯消息，精度毫秒 这个对于对账等功能比较有用 消息过滤 kafka不支持broker端过滤 rocketmq支持根据tag（相当于子主题）过滤 开发语言友好rocketmq使用java，更友好。 开源社区活跃度都比较活跃。 rocketmq消息存储]]></content>
