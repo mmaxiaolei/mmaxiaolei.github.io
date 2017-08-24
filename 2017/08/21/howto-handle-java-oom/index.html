@@ -112,7 +112,7 @@ OOM的常见原因
 top
 
 输入top命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可">
-<meta property="og:updated_time" content="2017-08-24T06:01:26.000Z">
+<meta property="og:updated_time" content="2017-08-24T06:59:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="线上java项目OOM快速定位与解决方法">
 <meta name="twitter:description" content="背景最近比较多的碰到OOM异常，总结下OOM的异常快速定位和解决的办法。
@@ -471,7 +471,7 @@ top
 </blockquote>
 <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# ll /proc/2879/fd | wc -l</div><div class="line">38</div></pre></td></tr></table></figure>
 <p>可以看到，该进程使用了38个文件句柄。</p>
-<p>如果占用大量文件句柄，需要审查代码中涉及到文件操作和网络连接操作是否有及时关系资源链接。</p>
+<p>如果占用大量文件句柄，需要审查代码中涉及到文件操作和网络连接操作是否有及时关闭资源链接。</p>
 <h2 id="jmap-附加说明"><a href="#jmap-附加说明" class="headerlink" title="jmap 附加说明"></a>jmap 附加说明</h2><p>jmap -heap输出的非自定义类名说明：</p>
 <table>
 <thead>
