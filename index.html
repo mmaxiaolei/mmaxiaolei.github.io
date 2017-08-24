@@ -294,6 +294,196 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/08/21/howto-handle-java-oom/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/08/21/howto-handle-java-oom/" itemprop="url">
+                  线上java项目OOM快速定位与解决方法
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-08-21T18:33:22+08:00">
+                2017-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2017/08/21/howto-handle-java-oom/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/08/21/howto-handle-java-oom/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近比较多的碰到OOM异常，总结下OOM的异常快速定位和解决的办法。</p>
+<h2 id="OOM的常见原因"><a href="#OOM的常见原因" class="headerlink" title="OOM的常见原因"></a>OOM的常见原因</h2><ul>
+<li>内存分配确实过小</li>
+<li>频繁创建对象，没有及时释放</li>
+<li>频繁申请系统资源，导致系统资源耗尽（例如：不断创建线程，不断发起网络连接）</li>
+</ul>
+<h2 id="定位与解决方法"><a href="#定位与解决方法" class="headerlink" title="定位与解决方法"></a>定位与解决方法</h2><p>需要先找到出问题的进程，使用top命令定位：</p>
+<blockquote>
+<p>top</p>
+</blockquote>
+<p>输入<code>top</code>命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可以先按c显示具体的command）</p>
+<p>这里先按M根据内存排序查找异常的进程：<strong>这里假设出现异常的进程pid为2879</strong></p>
+<h3 id="判断是否是由于“内存分配确实过小”"><a href="#判断是否是由于“内存分配确实过小”" class="headerlink" title="判断是否是由于“内存分配确实过小”"></a>判断是否是由于“内存分配确实过小”</h3><p>输入以下命令：</p>
+<blockquote>
+<p>jmap -heap 2879</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# jmap -heap 2879</div><div class="line">Attaching to process ID 2879, please wait...</div><div class="line">Debugger attached successfully.</div><div class="line">Server compiler detected.</div><div class="line">JVM version is 25.73-b02</div><div class="line"></div><div class="line">using thread-local object allocation.</div><div class="line">Parallel GC with 4 thread(s)</div><div class="line"></div><div class="line">Heap Configuration:</div><div class="line">   MinHeapFreeRatio         = 0</div><div class="line">   MaxHeapFreeRatio         = 100</div><div class="line">   MaxHeapSize              = 2040528896 (1946.0MB)</div><div class="line">   NewSize                  = 42467328 (40.5MB)</div><div class="line">   MaxNewSize               = 680001536 (648.5MB)</div><div class="line">   OldSize                  = 85458944 (81.5MB)</div><div class="line">   NewRatio                 = 2</div><div class="line">   SurvivorRatio            = 8</div><div class="line">   MetaspaceSize            = 21807104 (20.796875MB)</div><div class="line">   CompressedClassSpaceSize = 1073741824 (1024.0MB)</div><div class="line">   MaxMetaspaceSize         = 17592186044415 MB</div><div class="line">   G1HeapRegionSize         = 0 (0.0MB)</div><div class="line"></div><div class="line">Heap Usage:</div><div class="line">PS Young Generation</div><div class="line">Eden Space:</div><div class="line">   capacity = 28311552 (27.0MB)</div><div class="line">   used     = 21982144 (20.96380615234375MB)</div><div class="line">   free     = 6329408 (6.03619384765625MB)</div><div class="line">   77.64372649016204% used</div><div class="line">From Space:</div><div class="line">   capacity = 1048576 (1.0MB)</div><div class="line">   used     = 688128 (0.65625MB)</div><div class="line">   free     = 360448 (0.34375MB)</div><div class="line">   65.625% used</div><div class="line">To Space:</div><div class="line">   capacity = 1048576 (1.0MB)</div><div class="line">   used     = 0 (0.0MB)</div><div class="line">   free     = 1048576 (1.0MB)</div><div class="line">   0.0% used</div><div class="line">PS Old Generation</div><div class="line">   capacity = 100139008 (95.5MB)</div><div class="line">   used     = 90236608 (86.05633544921875MB)</div><div class="line">   free     = 9902400 (9.44366455078125MB)</div><div class="line">   90.11134602012434% used</div><div class="line"></div><div class="line">28237 interned Strings occupying 3386232 bytes.</div></pre></td></tr></table></figure>
+<p>可以看到详细的堆内存使用情况，可以以此判断应用分配的内存是否确实过小。</p>
+<h3 id="判断是否是由于“频繁创建对象，没有及时回收”"><a href="#判断是否是由于“频繁创建对象，没有及时回收”" class="headerlink" title="判断是否是由于“频繁创建对象，没有及时回收”"></a>判断是否是由于“频繁创建对象，没有及时回收”</h3><p>输入以下命令，找出最耗内存的对象：</p>
+<blockquote>
+<p>jmap -histo:live 2879 | more</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# jmap -histo:live 2879 | more</div><div class="line"></div><div class="line"> num     #instances         #bytes  class name</div><div class="line">----------------------------------------------</div><div class="line">   1:         81515       11259264  [C</div><div class="line">   2:         80010        1920240  java.lang.String</div><div class="line">   3:         44265        1416480  java.util.concurrent.ConcurrentHashMap$Node</div><div class="line">   4:          4057        1369872  [B</div><div class="line">   5:         11200        1241976  java.lang.Class</div><div class="line">   6:          8977         789976  java.lang.reflect.Method</div><div class="line">   7:         18801         752040  java.util.LinkedHashMap$Entry</div><div class="line">   8:          5144         627336  [I</div><div class="line">   9:         11948         601184  [Ljava.lang.Object;</div><div class="line">  10:          8275         595352  [Ljava.util.HashMap$Node;</div><div class="line">  11:         18231         583392  java.lang.ref.WeakReference</div><div class="line">  12:          9847         551432  java.util.LinkedHashMap</div><div class="line">  13:           375         544288  [Ljava.util.concurrent.ConcurrentHashMap$Node;</div><div class="line">  14:         29118         465888  java.lang.Object</div><div class="line">  15:         13034         417088  java.util.HashMap$Node</div><div class="line">  16:          8850         354000  java.lang.ref.SoftReference</div><div class="line">  17:         10490         251760  java.beans.MethodRef</div><div class="line">  18:          3586         200816  java.beans.MethodDescriptor</div><div class="line">  19:          6450         195288  [Ljava.lang.String;</div></pre></td></tr></table></figure>
+<p>输入命令后，会以表格的形式显示存活对象的信息，<strong>并按照所占内存大小排序</strong>。</p>
+<ul>
+<li>instances: 对象实例数量</li>
+<li>bytes: 占用内存大小</li>
+<li>class name: 类名</li>
+</ul>
+<p>可以看到目前最耗内存的对象也才占用内存11m，所以属于正常范畴</p>
+<p>如果发现某个对象的占用大量内存（例如：1G以上），就需要review代码，审查下该对象是否没有及时回收</p>
+<h3 id="判断是否是由于“频繁申请系统资源”"><a href="#判断是否是由于“频繁申请系统资源”" class="headerlink" title="判断是否是由于“频繁申请系统资源”"></a>判断是否是由于“频繁申请系统资源”</h3><ul>
+<li>查看进程的线程数量：</li>
+</ul>
+<blockquote>
+<p>ll /proc/{PID}/task | wc -l</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# ll /proc/2879/task | wc -l</div><div class="line">101</div></pre></td></tr></table></figure>
+<p>可以看到，该进程使用了101个线程。</p>
+<p>如果看到启用了大量线程，就需要审查代码涉及到线程池的使用部分，是否限定了最大线程数量。</p>
+<ul>
+<li>查询进程占用的句柄数量</li>
+</ul>
+<blockquote>
+<p>ll /proc/{PID}/fd | wc -l</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# ll /proc/2879/fd | wc -l</div><div class="line">38</div></pre></td></tr></table></figure>
+<p>可以看到，该进程使用了38个文件句柄。</p>
+<p>如果占用大量文件句柄，需要审查代码中涉及到文件操作和网络连接操作是否有及时关系资源链接。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/07/24/restructure-summary-2/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1722,157 +1912,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/26/treeMap-theory/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/08/26/treeMap-theory/" itemprop="url">
-                  红黑树&TreeMap的实现原理
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-26T21:02:14+08:00">
-                2016-08-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/08/26/treeMap-theory/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/26/treeMap-theory/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>由于TreeMap的实现原理就是以红黑树为基础数据结构的，所以基本也是红黑树的原理解读。</p>
-<h1 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h1><p>红黑树是一种自平衡的二叉查找树。是一种复杂但高效的数据结构，它可以在O(log n)时间内做查找，插入和删除。</p>
-<p>红黑树的规定：</p>
-<p>1.一个节点只能是红色或者黑色<br>2.根节点是黑色<br>3.每个叶节点（null节点/空节点）为黑色<br>4.如果一个节点为红色，则他们的2个子节点都为黑色<br>5.从任意节点到其每个叶节点</p>
-<p>红黑树结构java代码示例：（TreeMap中的内部类Entry）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</div><div class="line"> * 红黑树节点结构</div><div class="line"> */</span></div><div class="line">   <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>, <span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>, <span class="title">V</span>&gt; </span>&#123;</div><div class="line">       K key; <span class="comment">// 红黑树的排序字段</span></div><div class="line">       V value; <span class="comment">// 节点存储的值</span></div><div class="line">       Entry&lt;K, V&gt; left; <span class="comment">// 左子树节点</span></div><div class="line">       Entry&lt;K, V&gt; right; <span class="comment">// 右子树节点</span></div><div class="line">       Entry&lt;K, V&gt; parent; <span class="comment">// 父节点</span></div><div class="line">       <span class="keyword">boolean</span> color = BLACK; <span class="comment">// 节点颜色，默认为黑</span></div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Make a new cell with given key, value, and parent, and with</div><div class="line">        * &#123;<span class="doctag">@code</span> null&#125; child links, and BLACK color.</div><div class="line">        */</span></div><div class="line">       Entry(K key, V value, Entry&lt;K, V&gt; parent) &#123;</div><div class="line">           <span class="keyword">this</span>.key = key;</div><div class="line">           <span class="keyword">this</span>.value = value;</div><div class="line">           <span class="keyword">this</span>.parent = parent;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Returns the key.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the key</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> K <span class="title">getKey</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> key;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Returns the value associated with the key.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the value associated with the key</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> V <span class="title">getValue</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> value;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="comment">/**</div><div class="line">        * Replaces the value currently associated with the key with the given</div><div class="line">        * value.</div><div class="line">        *</div><div class="line">        * <span class="doctag">@return</span> the value associated with the key before this method was</div><div class="line">        * called</div><div class="line">        */</span></div><div class="line">       <span class="function"><span class="keyword">public</span> V <span class="title">setValue</span><span class="params">(V value)</span> </span>&#123;</div><div class="line">           V oldValue = <span class="keyword">this</span>.value;</div><div class="line">           <span class="keyword">this</span>.value = value;</div><div class="line">           <span class="keyword">return</span> oldValue;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</div><div class="line">           <span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Map.Entry))</div><div class="line">               <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">           Map.Entry&lt;?, ?&gt; e = (Map.Entry&lt;?, ?&gt;) o;</div><div class="line"></div><div class="line">           <span class="keyword">return</span> valEquals(key, e.getKey()) &amp;&amp; valEquals(value, e.getValue());</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">int</span> keyHash = (key == <span class="keyword">null</span> ? <span class="number">0</span> : key.hashCode());</div><div class="line">           <span class="keyword">int</span> valueHash = (value == <span class="keyword">null</span> ? <span class="number">0</span> : value.hashCode());</div><div class="line">           <span class="keyword">return</span> keyHash ^ valueHash;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">return</span> key + <span class="string">"="</span> + value;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/26/treeMap-theory/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1918,7 +1957,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-count">45</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1935,7 +1974,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">72</span>
+                <span class="site-state-item-count">73</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
