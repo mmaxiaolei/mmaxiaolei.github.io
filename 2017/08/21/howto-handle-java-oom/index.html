@@ -112,7 +112,7 @@ OOM的常见原因
 top
 
 输入top命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可">
-<meta property="og:updated_time" content="2017-08-24T03:05:09.000Z">
+<meta property="og:updated_time" content="2017-08-24T05:12:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="线上java项目OOM快速定位与解决方法">
 <meta name="twitter:description" content="背景最近比较多的碰到OOM异常，总结下OOM的异常快速定位和解决的办法。
@@ -433,6 +433,7 @@ top
 </blockquote>
 <p>输入<code>top</code>命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可以先按c显示具体的command）</p>
 <p>这里先按M根据内存排序查找异常的进程：<strong>这里假设出现异常的进程pid为2879</strong></p>
+<a id="more"></a>
 <h3 id="判断是否是由于“内存分配确实过小”"><a href="#判断是否是由于“内存分配确实过小”" class="headerlink" title="判断是否是由于“内存分配确实过小”"></a>判断是否是由于“内存分配确实过小”</h3><p>输入以下命令：</p>
 <blockquote>
 <p>jmap -heap 2879</p>
@@ -452,6 +453,7 @@ top
 </ul>
 <p>可以看到目前最耗内存的对象也才占用内存11m，所以属于正常范畴</p>
 <p>如果发现某个对象的占用大量内存（例如：1G以上），就需要review代码，审查下该对象是否没有及时回收</p>
+<p>PS：其中输出的奇怪的class name请查看最后的附录。</p>
 <h3 id="判断是否是由于“频繁申请系统资源”"><a href="#判断是否是由于“频繁申请系统资源”" class="headerlink" title="判断是否是由于“频繁申请系统资源”"></a>判断是否是由于“频繁申请系统资源”</h3><ul>
 <li>查看进程的线程数量：</li>
 </ul>
@@ -470,6 +472,68 @@ top
 <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">[root@node182 ~]# ll /proc/2879/fd | wc -l</div><div class="line">38</div></pre></td></tr></table></figure>
 <p>可以看到，该进程使用了38个文件句柄。</p>
 <p>如果占用大量文件句柄，需要审查代码中涉及到文件操作和网络连接操作是否有及时关系资源链接。</p>
+<h2 id="jmap-附加说明"><a href="#jmap-附加说明" class="headerlink" title="jmap 附加说明"></a>jmap 附加说明</h2><p>jmap -heap输出的非自定义类名说明：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">BaseType Character</th>
+<th>Type</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">B</td>
+<td>byte</td>
+<td>signed byte</td>
+</tr>
+<tr>
+<td style="text-align:left">C</td>
+<td>char</td>
+<td>Unicode character</td>
+</tr>
+<tr>
+<td style="text-align:left">D</td>
+<td>double</td>
+<td>double-precision floating-point value</td>
+</tr>
+<tr>
+<td style="text-align:left">F</td>
+<td>float</td>
+<td>single-precision floating-point value</td>
+</tr>
+<tr>
+<td style="text-align:left">I</td>
+<td>int</td>
+<td>integer</td>
+</tr>
+<tr>
+<td style="text-align:left">J</td>
+<td>long</td>
+<td>long integer</td>
+</tr>
+<tr>
+<td style="text-align:left">L;</td>
+<td>reference</td>
+<td>an instance of class</td>
+</tr>
+<tr>
+<td style="text-align:left">S</td>
+<td>short</td>
+<td>signed short</td>
+</tr>
+<tr>
+<td style="text-align:left">Z</td>
+<td>boolean</td>
+<td>true or false</td>
+</tr>
+<tr>
+<td style="text-align:left">[</td>
+<td>reference</td>
+<td>one array dimension</td>
+</tr>
+</tbody>
+</table>
 
       
     </div>
@@ -698,7 +762,7 @@ top
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOM的常见原因"><span class="nav-number">2.</span> <span class="nav-text">OOM的常见原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定位与解决方法"><span class="nav-number">3.</span> <span class="nav-text">定位与解决方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“内存分配确实过小”"><span class="nav-number">3.1.</span> <span class="nav-text">判断是否是由于“内存分配确实过小”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁创建对象，没有及时回收”"><span class="nav-number">3.2.</span> <span class="nav-text">判断是否是由于“频繁创建对象，没有及时回收”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁申请系统资源”"><span class="nav-number">3.3.</span> <span class="nav-text">判断是否是由于“频繁申请系统资源”</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOM的常见原因"><span class="nav-number">2.</span> <span class="nav-text">OOM的常见原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定位与解决方法"><span class="nav-number">3.</span> <span class="nav-text">定位与解决方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“内存分配确实过小”"><span class="nav-number">3.1.</span> <span class="nav-text">判断是否是由于“内存分配确实过小”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁创建对象，没有及时回收”"><span class="nav-number">3.2.</span> <span class="nav-text">判断是否是由于“频繁创建对象，没有及时回收”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁申请系统资源”"><span class="nav-number">3.3.</span> <span class="nav-text">判断是否是由于“频繁申请系统资源”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmap-附加说明"><span class="nav-number">4.</span> <span class="nav-text">jmap 附加说明</span></a></li></ol></div>
             
 
           </div>
