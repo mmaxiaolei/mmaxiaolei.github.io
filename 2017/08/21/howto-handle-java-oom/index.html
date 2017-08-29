@@ -112,7 +112,7 @@ OOM的常见原因
 top
 
 输入top命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可">
-<meta property="og:updated_time" content="2017-08-24T06:59:33.000Z">
+<meta property="og:updated_time" content="2017-08-29T06:56:12.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="线上java项目OOM快速定位与解决方法">
 <meta name="twitter:description" content="背景最近比较多的碰到OOM异常，总结下OOM的异常快速定位和解决的办法。
@@ -443,6 +443,8 @@ top
 <p>输入<code>top</code>命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可以先按c显示具体的command）</p>
 <p>这里先按M根据内存排序查找异常的进程：<strong>这里假设出现异常的进程pid为2879</strong></p>
 <a id="more"></a>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>定位问题前请先尝试输入jps命令，确定是否能够显示出现问题的pid（例如2879）.如果jps没有相应的显示，可能是你当前用户的权限不够，请使用启用相应进程的用户或者拥有更高权限的用户排查问题！不然以下的一些命令（例如jmap）将无法使用.</p>
+<p>原理：java程序启动后，默认会在/tmp/hsperfdata_userName目录下以该进程的id为文件名新建文件，并在该文件中存储jvm运行的相关信息，其中的userName为当前的用户名，/tmp/hsperfdata_userName目录会存放该用户所有已经启动的java进程信息.而jps、jconsole等工具的数据来源就是这个文件（/tmp/hsperfdata_userName/pid)。所以当该文件不存在或是无法读取时就会出现jps无法查看该进程号，jconsole无法监控等问题</p>
 <h3 id="判断是否是由于“内存分配确实过小”"><a href="#判断是否是由于“内存分配确实过小”" class="headerlink" title="判断是否是由于“内存分配确实过小”"></a>判断是否是由于“内存分配确实过小”</h3><p>输入以下命令：</p>
 <blockquote>
 <p>jmap -heap 2879</p>
@@ -771,7 +773,7 @@ top
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOM的常见原因"><span class="nav-number">2.</span> <span class="nav-text">OOM的常见原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定位与解决方法"><span class="nav-number">3.</span> <span class="nav-text">定位与解决方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“内存分配确实过小”"><span class="nav-number">3.1.</span> <span class="nav-text">判断是否是由于“内存分配确实过小”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁创建对象，没有及时回收”"><span class="nav-number">3.2.</span> <span class="nav-text">判断是否是由于“频繁创建对象，没有及时回收”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁申请系统资源”"><span class="nav-number">3.3.</span> <span class="nav-text">判断是否是由于“频繁申请系统资源”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmap-附加说明"><span class="nav-number">4.</span> <span class="nav-text">jmap 附加说明</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOM的常见原因"><span class="nav-number">2.</span> <span class="nav-text">OOM的常见原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定位与解决方法"><span class="nav-number">3.</span> <span class="nav-text">定位与解决方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注意"><span class="nav-number">3.1.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“内存分配确实过小”"><span class="nav-number">3.2.</span> <span class="nav-text">判断是否是由于“内存分配确实过小”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁创建对象，没有及时回收”"><span class="nav-number">3.3.</span> <span class="nav-text">判断是否是由于“频繁创建对象，没有及时回收”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#判断是否是由于“频繁申请系统资源”"><span class="nav-number">3.4.</span> <span class="nav-text">判断是否是由于“频繁申请系统资源”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmap-附加说明"><span class="nav-number">4.</span> <span class="nav-text">jmap 附加说明</span></a></li></ol></div>
             
 
           </div>
