@@ -294,6 +294,177 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/08/29/howto-zookeeper-move/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/08/29/howto-zookeeper-move/" itemprop="url">
+                  zookeeper迁移(扩容/缩容)实践
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-08-29T18:22:11+08:00">
+                2017-08-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2017/08/29/howto-zookeeper-move/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/08/29/howto-zookeeper-move/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/08/29/howto-zookeeper-move/" class="leancloud_visitors" data-flag-title="zookeeper迁移(扩容/缩容)实践">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。</p>
+<p>由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。</p>
+<h2 id="zookeeper选举原理"><a href="#zookeeper选举原理" class="headerlink" title="zookeeper选举原理"></a>zookeeper选举原理</h2><p>在迁移前有必要了解zookeeper的选举原理，以便更科学的迁移。</p>
+<h3 id="快速选举FastLeaderElection"><a href="#快速选举FastLeaderElection" class="headerlink" title="快速选举FastLeaderElection"></a>快速选举FastLeaderElection</h3><p>zookeeper默认使用快速选举，在此重点了解快速选举：</p>
+<ol>
+<li>向集群中的其他zookeeper建立连接，<strong>并且只有myid比对方大的连接才会被接受（也就是每2台只会有1个连接，避免连接浪费）</strong></li>
+<li>每台zookeeper默认先投自己，然后向集群广播自己的选票</li>
+<li>收到对方的选票时，依次比较epoch（选举轮数）、zxid（事务id）、myid，较大者胜出，更新选票并广播</li>
+<li>如果收到的选票中有某个节点超过集群半数，则胜出当选为leader，其他节点为follower</li>
+</ol>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li><p>zookeeper集群的数量应为奇数：</p>
+<p>  <strong>因为根据paxos理论，只有集群中超过半数的节点还存活才能保证集群的一致性</strong>。假如目前集群有5个节点，我们最多允许2个节点不可用，因为3&gt;5\2。当集群扩容到6个节点的时候，我们仍然只能最多允许2个节点不可用，到3个节点不可用时，将不满足paxos理论，因为3&gt;6\2不成立。也就是说当集群节点数n为偶数时，其可用性与n-1是一样的，那我们何必多浪费一台机器呢？</p>
+</li>
+<li><p>由于zookeeper只允许mid大的节点连接到mid小的节点，我们启动zookeeper的顺序应该按照myid小的到myid大的，最后再启动leader节点！ </p>
+</li>
+</ul>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/08/29/howto-zookeeper-move/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/08/21/howto-handle-java-oom/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1806,169 +1977,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/29/hash-collision/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/08/29/hash-collision/" itemprop="url">
-                  Hash碰撞
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-29T15:54:02+08:00">
-                2016-08-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/08/29/hash-collision/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/29/hash-collision/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/08/29/hash-collision/" class="leancloud_visitors" data-flag-title="Hash碰撞">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="Hash定义"><a href="#Hash定义" class="headerlink" title="Hash定义"></a>Hash定义</h1><p>摘自百度百科：</p>
-<blockquote>
-<p>Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。</p>
-</blockquote>
-<h1 id="为什么会产生Hash碰撞"><a href="#为什么会产生Hash碰撞" class="headerlink" title="为什么会产生Hash碰撞"></a>为什么会产生Hash碰撞</h1><blockquote>
-<p>…通过散列算法，变换成固定长度的输出，该输出就是散列值…</p>
-</blockquote>
-<p>既然是根据输入值，变换成<strong>固定长度</strong>的输出，那就必然会存在不同的输入产生相同的输出。</p>
-<h1 id="如何解决Hash碰撞"><a href="#如何解决Hash碰撞" class="headerlink" title="如何解决Hash碰撞"></a>如何解决Hash碰撞</h1><h2 id="开放地址法"><a href="#开放地址法" class="headerlink" title="开放地址法"></a>开放地址法</h2><p>这种方法就是在计算一个key的哈希的时候，发现目标地址已经有值了，即发生冲突了，这个时候通过相应的函数在此地址后面的地址去找，直到没有冲突为止。这个方法常用的有线性探测，二次探测，再哈希。这种解决方法有个不好的地方就是，当发生冲突之后，会在之后的地址空间中找一个放进去，这样就有可能后来出现一个key哈希出来的结果也正好是它放进去的这个地址空间，这样就会出现非同义词的两个key发生冲突。</p>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/29/hash-collision/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2014,7 +2022,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">45</span>
+              <span class="site-state-item-count">46</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -2031,7 +2039,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">73</span>
+                <span class="site-state-item-count">74</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

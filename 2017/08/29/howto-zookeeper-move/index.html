@@ -1,0 +1,1132 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,zookeeper," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。
+由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。
+zookee">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zookeeper迁移(扩容/缩容)实践">
+<meta property="og:url" content="https://zacard.net/2017/08/29/howto-zookeeper-move/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="背景由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。
+由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。
+zookee">
+<meta property="og:updated_time" content="2017-08-30T06:24:53.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="zookeeper迁移(扩容/缩容)实践">
+<meta name="twitter:description" content="背景由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。
+由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。
+zookee">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2017/08/29/howto-zookeeper-move/"/>
+
+
+
+
+
+  <title> zookeeper迁移(扩容/缩容)实践 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/08/29/howto-zookeeper-move/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                zookeeper迁移(扩容/缩容)实践
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-08-29T18:22:11+08:00">
+                2017-08-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2017/08/29/howto-zookeeper-move/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/08/29/howto-zookeeper-move/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/08/29/howto-zookeeper-move/" class="leancloud_visitors" data-flag-title="zookeeper迁移(扩容/缩容)实践">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。</p>
+<p>由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。</p>
+<h2 id="zookeeper选举原理"><a href="#zookeeper选举原理" class="headerlink" title="zookeeper选举原理"></a>zookeeper选举原理</h2><p>在迁移前有必要了解zookeeper的选举原理，以便更科学的迁移。</p>
+<h3 id="快速选举FastLeaderElection"><a href="#快速选举FastLeaderElection" class="headerlink" title="快速选举FastLeaderElection"></a>快速选举FastLeaderElection</h3><p>zookeeper默认使用快速选举，在此重点了解快速选举：</p>
+<ol>
+<li>向集群中的其他zookeeper建立连接，<strong>并且只有myid比对方大的连接才会被接受（也就是每2台只会有1个连接，避免连接浪费）</strong></li>
+<li>每台zookeeper默认先投自己，然后向集群广播自己的选票</li>
+<li>收到对方的选票时，依次比较epoch（选举轮数）、zxid（事务id）、myid，较大者胜出，更新选票并广播</li>
+<li>如果收到的选票中有某个节点超过集群半数，则胜出当选为leader，其他节点为follower</li>
+</ol>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li><p>zookeeper集群的数量应为奇数：</p>
+<p>  <strong>因为根据paxos理论，只有集群中超过半数的节点还存活才能保证集群的一致性</strong>。假如目前集群有5个节点，我们最多允许2个节点不可用，因为3&gt;5\2。当集群扩容到6个节点的时候，我们仍然只能最多允许2个节点不可用，到3个节点不可用时，将不满足paxos理论，因为3&gt;6\2不成立。也就是说当集群节点数n为偶数时，其可用性与n-1是一样的，那我们何必多浪费一台机器呢？</p>
+</li>
+<li><p>由于zookeeper只允许mid大的节点连接到mid小的节点，我们启动zookeeper的顺序应该按照myid小的到myid大的，最后再启动leader节点！ </p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="迁移目标"><a href="#迁移目标" class="headerlink" title="迁移目标"></a>迁移目标</h2><p>迁移过程中要保证原zookeeper集群还是能提供服务，新zookeeper集群同步老集群的数据，将zookeeper url指向新集群的3个节点，停掉老zookeeper集群。</p>
+<p>相当于先扩容zookeeper,然后缩容zookeeper…</p>
+<h2 id="迁移步骤"><a href="#迁移步骤" class="headerlink" title="迁移步骤"></a>迁移步骤</h2><p>原有zookeeper集群(server1、server2、server3)zoo.cfg配置如下:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div></pre></td></tr></table></figure>
+<p>使用命令：<code>echo srvr | nc node{?} 2181</code>检查谁是leader({?}依次替换为1、2、3)</p>
+<p><strong>这里假设leader为node2.</strong>（按照正常情况，leader也理应是node2）</p>
+<h3 id="步骤1：新增节点4"><a href="#步骤1：新增节点4" class="headerlink" title="步骤1：新增节点4"></a>步骤1：新增节点4</h3><ol>
+<li>在<code>/data</code>目录创建mid文件，内容为4</li>
+<li><p>配置zoo.cfg,内容如下：</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动zookeeper：<code>{zookeeperDir}/bin/zkServer.sh start</code></p>
+</li>
+<li><p>检查所有节点是否提供服务，且集群中只有一个leader，例如以下命令:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">$ echo srvr | nc node1 <span class="number">2181</span></div><div class="line">Zookeeper version: <span class="number">3.4</span>.5-cdh5.7.0--<span class="number">1</span>, built on <span class="number">03</span>/<span class="number">23</span>/<span class="number">2016</span> <span class="number">18</span>:<span class="number">30</span> GMT</div><div class="line">Latency min/avg/max: <span class="number">0</span>/<span class="number">6</span>/<span class="number">190</span></div><div class="line">Received: <span class="number">16002</span></div><div class="line">Sent: <span class="number">19874</span></div><div class="line">Connections: <span class="number">1</span></div><div class="line">Outstanding: <span class="number">0</span></div><div class="line">Zxid: <span class="number">0x3b00004872</span></div><div class="line">Mode: leader</div><div class="line">Node count: <span class="number">334</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>可以看到Mode表示该节点的角色为leader。依次检查每一个节点,如果没有响应，或者出现多个leader，需要还原整个集群！</p>
+<h3 id="步骤2：新增节点5"><a href="#步骤2：新增节点5" class="headerlink" title="步骤2：新增节点5"></a>步骤2：新增节点5</h3><ol>
+<li>在<code>/data</code>目录创建mid文件，内容为5</li>
+<li><p>配置zoo.cfg,内容如下：</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动zookeeper：<code>{zookeeperDir}/bin/zkServer.sh start</code></p>
+</li>
+<li><p>检查所有节点是否提供服务，且集群中只有一个leader:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">$ echo srvr | nc node1 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node2 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node3 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node4 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node5 <span class="number">2181</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="步骤3：新增节点6"><a href="#步骤3：新增节点6" class="headerlink" title="步骤3：新增节点6"></a>步骤3：新增节点6</h3><ol>
+<li>在<code>/data</code>目录创建mid文件，内容为6</li>
+<li><p>配置zoo.cfg,内容如下：</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动zookeeper：<code>{zookeeperDir}/bin/zkServer.sh start</code></p>
+</li>
+<li><p>检查所有节点是否提供服务，且集群中只有一个leader:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">$ echo srvr | nc node1 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node2 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node3 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node4 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node5 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node6 <span class="number">2181</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="步骤4：更新节点4"><a href="#步骤4：更新节点4" class="headerlink" title="步骤4：更新节点4"></a>步骤4：更新节点4</h3><ol>
+<li><p>修改节点4的配置如下：</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+</li>
+<li><p>重启节点4的zookeeper：<code>{zookeeperDir}/bin/zkServer.sh restart</code></p>
+</li>
+<li><p>检查所有节点是否提供服务，且集群中只有一个leader:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">$ echo srvr | nc node1 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node2 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node3 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node4 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node5 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node6 <span class="number">2181</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="步骤5：更新节点5"><a href="#步骤5：更新节点5" class="headerlink" title="步骤5：更新节点5"></a>步骤5：更新节点5</h3><p>同步骤4</p>
+<h3 id="步骤6：更新老集群节点1"><a href="#步骤6：更新老集群节点1" class="headerlink" title="步骤6：更新老集群节点1"></a>步骤6：更新老集群节点1</h3><ol>
+<li><p>修改节点1的配置如下：</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+</li>
+<li><p>重启节点4的zookeeper：<code>{zookeeperDir}/bin/zkServer.sh restart</code></p>
+</li>
+<li><p>检查所有节点是否提供服务，且集群中只有一个leader:</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">$ echo srvr | nc node1 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node2 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node3 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node4 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node5 <span class="number">2181</span></div><div class="line">...</div><div class="line">$ echo srvr | nc node6 <span class="number">2181</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="步骤7：更新老集群节点3"><a href="#步骤7：更新老集群节点3" class="headerlink" title="步骤7：更新老集群节点3"></a>步骤7：更新老集群节点3</h3><p>同步骤6</p>
+<h3 id="步骤8：更新老集群节点2"><a href="#步骤8：更新老集群节点2" class="headerlink" title="步骤8：更新老集群节点2"></a>步骤8：更新老集群节点2</h3><p><strong>最后更新leader节点：node2</strong>，同步骤6</p>
+<p>ps:这时候如果没有读写zookeeper操作，集群的leader将变为节点6（因为节点6的myid最大）</p>
+<h3 id="步骤9：将原有zookeeper的url指向新的节点"><a href="#步骤9：将原有zookeeper的url指向新的节点" class="headerlink" title="步骤9：将原有zookeeper的url指向新的节点"></a>步骤9：将原有zookeeper的url指向新的节点</h3><p>运维修改nginx配置，zookeeper url（例如pro1.zookeeper.so、pro2.zookeeper.so、pro3.zookeeper.so）指向node4，node5，node6</p>
+<p>相关业务系统重启（避免cdh缓存）</p>
+<h3 id="步骤10：老zookeeper集群下线"><a href="#步骤10：老zookeeper集群下线" class="headerlink" title="步骤10：老zookeeper集群下线"></a>步骤10：老zookeeper集群下线</h3><p><strong>这一步需要等待所有的业务系统都重启之后。</strong></p>
+<p>这时候还是得一台一台关闭（下线），因为假如同时关闭node1和node2，那当重启node3的时候集群将不可用（没有超过集群半数的节点存活）</p>
+<h4 id="步骤10-1：下线zookeeper老集群中的节点1"><a href="#步骤10-1：下线zookeeper老集群中的节点1" class="headerlink" title="步骤10.1：下线zookeeper老集群中的节点1"></a>步骤10.1：下线zookeeper老集群中的节点1</h4><p>关闭node1: <code>{zookeeperDir}/bin/zkServer.sh stop</code></p>
+<p>依次修改node2，3，4，5，6的配置，并且重启，配置如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+<p>重启后检查所有节点是否提供服务，且集群中只有一个leader。</p>
+<p>ps:这时候如果没有读写zookeeper操作，leader将变成node5，因为node6节点重启的时候，集群重新选举，node5的myid最大</p>
+<h4 id="步骤10-2：下线zookeeper老集群中的节点2"><a href="#步骤10-2：下线zookeeper老集群中的节点2" class="headerlink" title="步骤10.2：下线zookeeper老集群中的节点2"></a>步骤10.2：下线zookeeper老集群中的节点2</h4><p>关闭node2: <code>{zookeeperDir}/bin/zkServer.sh stop</code></p>
+<p>依次修改node3，4，5，6的配置，并且重启，配置如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.3=node3:3181:4181</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+<p>重启后检查所有节点是否提供服务，且集群中只有一个leader。</p>
+<p>ps:这时候如果没有读写zookeeper操作，leader将重新变成node6</p>
+<h4 id="步骤10-3：下线zookeeper老集群中的节点3"><a href="#步骤10-3：下线zookeeper老集群中的节点3" class="headerlink" title="步骤10.3：下线zookeeper老集群中的节点3"></a>步骤10.3：下线zookeeper老集群中的节点3</h4><p>关闭node3: <code>{zookeeperDir}/bin/zkServer.sh stop</code></p>
+<p>依次修改node4，5，6的配置，并且重启，配置如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.4=node4:3181:4181</div><div class="line">server.5=node5:3181:4181</div><div class="line">server.6=node6:3181:4181</div></pre></td></tr></table></figure>
+<p>重启后检查所有节点是否提供服务，且集群中只有一个leader。</p>
+<p>ps:这时候如果没有读写zookeeper操作，node5将成为最终的leader</p>
+<p>结束。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/zookeeper/" rel="tag"># zookeeper</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/21/howto-handle-java-oom/" rel="next" title="线上java项目OOM快速定位与解决方法">
+                <i class="fa fa-chevron-left"></i> 线上java项目OOM快速定位与解决方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/08/29/howto-zookeeper-move/"
+           data-title="zookeeper迁移(扩容/缩容)实践" data-url="https://zacard.net/2017/08/29/howto-zookeeper-move/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">46</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">74</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-block">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://www.dingdangss.com/" title="DingDang's Notes" target="_blank">DingDang's Notes</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper选举原理"><span class="nav-number">2.</span> <span class="nav-text">zookeeper选举原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#快速选举FastLeaderElection"><span class="nav-number">2.1.</span> <span class="nav-text">快速选举FastLeaderElection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注意事项"><span class="nav-number">2.2.</span> <span class="nav-text">注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迁移目标"><span class="nav-number">3.</span> <span class="nav-text">迁移目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迁移步骤"><span class="nav-number">4.</span> <span class="nav-text">迁移步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤1：新增节点4"><span class="nav-number">4.1.</span> <span class="nav-text">步骤1：新增节点4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤2：新增节点5"><span class="nav-number">4.2.</span> <span class="nav-text">步骤2：新增节点5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤3：新增节点6"><span class="nav-number">4.3.</span> <span class="nav-text">步骤3：新增节点6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤4：更新节点4"><span class="nav-number">4.4.</span> <span class="nav-text">步骤4：更新节点4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤5：更新节点5"><span class="nav-number">4.5.</span> <span class="nav-text">步骤5：更新节点5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤6：更新老集群节点1"><span class="nav-number">4.6.</span> <span class="nav-text">步骤6：更新老集群节点1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤7：更新老集群节点3"><span class="nav-number">4.7.</span> <span class="nav-text">步骤7：更新老集群节点3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤8：更新老集群节点2"><span class="nav-number">4.8.</span> <span class="nav-text">步骤8：更新老集群节点2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤9：将原有zookeeper的url指向新的节点"><span class="nav-number">4.9.</span> <span class="nav-text">步骤9：将原有zookeeper的url指向新的节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤10：老zookeeper集群下线"><span class="nav-number">4.10.</span> <span class="nav-text">步骤10：老zookeeper集群下线</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤10-1：下线zookeeper老集群中的节点1"><span class="nav-number">4.10.1.</span> <span class="nav-text">步骤10.1：下线zookeeper老集群中的节点1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤10-2：下线zookeeper老集群中的节点2"><span class="nav-number">4.10.2.</span> <span class="nav-text">步骤10.2：下线zookeeper老集群中的节点2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤10-3：下线zookeeper老集群中的节点3"><span class="nav-number">4.10.3.</span> <span class="nav-text">步骤10.3：下线zookeeper老集群中的节点3</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>
