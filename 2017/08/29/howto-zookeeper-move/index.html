@@ -96,7 +96,7 @@ zookee">
 <meta property="og:description" content="背景由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。
 由于大量项目使用dubbo且依赖zookeeper作为注册中心，zookeeper的不稳定可能是致命的，所以计划先将zookeeper迁出到3台独立的节点，在此记录下迁移方案。
 zookee">
-<meta property="og:updated_time" content="2017-08-30T06:24:53.000Z">
+<meta property="og:updated_time" content="2017-09-18T06:08:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="zookeeper迁移(扩容/缩容)实践">
 <meta name="twitter:description" content="背景由于一些历史原因，目前zookeeper集群（3个节点）和elasticsearch、hadoop部署在一起，导致几个组件相互影响，性能也逐渐下降。甚至出现某个组件异常（例如oom）导致了其他组件不可用。
@@ -429,6 +429,7 @@ zookee">
 <h2 id="迁移步骤"><a href="#迁移步骤" class="headerlink" title="迁移步骤"></a>迁移步骤</h2><p>原有zookeeper集群(server1、server2、server3)zoo.cfg配置如下:</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 省略其他配置</div><div class="line">dataDir=/data</div><div class="line">server.1=node1:3181:4181</div><div class="line">server.2=node2:3181:4181</div><div class="line">server.3=node3:3181:4181</div></pre></td></tr></table></figure>
 <p>使用命令：<code>echo srvr | nc node{?} 2181</code>检查谁是leader({?}依次替换为1、2、3)</p>
+<p>ps：也可以用<code>echo stat | nc node{?} 2181</code>显示更详细信息</p>
 <p><strong>这里假设leader为node2.</strong>（按照正常情况，leader也理应是node2）</p>
 <h3 id="步骤1：新增节点4"><a href="#步骤1：新增节点4" class="headerlink" title="步骤1：新增节点4"></a>步骤1：新增节点4</h3><ol>
 <li>在<code>/data</code>目录创建mid文件，内容为4</li>
