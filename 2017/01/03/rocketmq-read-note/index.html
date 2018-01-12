@@ -98,7 +98,7 @@ kafka异步刷盘，异步">
 数据可靠性
 rocketmq支持异步/同步刷盘,异步/同步复制
 kafka异步刷盘，异步">
-<meta property="og:updated_time" content="2017-01-04T09:05:48.000Z">
+<meta property="og:updated_time" content="2018-01-12T13:37:11.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RocketMQ阅读笔记">
 <meta name="twitter:description" content="为何选择rocketmq选型时主要对比了kafka和rocketmq。两者还是存在较大差异的，kafka一开始的定位就是日志收集，对于订单、交易等可靠传输场景不能很好满足（消息丢失、消息重复消费等方面）。并且rocketmq是使用java编写的，相对于scala编写的kafka，我们有更大的定制与扩展的空间。
@@ -415,6 +415,7 @@ kafka异步刷盘，异步">
 <li>kafka异步刷盘，异步/同步复制</li>
 </ul>
 <p>刷盘效率上应该是rocketmq更高。因为rocketmq的消息都写到一个文件中，而kafka的每个分区对应一个文件，rocketmq可以充分利用IO组commit机制批量传输数据。</p>
+<a id="more"></a>
 <h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><ul>
 <li>kafka单机协议TPS约在100w/s，消息大小为10字节</li>
 <li>rocketmq单机写入TPS单实例约为7W/s,单机3个broker，可以跑到12w/s,消息大小为10字节</li>
