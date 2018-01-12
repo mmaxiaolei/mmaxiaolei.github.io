@@ -294,6 +294,338 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2018/01/12/deeplearning-1/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/01/12/deeplearning-1/" itemprop="url">
+                  深度学习记录 - 初步概念
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-12T20:59:17+08:00">
+                2018-01-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2018/01/12/deeplearning-1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/01/12/deeplearning-1/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2018/01/12/deeplearning-1/" class="leancloud_visitors" data-flag-title="深度学习记录 - 初步概念">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/dl-1.png" alt=""></p>
+<p>仅以此图，催眠我学习deep learning的动力！</p>
+<blockquote>
+<p>深度学习的实质无非如此：根据模型产生的误差调整模型中的诸多权重，直到误差不能再减少为止</p>
+</blockquote>
+<h2 id="Bias（偏差）-amp-Variance（方差）-amp-Error-误差-的区别"><a href="#Bias（偏差）-amp-Variance（方差）-amp-Error-误差-的区别" class="headerlink" title="Bias（偏差）&amp;Variance（方差）&amp;Error(误差)的区别"></a>Bias（偏差）&amp;Variance（方差）&amp;Error(误差)的区别</h2><p>首先<code>Error = Bias + Variance</code></p>
+<ul>
+<li><code>Error</code>反映的是整个模型的准确度</li>
+<li><code>Bias</code>反映的是模型在样本上的输出与真实值之间的误差，即模型本身的<strong>精准度</strong></li>
+<li><code>Variance</code>反映的是模型每一次输出结果与模型输出期望之间的误差，即模型的<strong>精确性</strong></li>
+</ul>
+<p>在一个实际系统中，<strong>Bias与Variance往往是不能兼得的</strong>。如果要降低模型的Bias，就一定程度上会提高模型的Variance，反之亦然。造成这种现象的根本原因是，<strong>我们总是希望试图用有限训练样本去估计无限的真实数据</strong>。当我们更加相信这些数据的真实性，而忽视对模型的先验知识，就会尽量保证模型在训练样本上的准确度，这样可以减少模型的Bias。但是，这样学习到的模型，很可能会失去一定的泛化能力，从而造成<strong>过拟合</strong>，降低模型在真实数据上的表现，增加模型的不确定性。相反，如果更加相信我们对于模型的先验知识，在学习模型的过程中对模型增加更多的限制，就可以降低模型的variance，提高模型的稳定性，但也会使模型的Bias增大。<strong>Bias与Variance两者之间的trade-off(权衡)是机器学习的基本主题之一</strong>。</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/dnn-bias-variance.jpg" alt=""></p>
+<ul>
+<li>准：bias描述的是根据样本拟合出的模型的输出预测结果的期望与样本真实结果的差距，简单讲，就是在样本上拟合的好不好。要想在bias上表现好，low bias，就得复杂化模型，增加模型的参数，但这样容易过拟合 (overfitting)，过拟合对应上图是high variance，点很分散。low bias对应就是点都打在靶心附近，所以瞄的是准的，但手不一定稳。</li>
+<li>确：varience描述的是样本上训练出来的模型在测试集上的表现，要想在variance上表现好，low varience，就要简化模型，减少模型的参数，但这样容易欠拟合(unfitting)，欠拟合对应上图是high bias，点偏离中心。low variance对应就是点都打的很集中，但不一定是靶心附近，手很稳，但是瞄的不准。</li>
+</ul>
+<h2 id="什么是欠拟合-unfitting-amp-过拟合-overfitting"><a href="#什么是欠拟合-unfitting-amp-过拟合-overfitting" class="headerlink" title="什么是欠拟合(unfitting)&amp;过拟合(overfitting)"></a>什么是欠拟合(unfitting)&amp;过拟合(overfitting)</h2><p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/dnn-fit.png" alt=""></p>
+<ul>
+<li>欠拟合就是模型能力不足，偏差大。(图1：higt bias)</li>
+<li>过拟合就是模型对于训练数据拟合过于完美，方差大。(图3：high variance)</li>
+</ul>
+<h3 id="如何解决欠拟合"><a href="#如何解决欠拟合" class="headerlink" title="如何解决欠拟合"></a>如何解决欠拟合</h3><p>调整模型参数，增加样本数量</p>
+<h3 id="如何解决过拟合"><a href="#如何解决过拟合" class="headerlink" title="如何解决过拟合"></a>如何解决过拟合</h3><p>减少特征数量，手动选择一些需要保留的特征，<strong>正则化(regularization)</strong>。常见正则化有<strong>L2正则(常用)</strong>，L1正则</p>
+<p>ps:<strong>所以正则化就是为了解决过拟合</strong>，why？</p>
+<h2 id="模型参数-amp-超参数"><a href="#模型参数-amp-超参数" class="headerlink" title="模型参数&amp;超参数"></a>模型参数&amp;超参数</h2><ul>
+<li><strong>模型参数</strong>就是模型内部的配置变量，可以用数据估计它的值</li>
+<li><strong>模型超参数</strong>是模型外部的配置，其值不能从数据估计得到</li>
+</ul>
+<p>模型参数的一些例子包括：</p>
+<ul>
+<li><strong>神经网络中的权重</strong></li>
+<li>支持向量机中的支持向量</li>
+<li>线性回归或逻辑回归中的系数</li>
+</ul>
+<blockquote>
+<p>参数用来处理输入数据的系数，神经网络在学习过程中不断调整参数，直至能准确预测――此时就得到了一个比较准确的模型</p>
+</blockquote>
+<p>模型超参数的一些例子包括：</p>
+<ul>
+<li><strong>训练神经网络的学习速率(learning rate)</strong></li>
+<li>支持向量机的C和sigma超参数</li>
+<li>k邻域中的k</li>
+</ul>
+<blockquote>
+<p>每一项超参数就如同一道菜里的一种食材：取决于食材好坏，这道菜也许非常可口，也可能十分难吃……</p>
+</blockquote>
+<h2 id="神经网络的激活函数"><a href="#神经网络的激活函数" class="headerlink" title="神经网络的激活函数"></a>神经网络的激活函数</h2><p>为什么要有激活函数？加入激活函数是用来加入非线性因素的，解决线性模型所不能解决或者很难解决的问题。<a href="https://www.zhihu.com/question/22334626" target="_blank" rel="external">参考link</a></p>
+<blockquote>
+<p>输出层的激活函数相当于逻辑回归函数，例如softmax。该层函数的选择具体取决于你更能容忍哪一类的错误：选择标准过低会增加取伪错误的数量，标准过高会增加弃真错误的数量</p>
+</blockquote>
+<h2 id="归一化"><a href="#归一化" class="headerlink" title="归一化"></a>归一化</h2><p>归一化方法：把数变为（0，1）之间的小数。主要是为了数据处理方便提出来的，把数据映射到0～1范围之内处理，更加便捷快速。加快收敛，把各个特征的尺度控制在相同的范围内,加快<strong>梯度下降</strong></p>
+<h2 id="梯度下降"><a href="#梯度下降" class="headerlink" title="梯度下降"></a>梯度下降</h2><p>常见的为随机梯度下降(Stochastic Gradient Descent，SGD).<strong>是一种用于优化代价函数的常见方法</strong>. – 参考Andrew Ng的机器学习课程第2节</p>
+<h2 id="学习速率（learning-rate）"><a href="#学习速率（learning-rate）" class="headerlink" title="学习速率（learning rate）"></a>学习速率（learning rate）</h2><p>即每次迭代时对于权重的调整幅度，亦称步幅。学习速率越高，神经网络“翻越”整个误差曲面的速度就越快，但也更容易错过误差极小点。学习速率较低时，网络更有可能找到极小值，但速度会变得非常慢，因为每次权重调整的幅度都比较小.</p>
+<blockquote>
+<p>其实就是梯度下降每次下降的步幅</p>
+</blockquote>
+<h2 id="动量（Momentum）"><a href="#动量（Momentum）" class="headerlink" title="动量（Momentum）"></a>动量（Momentum）</h2><p>动量是另一项决定优化算法向最优值收敛的速度的因素。</p>
+<p>如果您想要加快定型速度，可以提高动量。但定型速度加快可能会降低模型的准确率。</p>
+<p>更深入来看，动量是一个范围在0～1之间的变量，是矩阵变化速率的导数的因数。它会影响权重随时间变化的速率。</p>
+<h2 id="什么是隐层-hidden-layer"><a href="#什么是隐层-hidden-layer" class="headerlink" title="什么是隐层(hidden layer)"></a>什么是隐层(hidden layer)</h2><p>隐藏层中的每个节点表示数据集中数据的一项特征。模型的系数按照重要性大小为这些特征赋予权重，随后在每个隐藏层中重新相加，帮助预测。节点的层数更多，网络就能处理更复杂的因素，捕捉更多细节，进而做出更准确的预测。</p>
+<p>之所以将中间的层称为“隐藏”层，是因为<strong>人们可以看到数据输入神经网络、判定结果输出，但网络内部的数据处理方式和原理并非一目了然</strong>。神经网络模型的参数其实就是包含许多数字、计算机可以读取的长向量</p>
+<h2 id="如何选择神经网络"><a href="#如何选择神经网络" class="headerlink" title="如何选择神经网络"></a>如何选择神经网络</h2><p>下表列出了各种不同的问题和每种问题最适用的神经网络：</p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>应用案例</th>
+<th>输入</th>
+<th>变换</th>
+<th>神经网络</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文本</td>
+<td>情感分析</td>
+<td>词向量</td>
+<td>高斯修正</td>
+<td>RNTN或DBN（采用移动窗口）</td>
+</tr>
+<tr>
+<td>文本</td>
+<td>命名实体识别</td>
+<td>词向量</td>
+<td>高斯修正</td>
+<td>RNTN或DBN（采用移动窗口）</td>
+</tr>
+<tr>
+<td>文本</td>
+<td>词性标注</td>
+<td>词向量</td>
+<td>高斯修正</td>
+<td>RNTN或DBN（采用移动窗口）</td>
+</tr>
+<tr>
+<td>文本</td>
+<td>词性标注</td>
+<td>词向量</td>
+<td>高斯修正</td>
+<td>RNTN或DBN（采用移动窗口）</td>
+</tr>
+<tr>
+<td>文本</td>
+<td>语义角色标记</td>
+<td>词向量</td>
+<td>高斯修正</td>
+<td>RNTN或DBN（采用移动窗口）</td>
+</tr>
+<tr>
+<td>文档</td>
+<td>主题建模/语义哈希（无监督）</td>
+<td>词频概率</td>
+<td>可为二进制</td>
+<td>深度自动编码器（包装一个DBN或SDA）</td>
+</tr>
+<tr>
+<td>文档</td>
+<td>文档分类（有监督）</td>
+<td>TF-IDF（或词频概率）</td>
+<td>二进制</td>
+<td>深度置信网络、堆叠式降噪自动编码器</td>
+</tr>
+<tr>
+<td>图像</td>
+<td>图像识别</td>
+<td>二进制</td>
+<td>二进制（可见及隐藏层）</td>
+<td>深度置信网络</td>
+</tr>
+<tr>
+<td>图像</td>
+<td>图像识别</td>
+<td>连续</td>
+<td>高斯修正</td>
+<td>深度置信网络</td>
+</tr>
+<tr>
+<td>图像</td>
+<td>多对象识别</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>卷积网络、RNTN（图像向量化）</td>
+</tr>
+<tr>
+<td>图像</td>
+<td>图像搜索/语义哈希</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>深度自动编码器（包装一个DBN）</td>
+</tr>
+<tr>
+<td>声音</td>
+<td>语音识别</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>循环网络</td>
+</tr>
+<tr>
+<td>声音</td>
+<td>语音识别</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>移动窗口，DBN或卷积网络</td>
+</tr>
+<tr>
+<td>时间序列</td>
+<td>预测分析</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>循环网络</td>
+</tr>
+<tr>
+<td>时间序列</td>
+<td>预测分析</td>
+<td>N/A</td>
+<td>高斯修正</td>
+<td>移动窗口，DBN或卷积网络</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注</strong>：高斯修正 = Gaussian Rectified | 语义哈希 = Semantic Hashing</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/11/06/apm-share/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1829,171 +2161,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/12/02/netty-hashedwheeltimer/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/12/02/netty-hashedwheeltimer/" itemprop="url">
-                  netty源码解读之时间轮算法实现-HashedWheelTimer
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-12-02T09:51:38+08:00">
-                2016-12-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/12/02/netty-hashedwheeltimer/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/02/netty-hashedwheeltimer/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/12/02/netty-hashedwheeltimer/" class="leancloud_visitors" data-flag-title="netty源码解读之时间轮算法实现-HashedWheelTimer">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="前因"><a href="#前因" class="headerlink" title="前因"></a>前因</h2><p>由于netty动辄管理100w+的连接，每一个连接都会有很多超时任务。比如发送超时、心跳检测间隔等，如果每一个定时任务都启动一个<code>Timer</code>,不仅低效，而且会消耗大量的资源。</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>根据George Varghese 和 Tony Lauck 1996 年的论文：<a href="http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z">Hashed and Hierarchical Timing Wheels: data structures to efficiently implement a timer facility</a>。提出了一种定时轮的方式来管理和维护大量的<code>Timer</code>调度.</p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>时间轮其实就是一种环形的数据结构，可以想象成时钟，分成很多格子，一个格子代码一段时间（这个时间越短，<code>Timer</code>的精度越高）。并用一个链表报错在该格子上的到期任务，同时一个指针随着时间一格一格转动，并执行相应格子中的到期任务。任务通过<code>取摸</code>决定放入那个格子。如下图所示：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/netty-hasedwheeltimer1.png" alt=""></p>
-<p>以上图为例，假设一个格子是1秒，则整个wheel能表示的时间段为8s，假如当前指针指向2，此时需要调度一个3s后执行的任务，显然应该加入到(2+3=5)的方格中，指针再走3次就可以执行了；如果任务要在10s后执行，应该等指针走完一个round零2格再执行，因此应放入4，同时将round（1）保存到任务中。检查到期任务时应当只执行round为0的，格子上其他任务的round应减1。</p>
-<p>是不是很像java中的<code>Hashmap</code>。其实就是<code>HashMap</code>的哈希拉链算法，只不过多了指针转动与一些定时处理的逻辑。所以其相关的操作和<code>HashMap</code>也一致：</p>
-<ul>
-<li>添加任务：O(1)</li>
-<li>删除/取消任务：O(1)</li>
-<li>过期/执行任务：最差情况为O(n)-&gt;也就是当<code>HashMap</code>里面的元素全部hash冲突，退化为一条链表的情况。平均O(1)-&gt;显然，格子越多，每个格子上的链表就越短，这里需要权衡时间与空间。</li>
-</ul>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/12/02/netty-hashedwheeltimer/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2039,7 +2206,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">48</span>
+              <span class="site-state-item-count">49</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -2056,7 +2223,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">77</span>
+                <span class="site-state-item-count">79</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -2139,7 +2306,7 @@
         <div class="copyright" >
   
   &copy;  2015 - 
-  <span itemprop="copyrightYear">2017</span>
+  <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

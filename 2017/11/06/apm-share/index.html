@@ -114,7 +114,7 @@
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/TraceSegmentCollector.png">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/trace-zy-1.png">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/trace-zy-2.png">
-<meta property="og:updated_time" content="2017-11-07T08:22:43.000Z">
+<meta property="og:updated_time" content="2017-11-07T08:33:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式追踪系统x-apm开发经历分享">
 <meta name="twitter:description" content="感谢@dingdang对开发的强力支持。
@@ -518,7 +518,7 @@
 </ol>
 <h4 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h4><ul>
 <li>flume是个集群，单点故障可以无视，有重试机制。当全部flume都挂了的时候，agent端的数据将全部丢失，并且agent端将进入每隔30s的无限重连flume操作</li>
-<li>agent的异常被全局catch，输出到日志，后面spark日志实时流分析对预警。</li>
+<li>agent的异常被全局catch，输出到日志，后面spark日志实时流分析预警。</li>
 <li>agent的升级比较简单，由于项目使用docker部署，所以升级的时候，只要替换docker仓库中的基础镜像中的agent包即可。</li>
 </ul>
 <h2 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h2><p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/trace-zy-1.png" alt=""></p>
@@ -586,6 +586,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/12/deeplearning-1/" rel="prev" title="深度学习记录 - 初步概念">
+                深度学习记录 - 初步概念 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -660,7 +664,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">48</span>
+              <span class="site-state-item-count">49</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -677,7 +681,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">77</span>
+                <span class="site-state-item-count">79</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -776,7 +780,7 @@
         <div class="copyright" >
   
   &copy;  2015 - 
-  <span itemprop="copyrightYear">2017</span>
+  <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
