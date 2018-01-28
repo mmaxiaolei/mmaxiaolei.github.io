@@ -111,7 +111,7 @@ V">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/dl-1.png">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/dnn-bias-variance.jpg">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/dnn-fit.png">
-<meta property="og:updated_time" content="2018-01-12T13:33:27.000Z">
+<meta property="og:updated_time" content="2018-01-19T08:06:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深度学习(deep learning)记录 - 初步概念">
 <meta name="twitter:description" content="仅以此图，催眠我学习deep learning的动力！
@@ -489,6 +489,12 @@ V">
 <h2 id="动量（Momentum）"><a href="#动量（Momentum）" class="headerlink" title="动量（Momentum）"></a>动量（Momentum）</h2><p>动量是另一项决定优化算法向最优值收敛的速度的因素。</p>
 <p>如果您想要加快定型速度，可以提高动量。但定型速度加快可能会降低模型的准确率。</p>
 <p>更深入来看，动量是一个范围在0～1之间的变量，是矩阵变化速率的导数的因数。它会影响权重随时间变化的速率。</p>
+<p>训练网络时，通常先对网络的初始权值按照某种分布进行初始化，如：高斯分布。初始化权值操作对最终网络的性能影响比较大，合适的网络初始权值能够使得损失函数在训练过程中的收敛速度更快，从而获得更好的优化结果。但是按照某类分布随机初始化网络权值时，存在一些不确定因素，并不能保证每一次初始化操作都能使得网络的初始权值处在一个合适的状态。不恰当的初始权值可<br>能使得网络的损失函数在训练过程中陷入局部最小值，达不到全局最优的状态。因此，如何消除这种不确定性，是训练深度网络是必须解决的一个问题。 </p>
+<p>momentum 动量能够在一定程度上解决这个问题。momentum 动量是依据物理学的势能与动能之间能量转换原理提出来的。当 momentum 动量越大时，其转换为势能的能量也就越大，就越有可能摆脱局部凹域的束缚，进入全局凹域。momentum 动量主要用在权重更新的时候。</p>
+<p>一般，神经网络在更新权值时，采用如下公式: <code>w = w - learning_rate * dw</code>,引入momentum后，采用如下公式：</p>
+<p><code>v = mu * v - learning_rate * dw</code></p>
+<p><code>w = w + v</code></p>
+<p>其中，v初始化为0，mu是设定的一个超变量，最常见的设定值是0.9。可以这样理解上式：如果上次的momentum(v)与这次的负梯度方向是相同的，那这次下降的幅度就会加大，从而加速收敛。</p>
 <h2 id="什么是隐层-hidden-layer"><a href="#什么是隐层-hidden-layer" class="headerlink" title="什么是隐层(hidden layer)"></a>什么是隐层(hidden layer)</h2><p>隐藏层中的每个节点表示数据集中数据的一项特征。模型的系数按照重要性大小为这些特征赋予权重，随后在每个隐藏层中重新相加，帮助预测。节点的层数更多，网络就能处理更复杂的因素，捕捉更多细节，进而做出更准确的预测。</p>
 <p>之所以将中间的层称为“隐藏”层，是因为<strong>人们可以看到数据输入神经网络、判定结果输出，但网络内部的数据处理方式和原理并非一目了然</strong>。神经网络模型的参数其实就是包含许多数字、计算机可以读取的长向量</p>
 <h2 id="如何选择神经网络"><a href="#如何选择神经网络" class="headerlink" title="如何选择神经网络"></a>如何选择神经网络</h2><p>下表列出了各种不同的问题和每种问题最适用的神经网络：</p>
@@ -671,6 +677,10 @@ V">
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/01/28/machelearning-1-entropy/" rel="prev" title="机器学习基础 - 熵&交叉熵&相对熵">
+                机器学习基础 - 熵&交叉熵&相对熵 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -744,7 +754,7 @@ V">
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">50</span>
+              <span class="site-state-item-count">51</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -761,7 +771,7 @@ V">
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">80</span>
+                <span class="site-state-item-count">81</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
