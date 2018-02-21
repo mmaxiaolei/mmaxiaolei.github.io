@@ -320,7 +320,7 @@
               
                 
                 <a class="post-title-link" href="/2018/02/13/java-syntethic-and-bridge-methods/" itemprop="url">
-                  分布式追踪系统x-apm开发拾遗之syntethic与bridge方法
+                  分布式追踪系统x-apm开发拾遗之synthetic与bridge方法
                 </a>
               
             
@@ -379,7 +379,7 @@
 
           
           
-             <span id="/2018/02/13/java-syntethic-and-bridge-methods/" class="leancloud_visitors" data-flag-title="分布式追踪系统x-apm开发拾遗之syntethic与bridge方法">
+             <span id="/2018/02/13/java-syntethic-and-bridge-methods/" class="leancloud_visitors" data-flag-title="分布式追踪系统x-apm开发拾遗之synthetic与bridge方法">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -405,8 +405,8 @@
 
       
         
-          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前开发x-apm的时候，自定义增强一个spring bean的时候，出现了一个奇怪的异常 – 找不到无参构造方法，导致bean初始化失败。原来是bytebuddy这个类库在增强类的时候，会自动增加一个syntethic的构造方法，导致spring无法找打正确的构造方法初始化。这里记录下syntethic方法和bridge方法。</p>
-<h2 id="syntethic方法"><a href="#syntethic方法" class="headerlink" title="syntethic方法"></a>syntethic方法</h2><p>syntethic方法是什么呢？先来看个实际例子：</p>
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前开发x-apm的时候，自定义增强一个spring bean的时候，出现了一个奇怪的异常 – 找不到无参构造方法，导致bean初始化失败。原来是bytebuddy这个类库在增强类的时候，会自动增加一个synthetic的构造方法，导致spring无法找打正确的构造方法初始化。这里记录下synthetic方法和bridge方法。</p>
+<h2 id="synthetic方法"><a href="#synthetic方法" class="headerlink" title="synthetic方法"></a>synthetic方法</h2><p>synthetic方法是什么呢？先来看个实际例子：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SyntheticTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> i;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setI</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.i = i;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</div><div class="line">        <span class="keyword">private</span> <span class="keyword">int</span> j;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">sum</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> j + i;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setJ</span><span class="params">(<span class="keyword">int</span> j)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.j = j;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        SyntheticTest syntheticTest = <span class="keyword">new</span> SyntheticTest();</div><div class="line">        A a = syntheticTest.new A();</div><div class="line">        a.setJ(<span class="number">1</span>);</div><div class="line">        System.out.println(<span class="string">"sum="</span> + a.sum());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-more-link text-center">
