@@ -1,0 +1,1143 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,false share,pad," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景之前开发分布式追踪系统x-apm的时候，确认了2个目标：
+
+x-apm的异常绝不能影响业务系统
+x-apm应该尽可能的少暂用系统资源的前提下，尽可能的快(实时)
+
+针对第2点，用来暂存追踪数据的数据结构碰到了伪共享的问题，导致收集发送的效率不够高，所以使用的缓存行填充。
+这里记录下伪共享和缓存行填充的相关内容。
+基础简介cpu cache一个典型的cpu cache架构：
+
+访问速度：寄存器&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式追踪系统x-apm拾遗之伪共享与缓存行填充">
+<meta property="og:url" content="https://zacard.net/2018/02/26/false-share/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="背景之前开发分布式追踪系统x-apm的时候，确认了2个目标：
+
+x-apm的异常绝不能影响业务系统
+x-apm应该尽可能的少暂用系统资源的前提下，尽可能的快(实时)
+
+针对第2点，用来暂存追踪数据的数据结构碰到了伪共享的问题，导致收集发送的效率不够高，所以使用的缓存行填充。
+这里记录下伪共享和缓存行填充的相关内容。
+基础简介cpu cache一个典型的cpu cache架构：
+
+访问速度：寄存器&amp;">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/cachelinepad-1.png">
+<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/cacheline-2.png">
+<meta property="og:updated_time" content="2018-02-26T13:40:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分布式追踪系统x-apm拾遗之伪共享与缓存行填充">
+<meta name="twitter:description" content="背景之前开发分布式追踪系统x-apm的时候，确认了2个目标：
+
+x-apm的异常绝不能影响业务系统
+x-apm应该尽可能的少暂用系统资源的前提下，尽可能的快(实时)
+
+针对第2点，用来暂存追踪数据的数据结构碰到了伪共享的问题，导致收集发送的效率不够高，所以使用的缓存行填充。
+这里记录下伪共享和缓存行填充的相关内容。
+基础简介cpu cache一个典型的cpu cache架构：
+
+访问速度：寄存器&amp;">
+<meta name="twitter:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/cachelinepad-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2018/02/26/false-share/"/>
+
+
+
+
+
+  <title> 分布式追踪系统x-apm拾遗之伪共享与缓存行填充 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2018/02/26/false-share/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                分布式追踪系统x-apm拾遗之伪共享与缓存行填充
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-26T20:03:18+08:00">
+                2018-02-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2018/02/26/false-share/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/02/26/false-share/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2018/02/26/false-share/" class="leancloud_visitors" data-flag-title="分布式追踪系统x-apm拾遗之伪共享与缓存行填充">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前开发分布式追踪系统x-apm的时候，确认了2个目标：</p>
+<ol>
+<li>x-apm的异常绝不能影响业务系统</li>
+<li>x-apm应该尽可能的少暂用系统资源的前提下，尽可能的快(实时)</li>
+</ol>
+<p>针对第2点，用来暂存追踪数据的数据结构碰到了伪共享的问题，导致收集发送的效率不够高，所以使用的缓存行填充。</p>
+<p>这里记录下伪共享和缓存行填充的相关内容。</p>
+<h2 id="基础简介"><a href="#基础简介" class="headerlink" title="基础简介"></a>基础简介</h2><h3 id="cpu-cache"><a href="#cpu-cache" class="headerlink" title="cpu cache"></a>cpu cache</h3><p>一个典型的cpu cache架构：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/cachelinepad-1.png" alt=""></p>
+<p>访问速度：寄存器&lt;L1 cache&lt;L2 cache&lt;L3 cache&lt;主存</p>
+<p>所以，充分利用它的结构和机制，可以有效的提高程序的性能</p>
+<p><strong>这里需要注意：一个cpu中的多核共享L3 cache,而L1、L2 cache是每个核心各自拥有的;一个缓存行一般缓存64byte大小的数据</strong></p>
+<a id="more"></a>
+<h3 id="cpu缓存一致性协议-MESI"><a href="#cpu缓存一致性协议-MESI" class="headerlink" title="cpu缓存一致性协议 - MESI"></a>cpu缓存一致性协议 - MESI</h3><p>在MESI协议中，每个Cache line有4个状态，可用2个bit表示，它们分别是： </p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M(Modified)</td>
+<td>这行数据有效，数据被修改了，和主存冲的数据不一致，数据只存在本Cache中</td>
+</tr>
+<tr>
+<td>E(Exclusive)</td>
+<td>这行数据有效，数据和内存中的数据一致，数据只存在于本Cache中</td>
+</tr>
+<tr>
+<td>S(Shard)</td>
+<td>这行数据有效，数据和内存中的数据一致，数据存在于很多Cache中</td>
+</tr>
+<tr>
+<td>I(Invalid)</td>
+<td>这行数据无效</td>
+</tr>
+</tbody>
+</table>
+<h4 id="MESI协议中的状态"><a href="#MESI协议中的状态" class="headerlink" title="MESI协议中的状态"></a>MESI协议中的状态</h4><ul>
+<li><p>M: 被修改（Modified)</p>
+<p>  该缓存行只被缓存在该CPU的缓存中，并且是被修改过的（dirty),即与主存中的数据不一致，该缓存行中的内存需要在未来的某个时间点（允许其它CPU读取请主存中相应内存之前）写回（write back）主存。</p>
+<p>  当被写回主存之后，该缓存行的状态会变成独享（exclusive)状态。</p>
+</li>
+<li><p>E: 独享的（Exclusive)</p>
+<p>  该缓存行只被缓存在该CPU的缓存中，它是未被修改过的（clean)，与主存中数据一致。该状态可以在任何时刻当有其它CPU读取该内存时变成共享状态（shared)。</p>
+<p>  同样地，当CPU修改该缓存行中内容时，该状态可以变成Modified状态。</p>
+</li>
+<li><p>S: 共享的（Shared)</p>
+<p>  该状态意味着该缓存行可能被多个CPU缓存，并且各个缓存中的数据与主存数据一致（clean)，当有一个CPU修改该缓存行中，</p>
+<p>  其它CPU中该缓存行可以被作废（变成无效状态（Invalid））。</p>
+</li>
+<li><p>I: 无效的 (Invalid)</p>
+<p>  该缓存行数据无效。</p>
+</li>
+</ul>
+<p>M(Modified)和E(Exclusive)状态的Cache line，数据是独有的，不同点在于M状态的数据是dirty的(和内存的不一致)，E状态的数据是clean的(和内存的一致)。</p>
+<p>S(Shared)状态的Cache line，数据和其他Core的Cache共享。只有clean的数据才能被多个Cache共享。</p>
+<p>一个缓存除在Invalid状态外都可以满足cpu的读请求，一个invalid的缓存行必须从主存中读取（变成S或者E状态）来满足该CPU的读请求</p>
+<h3 id="cache-line"><a href="#cache-line" class="headerlink" title="cache line"></a>cache line</h3><p>数据在缓存中不是以独立的项来存储的，如不是一个单独的变量，也不是一个单独的指针。缓存是由缓存行组成的，通常是64字节，并且它有效地引用主内存中的一块地址。一个Java的long类型是8字节，因此在一个缓存行中可以存8个long类型的变量。</p>
+<p>当缓存行加载数据的时候，会同时加载其后连续的一部分数据。所以你可以非常快速的遍历在连续的内存块中分配的任意数据结构。因此如果你数据结构中的项在内存中不是彼此相邻的（比如链表），你将得不到免费缓存加载所带来的优势。并且在这些数据结构中的每一个项都可能会出现缓存未命中</p>
+<h2 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h2><p>伪共享就是2个不同的数据恰好被加载到同一个缓存行中，不同cpu的核分别去修改该缓存行中的不同数据，却导致了相互竞争同一个缓存行。例如以下例子：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/cacheline-2.png" alt=""></p>
+<p>数据X、Y、Z被加载到同一Cache Line中，线程A在Core1修改X，线程B在Core2上修改Y。根据MESI大法，假设是Core1是第一个发起操作的CPU核，Core1上的L1 Cache Line由S（共享）状态变成M（修改，脏数据）状态，然后告知其他的CPU核，图例则是Core2，引用同一地址的Cache Line已经无效了；当Core2发起写操作时，首先导致Core1将X写回主存，Cache Line状态由M变为I（无效），而后才是Core2从主存重新读取该地址内容，Cache Line状态由I变成E（独占），最后进行修改Y操作， Cache Line从E变成M。可见多个线程操作在同一Cache Line上的不同数据，相互竞争同一Cache Line，导致线程彼此牵制影响，变成了串行程序，降低了并发性。</p>
+<h2 id="缓存行填充"><a href="#缓存行填充" class="headerlink" title="缓存行填充"></a>缓存行填充</h2><p>一般解决伪共享的方式就是缓存行填充，将频繁写的变量填充到64byte，不和其他变量加载到同一个缓存行即可。</p>
+<p>例如以下代码：(参考Disruptor作者的博客改写而来)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FalseSharingTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> THREAD_NUMBER = <span class="number">4</span>;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> WIRTER_NUMBER = <span class="number">800_000_000L</span>;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> PaddedLong[] ARRAY = <span class="keyword">new</span> PaddedLong[<span class="number">4</span>];</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingLong</span> </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">private</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6 = <span class="number">7L</span>;</div><div class="line"></div><div class="line">        <span class="comment">/**</span></div><div class="line">         * 阻止jvm优化掉无用的字段</div><div class="line">         */</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">preventOptimisation</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> p1 + p2 + p3 + p4 + p5 + p6;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddedLong</span> <span class="keyword">extends</span> <span class="title">PaddingLong</span> </span>&#123;</div><div class="line">        <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</div><div class="line">        CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(THREAD_NUMBER);</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; THREAD_NUMBER; i++) &#123;</div><div class="line">            <span class="keyword">final</span> <span class="keyword">int</span> index = i;</div><div class="line">            <span class="keyword">new</span> Thread(() -&gt; &#123;</div><div class="line">                ARRAY[index] = <span class="keyword">new</span> PaddedLong();</div><div class="line">                <span class="keyword">long</span> count = WIRTER_NUMBER;</div><div class="line">                <span class="keyword">while</span> (count-- != <span class="number">0</span>) &#123;</div><div class="line">                    ARRAY[index].value = count;</div><div class="line">                &#125;</div><div class="line">                countDownLatch.countDown();</div><div class="line">            &#125;).start();</div><div class="line">        &#125;</div><div class="line">        countDownLatch.await();</div><div class="line">        System.out.println(<span class="string">"耗时："</span> + (System.currentTimeMillis() - start));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>PaddedLong不继承PaddingLong的时候，即没有使用缓存行填充，程序执行时间甚至2倍于填充后</p>
+<p>JDK8后更智能，可以直接使用@sun.misc.Contended来标注需要填充的字段或者类（标注类表示，类中的所有字段都需要填充）。注意，jvm需要添加参数-XX:-RestrictContended才能开启此功能</p>
+<p>例如JDK8中的ConcurrentHashMap：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">// ConcurrentHashMap.java line:2506</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * A padded cell for distributing counts.  Adapted from LongAdder</div><div class="line">     * and Striped64.  See their internal docs for explanation.</div><div class="line">     */</div><div class="line">    <span class="meta">@sun</span>.misc.Contended <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CounterCell</span> </span>&#123;</div><div class="line">        <span class="keyword">volatile</span> <span class="keyword">long</span> value;</div><div class="line">        CounterCell(<span class="keyword">long</span> x) &#123; value = x; &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<h2 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h2><p>@sun.misc.Contended虽然很智能，但是需要jvm开启特定参数。对于中间件产品来说可能手动填充更合适。请看以下常见填充方式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingLong</span> </span>&#123;</div><div class="line"></div><div class="line">     <span class="keyword">private</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6 = <span class="number">7L</span>;</div><div class="line"></div><div class="line">     <span class="comment">/**</span></div><div class="line">      * 阻止jvm优化掉无用的字段</div><div class="line">      */</div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">preventOptimisation</span><span class="params">()</span> </span>&#123;</div><div class="line">         <span class="keyword">return</span> p1 + p2 + p3 + p4 + p5 + p6;</div><div class="line">     &#125;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddedLong</span> <span class="keyword">extends</span> <span class="title">PaddingLong</span> </span>&#123;</div><div class="line">     <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>以上是参考Disruptor作者的填充方式，也是很多开源产品的填充方式。</p>
+<p>作者只填充了6个long变量，也就是PaddedLong实例对象的内存占用大小为：<code>16(对象头大小)+6*8(填充变量大小)+1*8(被填充变量大小)=72byte&gt;64byte</code></p>
+<p>可以使用JOL工具(<a href="http://openjdk.java.net/projects/code-tools/jol/" target="_blank" rel="external">下载传送门</a>)查看对象内存布局来验证我们的预想：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">$ java -jar ~/tools/jol-cli-0.9-full.jar internals -cp algorithm-1.0-SNAPSHOT.jar com.zacard.algorithm.test.falseshare.PaddedLong</div><div class="line"></div><div class="line">$ com.zacard.algorithm.test.falseshare.PaddedLong object internals:</div><div class="line"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE</div><div class="line">      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)</div><div class="line">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</div><div class="line">      8     4        (object header)                           44 08 02 f8 (01000100 00001000 00000010 11111000) (-134084540)</div><div class="line">     12     4        (alignment/padding gap)</div><div class="line">     16     8   long PaddingLong.p1                            0</div><div class="line">     24     8   long PaddingLong.p2                            0</div><div class="line">     32     8   long PaddingLong.p3                            0</div><div class="line">     40     8   long PaddingLong.p4                            0</div><div class="line">     48     8   long PaddingLong.p5                            0</div><div class="line">     56     8   long PaddingLong.p6                            7</div><div class="line">     64     8   long PaddedLong.value                          0</div><div class="line">Instance size: 72 bytes</div><div class="line">Space losses: 4 bytes internal + 0 bytes external = 4 bytes total</div></pre></td></tr></table></figure>
+<p>可以看到填充的对象确实占用了72byte。</p>
+<p>看一下作者的解释（<a href="https://mechanical-sympathy.blogspot.jp/2011/08/false-sharing-java-7.html" target="_blank" rel="external">传送门</a>）：</p>
+<blockquote>
+<p>I do not want the mark word to be in the cache line which can be modified by taking out locks or the garbage collector ageing the object</p>
+<p>我不希望在缓存行中的对象头中的“mark word”在设置锁标记或者垃圾回收器在老化对象的时候被修改</p>
+</blockquote>
+<p>这里修改对象头中的锁标记应该能理解，因为当synchronized一个对象的时候，确实会修改对象头中的锁标记，这个也很可能会造成伪共享的问题。</p>
+<p>“garbage collector ageing the object”应该指的是对象挨过一次gc存活下来，需要修改对象头中的对象年龄。</p>
+<p>对于作者的严谨，我服…</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/false-share/" rel="tag"># false share</a>
+          
+            <a href="/tags/pad/" rel="tag"># pad</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/13/java-syntethic-and-bridge-methods/" rel="next" title="分布式追踪系统x-apm开发拾遗之synthetic与bridge方法">
+                <i class="fa fa-chevron-left"></i> 分布式追踪系统x-apm开发拾遗之synthetic与bridge方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2018/02/26/false-share/"
+           data-title="分布式追踪系统x-apm拾遗之伪共享与缓存行填充" data-url="https://zacard.net/2018/02/26/false-share/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">55</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">87</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-block">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://www.dingdangss.com/" title="DingDang's Notes" target="_blank">DingDang's Notes</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础简介"><span class="nav-number">2.</span> <span class="nav-text">基础简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cpu-cache"><span class="nav-number">2.1.</span> <span class="nav-text">cpu cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cpu缓存一致性协议-MESI"><span class="nav-number">2.2.</span> <span class="nav-text">cpu缓存一致性协议 - MESI</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MESI协议中的状态"><span class="nav-number">2.2.1.</span> <span class="nav-text">MESI协议中的状态</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache-line"><span class="nav-number">2.3.</span> <span class="nav-text">cache line</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伪共享"><span class="nav-number">3.</span> <span class="nav-text">伪共享</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存行填充"><span class="nav-number">4.</span> <span class="nav-text">缓存行填充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思考"><span class="nav-number">5.</span> <span class="nav-text">思考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>

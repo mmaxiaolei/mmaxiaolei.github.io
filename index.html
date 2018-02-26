@@ -294,6 +294,172 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2018/02/26/false-share/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/02/26/false-share/" itemprop="url">
+                  分布式追踪系统x-apm拾遗之伪共享与缓存行填充
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-26T20:03:18+08:00">
+                2018-02-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2018/02/26/false-share/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/02/26/false-share/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2018/02/26/false-share/" class="leancloud_visitors" data-flag-title="分布式追踪系统x-apm拾遗之伪共享与缓存行填充">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前开发分布式追踪系统x-apm的时候，确认了2个目标：</p>
+<ol>
+<li>x-apm的异常绝不能影响业务系统</li>
+<li>x-apm应该尽可能的少暂用系统资源的前提下，尽可能的快(实时)</li>
+</ol>
+<p>针对第2点，用来暂存追踪数据的数据结构碰到了伪共享的问题，导致收集发送的效率不够高，所以使用的缓存行填充。</p>
+<p>这里记录下伪共享和缓存行填充的相关内容。</p>
+<h2 id="基础简介"><a href="#基础简介" class="headerlink" title="基础简介"></a>基础简介</h2><h3 id="cpu-cache"><a href="#cpu-cache" class="headerlink" title="cpu cache"></a>cpu cache</h3><p>一个典型的cpu cache架构：</p>
+<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/cachelinepad-1.png" alt=""></p>
+<p>访问速度：寄存器&lt;L1 cache&lt;L2 cache&lt;L3 cache&lt;主存</p>
+<p>所以，充分利用它的结构和机制，可以有效的提高程序的性能</p>
+<p><strong>这里需要注意：一个cpu中的多核共享L3 cache,而L1、L2 cache是每个核心各自拥有的;一个缓存行一般缓存64byte大小的数据</strong></p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2018/02/26/false-share/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2018/02/13/java-syntethic-and-bridge-methods/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1768,172 +1934,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/08/21/howto-handle-java-oom/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/08/21/howto-handle-java-oom/" itemprop="url">
-                  线上java项目OOM快速定位与解决方法
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-08-21T18:33:22+08:00">
-                2017-08-21
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2017/08/21/howto-handle-java-oom/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/08/21/howto-handle-java-oom/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2017/08/21/howto-handle-java-oom/" class="leancloud_visitors" data-flag-title="线上java项目OOM快速定位与解决方法">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近比较多的碰到OOM异常，总结下OOM的异常快速定位和解决的办法。</p>
-<h2 id="OOM的常见原因"><a href="#OOM的常见原因" class="headerlink" title="OOM的常见原因"></a>OOM的常见原因</h2><ul>
-<li>内存分配确实过小</li>
-<li>频繁创建对象，没有及时释放</li>
-<li>频繁申请系统资源，导致系统资源耗尽（例如：不断创建线程，不断发起网络连接）</li>
-</ul>
-<h2 id="定位与解决方法"><a href="#定位与解决方法" class="headerlink" title="定位与解决方法"></a>定位与解决方法</h2><p>需要先找到出问题的进程，使用top命令定位：</p>
-<blockquote>
-<p>top</p>
-</blockquote>
-<p>输入<code>top</code>命令后，可以按P(shift+p)根据cpu占用排序、按M根据内存占用排序、按T根据运行时间排序。（可以先按c显示具体的command）</p>
-<p>这里先按M根据内存排序查找异常的进程：<strong>这里假设出现异常的进程pid为2879</strong></p>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2017/08/21/howto-handle-java-oom/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1979,7 +1979,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">54</span>
+              <span class="site-state-item-count">55</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1996,7 +1996,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">85</span>
+                <span class="site-state-item-count">87</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
