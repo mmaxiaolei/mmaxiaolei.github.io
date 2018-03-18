@@ -294,6 +294,169 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/29/hash-collision/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/08/29/hash-collision/" itemprop="url">
+                  Hash碰撞
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-08-29T15:54:02+08:00">
+                2016-08-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/08/29/hash-collision/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/29/hash-collision/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/29/hash-collision/" class="leancloud_visitors" data-flag-title="Hash碰撞">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="Hash定义"><a href="#Hash定义" class="headerlink" title="Hash定义"></a>Hash定义</h1><p>摘自百度百科：</p>
+<blockquote>
+<p>Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。</p>
+</blockquote>
+<h1 id="为什么会产生Hash碰撞"><a href="#为什么会产生Hash碰撞" class="headerlink" title="为什么会产生Hash碰撞"></a>为什么会产生Hash碰撞</h1><blockquote>
+<p>…通过散列算法，变换成固定长度的输出，该输出就是散列值…</p>
+</blockquote>
+<p>既然是根据输入值，变换成<strong>固定长度</strong>的输出，那就必然会存在不同的输入产生相同的输出。</p>
+<h1 id="如何解决Hash碰撞"><a href="#如何解决Hash碰撞" class="headerlink" title="如何解决Hash碰撞"></a>如何解决Hash碰撞</h1><h2 id="开放地址法"><a href="#开放地址法" class="headerlink" title="开放地址法"></a>开放地址法</h2><p>这种方法就是在计算一个key的哈希的时候，发现目标地址已经有值了，即发生冲突了，这个时候通过相应的函数在此地址后面的地址去找，直到没有冲突为止。这个方法常用的有线性探测，二次探测，再哈希。这种解决方法有个不好的地方就是，当发生冲突之后，会在之后的地址空间中找一个放进去，这样就有可能后来出现一个key哈希出来的结果也正好是它放进去的这个地址空间，这样就会出现非同义词的两个key发生冲突。</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/08/29/hash-collision/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/08/26/treeMap-theory/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1822,178 +1985,6 @@ docker run --name jenkins -p 8882:8080 --link -d jetty:jetty jenkins;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/05/13/docker-third-registry/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/13/docker-third-registry/" itemprop="url">
-                  Docker学习系列三：Registry
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-13T10:29:29+08:00">
-                2016-05-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/05/13/docker-third-registry/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/13/docker-third-registry/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/05/13/docker-third-registry/" class="leancloud_visitors" data-flag-title="Docker学习系列三：Registry">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="什么是registry"><a href="#什么是registry" class="headerlink" title="什么是registry"></a>什么是registry</h3><p>Docker Registry是一个docker仓库，用来存储和分享docker镜像。类似于Github。</p>
-<h3 id="为什么需要docker-registry"><a href="#为什么需要docker-registry" class="headerlink" title="为什么需要docker registry"></a>为什么需要docker registry</h3><p>这里应该说为什么需要配置一个私有的docker registry。我们知道，已经有dockerhub了，而且官方也提供私有仓库的功能。</p>
-<p>因为访问官方的dockerhub，是要良好的网络。而且当我们部署发布的时候，肯定不希望dockeruhb在维护或者故障。而我们配置私有的docker registry可以很好的避免此类问题。</p>
-<h3 id="部署私有的docker-registry"><a href="#部署私有的docker-registry" class="headerlink" title="部署私有的docker registry"></a>部署私有的docker registry</h3><h4 id="pull官方的registry"><a href="#pull官方的registry" class="headerlink" title="pull官方的registry"></a>pull官方的registry</h4><pre><code>docker pull registry:2.4
-</code></pre><h4 id="运行registry"><a href="#运行registry" class="headerlink" title="运行registry"></a>运行registry</h4><p>命令：</p>
-<pre><code>docker run -d -p 5000:5000 --restart=always --name registry -v /data/registry:/var/lib/registry registry:2.4
-</code></pre><p>使用Compose file编排(创建docker-compose.yml)：</p>
-<pre><code>registry:
-  restart: always
-  image: registry:2.4
-  container_name: registry
-  ports:
-    - 5000:5000
-  volumes:
-    - /data/registry:/var/lib/registry
-</code></pre><p>然后使用命令：</p>
-<pre><code>docker-compose up -d
-</code></pre>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/13/docker-third-registry/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2039,7 +2030,7 @@ docker run --name jenkins -p 8882:8080 --link -d jetty:jetty jenkins;
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">55</span>
+              <span class="site-state-item-count">56</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
