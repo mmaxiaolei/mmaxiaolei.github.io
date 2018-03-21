@@ -76,6 +76,8 @@
 
 
 
+  <link rel="alternate" href="/atom.xml" title="Zacard's Notes" type="application/atom+xml" />
+
 
 
 
@@ -284,6 +286,190 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2018/03/20/alibaba-middleware-interview/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/03/20/alibaba-middleware-interview/" itemprop="url">
+                  阿里中间件6轮面试被砍的血泪总结
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-20T22:13:02+08:00">
+                2018-03-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试/" itemprop="url" rel="index">
+                    <span itemprop="name">面试</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2018/03/20/alibaba-middleware-interview/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2018/03/20/alibaba-middleware-interview/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2018/03/20/alibaba-middleware-interview/" class="leancloud_visitors" data-flag-title="阿里中间件6轮面试被砍的血泪总结">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>年前在v2ex遇到阿里中间件的哥们，内推面试。从2018.02.01开始到今天2018.03.20，一场浩浩荡荡，跨年，持续了1个半月时间的残酷面试终于尘埃落定。遗憾的未能加入阿里中间件部门这个大家庭，让我深感痛惜。</p>
+<p>最终未能如愿的原因是“名额有限，有更适合的同学”。这也可能是内推大哥为了顾及我的感受的说辞，可能是最后一面面的不好。</p>
+<p>这里凭借隐约的记忆，总结下面试经过。让我自己<strong>引以为戒，奋发自强，继续前行</strong></p>
+<h2 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h2><p>主要问一些java基础。包括集合、多线程、ClassLoader、锁、juc类库等都要知道大致的<strong>原理、使用规范、约定</strong>等</p>
+<h2 id="二面"><a href="#二面" class="headerlink" title="二面"></a>二面</h2><p>根据项目，深入探讨。你需要清楚你所做项目的关键细节、优化、特点、原理。所用第三方库&amp;中间件等的原理，<strong>即使不知道，也要有自己的想法能够说出如何代替实现</strong>！而且需要一定的<strong>技术知识的广度</strong>，对于如何选型，为何这么选型能够说出自己的理由</p>
+<h2 id="三面"><a href="#三面" class="headerlink" title="三面"></a>三面</h2><p>个人感觉着重<strong>技术深度</strong>。</p>
+<p>从ConcurrentHashMap一路问到锁&amp;锁优化-&gt;LongAdder-&gt;伪共享-&gt;缓存行填充-&gt;cas等诸多技术细节；</p>
+<p>从hystrix一路问到原理-&gt;自己如何实现-&gt;如何优化-&gt;响应流编程(reactive streams);</p>
+<p>从简单的生产者消费者模式设计到如何高效健壮实现；</p>
+<p>等等。</p>
+<h2 id="四面"><a href="#四面" class="headerlink" title="四面"></a>四面</h2><p>纯coding。</p>
+<blockquote>
+<p>如何倒序输出单向链表？</p>
+</blockquote>
+<p>个人直接想法是用栈先进后出的特点，把链表数据读到栈里然后输出。</p>
+<blockquote>
+<p>有更好的实现方式吗？</p>
+</blockquote>
+<p>仔细一想，确实不够优雅，还好之前刷过一阵子的leetcode，一般能用<strong>栈解决的都能用递归搞定</strong>。换了一种递归实现：</p>
+<p>具体看本人的<a href="https://github.com/mmaxiaolei/algorithm/blob/master/src/main/java/com/zacard/algorithm/test/Test.java" target="_blank" rel="external">github传送门</a></p>
+<h2 id="五面"><a href="#五面" class="headerlink" title="五面"></a>五面</h2><p>hr面，唯一一次现场面，一直以为是最后一面呢。</p>
+<p>给大家抛出几大深坑问题：</p>
+<ul>
+<li>个人的职业规划是什么</li>
+<li>你遇到的最大问题或者是困难是什么</li>
+<li>你如何看待阿里</li>
+<li>你能为阿里带来什么</li>
+<li>你的优缺点是什么</li>
+</ul>
+<p>这几个问题，大家深思啊，不多说。</p>
+<h2 id="六面"><a href="#六面" class="headerlink" title="六面"></a>六面</h2><p>大概晚上20:00的时候接的电面。那会刚刚游泳游了大概2，300百米，然后又没有吃饭，肚子咕咕叫。忍着接听。</p>
+<p>主要问项目情况，然后根据一个项目，问如果量级扩大1000倍，你会怎么做？有哪些优化措施？高性能&amp;高可用措施？</p>
+<p>后面有点饿的眩晕，不知道怎么结束的。。。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>感觉阿里更偏重<strong>扎实的基础和解决问题的创意与能力</strong>。个人感觉自己缺乏大并发、大流量下面对各种复杂问题的处理经验与解决方案，继续沉淀学习吧。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
     
       
 
@@ -1761,181 +1947,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2017/11/06/apm-share/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/11/06/apm-share/" itemprop="url">
-                  分布式追踪系统x-apm开发经历分享
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-06T21:45:22+08:00">
-                2017-11-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2017/11/06/apm-share/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/11/06/apm-share/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2017/11/06/apm-share/" class="leancloud_visitors" data-flag-title="分布式追踪系统x-apm开发经历分享">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>感谢<a href="https://www.dingdangss.com/">@dingdang</a>对开发的强力支持。</p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在公司微服务化转型后，系统被拆分为多个由不同开发团队维护的分布式微服务。随着业务的发展，分布式服务越来越多，其关系越来越复杂。我们亟需一个工具能够梳理内部服务之间的关系，感知上下游服务的形态，快速定位冗长服务调用间的问题。</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/mtrace1.png" alt=""></p>
-<p>需要解决的核心问题：</p>
-<ul>
-<li>一次请求的完整调用链</li>
-<li>一次请求出现异常，能快速定位那个节点出现问题</li>
-<li>一次请求经历的服务的详细信息</li>
-<li>一次请求的瓶颈节点，并对节点资源分配提供数据支持</li>
-<li>一次请求中出现异常、超时自动报警</li>
-</ul>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>为了解决以上问题，自研了一个分布式追踪系统X-APM(APM = Application Performance Management，应用性能管理).其核心就是调用链：通过一个全局的ID将分布在各个服务节点上的同一次请求串联起来，还原原有的调用关系、追踪系统问题、分析调用数据、统计系统指标。<br>在阅读google 《dapper》的思想，<a href="https://wu-sheng.gitbooks.io/opentracing-io/content/">open traceing</a>的理念后,实现参考了<a href="https://github.com/OpenSkywalking/skywalking">skywalking</a></p>
-<h2 id="设计目标"><a href="#设计目标" class="headerlink" title="设计目标"></a>设计目标</h2><ul>
-<li>低损耗: 对微服务的影响越低越好，包括cpu、内存、tps、响应时间等指标</li>
-<li>低侵入: 作为非业务组件，应当尽可能少侵入或者无侵入其他业务系统，对于使用方透明，减少开发人员的负担</li>
-<li>低延迟: 从数据的产生和收集，到数据计算和处理，再到最终展现，都要求尽可能快</li>
-<li>可配置: 可以通过配置决定所收集数据的范围和粒度</li>
-<li>可视化: 能够以图表方式展示调用链路等信息</li>
-<li>可预警: 分析跟踪到的调用链数据，当出现调用耗时时间过长、调用异常、重复调用等情况，及时警告</li>
-<li>决策支持: 这些数据最好能在决策支持层面发挥作用</li>
-</ul>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2017/11/06/apm-share/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1981,7 +1992,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">57</span>
+              <span class="site-state-item-count">58</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1989,7 +2000,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -1998,7 +2009,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">88</span>
+                <span class="site-state-item-count">91</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -2006,6 +2017,13 @@
 
         </nav>
 
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
         
 
         <div class="links-of-author motion-element">
