@@ -90,30 +90,24 @@
 
 <meta name="description" content="背景类似mysql等数据库偏爱用b+tree这个数据结构作为索引，这是为什么呢？要解释这个原因，必须先讲下计算机组成原理中的磁盘数据存取原理。
 磁盘数据读取原理这里指普通的机械磁盘。
-先看下磁盘的结构:
-
-如上图，磁盘由盘片构成,每个盘片有两面，又称为盘面(Surface)，这些盘面覆盖有磁性材料。盘片中央有一个可以旋转的主轴(spindle)，他使得盘片以固定的旋转速率旋转，通常是5400转每分">
+先看下磁盘的结构:">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mysql等数据库索引为什么偏爱b+tree">
 <meta property="og:url" content="https://zacard.net/2018/03/30/mysql-b-tree/index.html">
 <meta property="og:site_name" content="Zacard's Notes">
 <meta property="og:description" content="背景类似mysql等数据库偏爱用b+tree这个数据结构作为索引，这是为什么呢？要解释这个原因，必须先讲下计算机组成原理中的磁盘数据存取原理。
 磁盘数据读取原理这里指普通的机械磁盘。
-先看下磁盘的结构:
-
-如上图，磁盘由盘片构成,每个盘片有两面，又称为盘面(Surface)，这些盘面覆盖有磁性材料。盘片中央有一个可以旋转的主轴(spindle)，他使得盘片以固定的旋转速率旋转，通常是5400转每分">
+先看下磁盘的结构:">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree1.png">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree2.png">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/b-tree1">
 <meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree3">
-<meta property="og:updated_time" content="2018-03-30T06:17:31.000Z">
+<meta property="og:updated_time" content="2018-03-30T06:34:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql等数据库索引为什么偏爱b+tree">
 <meta name="twitter:description" content="背景类似mysql等数据库偏爱用b+tree这个数据结构作为索引，这是为什么呢？要解释这个原因，必须先讲下计算机组成原理中的磁盘数据存取原理。
 磁盘数据读取原理这里指普通的机械磁盘。
-先看下磁盘的结构:
-
-如上图，磁盘由盘片构成,每个盘片有两面，又称为盘面(Surface)，这些盘面覆盖有磁性材料。盘片中央有一个可以旋转的主轴(spindle)，他使得盘片以固定的旋转速率旋转，通常是5400转每分">
+先看下磁盘的结构:">
 <meta name="twitter:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree1.png">
 
 
@@ -423,6 +417,7 @@
 <h2 id="磁盘数据读取原理"><a href="#磁盘数据读取原理" class="headerlink" title="磁盘数据读取原理"></a>磁盘数据读取原理</h2><p><strong>这里指普通的机械磁盘。</strong></p>
 <p>先看下磁盘的结构:</p>
 <p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree1.png" alt=""></p>
+<a id="more"></a>
 <p>如上图，磁盘由盘片构成,每个盘片有两面，又称为盘面(Surface)，这些盘面覆盖有磁性材料。盘片中央有一个可以旋转的主轴(spindle)，他使得盘片以固定的旋转速率旋转，通常是5400转每分钟(Revolution Per Minute,RPM)或者是7200RPM。磁盘包含多个这样的盘片并封装在一个密封的容器内。上图左，展示了一个典型的磁盘表面结构。每个表面是由一组称为磁道(track)的同心圆组成的，每个磁道被划分为了一组<strong>扇区(sector)</strong>.每个扇区包含相等数量的数据位，通常是512子节。扇区之间由一些间隔(gap)隔开,不存储数据。</p>
 <p>磁盘的读写操作：</p>
 <p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/b+tree2.png" alt=""></p>
