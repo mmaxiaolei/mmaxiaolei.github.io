@@ -296,6 +296,165 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/12/12/dubbo-parameter-validate/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/12/12/dubbo-parameter-validate/" itemprop="url">
+                  dubbo遇到的坑
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-12-12T20:42:39+08:00">
+                2016-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/12/12/dubbo-parameter-validate/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/12/dubbo-parameter-validate/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/12/12/dubbo-parameter-validate/" class="leancloud_visitors" data-flag-title="dubbo遇到的坑">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>目前项目使用dubbo做服务化，同时开启dubbo的consumer端的参数校验。</p>
+<h2 id="遇到的坑一"><a href="#遇到的坑一" class="headerlink" title="遇到的坑一"></a>遇到的坑一</h2><p>第一个遇到的就是参数分组校验的bug了，这个其实网上很多人提过。</p>
+<p>具体原因就是内部类使用<code>_</code>连接符代替实际应该使用的<code>$</code>。具体看如下代码(<a href="https://github.com/alibaba/dubbo/blob/master/dubbo-filter/dubbo-filter-validation/src/main/java/com/alibaba/dubbo/validation/support/jvalidation/JValidator.java">传送门</a>)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(String methodName, Class&lt;?&gt;[] parameterTypes, Object[] arguments)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">           String methodClassName = clazz.getName() + <span class="string">"_"</span> + toUpperMethoName(methodName);</div><div class="line">           Class&lt;?&gt; methodClass = <span class="keyword">null</span>;</div><div class="line">           <span class="keyword">try</span> &#123;</div><div class="line">               methodClass = Class.forName(methodClassName, <span class="keyword">false</span>, Thread.currentThread().getContextClassLoader());</div><div class="line">           &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</div><div class="line">           &#125;</div><div class="line">           <span class="comment">// 以下代码略</span></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>这段代码的作用就是加载dubbo service中的分组校验group的内部类，再根据具体的group进行参数校验。但是内部类的连接符却用了<code>_</code>连接。按理说这个问题应该很容易被发现且很容易被测试出来，不应该出现在<code>dubbo</code>身上。</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/12/12/dubbo-parameter-validate/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
   <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/12/09/howto-handle-java-cpu100/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1758,176 +1917,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="https://zacard.net/2016/07/15/docker-six-zookeeper/">
-
-  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="zacard">
-    <meta itemprop="description" content="">
-    <meta itemprop="image" content="/images/88666.jpg">
-  </span>
-
-  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-    <meta itemprop="name" content="Zacard's Notes">
-    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
-      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
-    </span>
-  </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/07/15/docker-six-zookeeper/" itemprop="url">
-                  docker学习系列六：构建zookeeper镜像
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-07-15T15:57:33+08:00">
-                2016-07-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/软件技术/" itemprop="url" rel="index">
-                    <span itemprop="name">软件技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <a href="/2016/07/15/docker-six-zookeeper/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/15/docker-six-zookeeper/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/07/15/docker-six-zookeeper/" class="leancloud_visitors" data-flag-title="docker学习系列六：构建zookeeper镜像">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="什么是zookeeper"><a href="#什么是zookeeper" class="headerlink" title="什么是zookeeper"></a>什么是zookeeper</h3><p>zookeeper 是一个分布式的，开源的协调服务框架，服务于分布式应用程序。</p>
-<h3 id="为什么要zookeeper"><a href="#为什么要zookeeper" class="headerlink" title="为什么要zookeeper"></a>为什么要zookeeper</h3><p>可以将分布式应用从处理协调服务的泥潭中解救出来。且性能优越，设计简洁优雅。</p>
-<ul>
-<li>顺序一致性: 来自客户端的更新操作将会按照顺序被作用</li>
-<li>原子性操作: 更新要么全部成功,要么全部失败,没有部分的结果</li>
-<li>统一的系统镜像: 无论客户端链接的是哪台服务器,都能获得同样的服务视图,也就是说他是无状态的</li>
-<li>可靠性保证: 一旦写入操作被执行(作用到服务器),这个状态将会被持久化,直到其他客户端的修改生效</li>
-<li>时间线特性: 客户端访问服务器系统镜像能在一个特定时间访问内保证当前系统是实时更新的</li>
-</ul>
-<h3 id="Dockfile"><a href="#Dockfile" class="headerlink" title="Dockfile"></a>Dockfile</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">FROM oraclejdk8</div><div class="line">   MAINTAINER zacard &lt;mmaxiaolei@gmail.com&gt;</div><div class="line"></div><div class="line">   <span class="comment"># Install required packages</span></div><div class="line">   RUN apk add --no-cache \</div><div class="line">       bash \</div><div class="line">       su-exec</div><div class="line"></div><div class="line">   ENV ZOO_USER zookeeper</div><div class="line">   ENV ZOO_CONF_DIR /conf</div><div class="line">   ENV ZOO_DATA_DIR /data</div><div class="line">   ENV ZOO_DATA_LOG_DIR /datalog</div><div class="line"></div><div class="line">   <span class="comment"># Add a user and make dirs</span></div><div class="line">   RUN <span class="built_in">set</span> -x \</div><div class="line">       &amp;&amp; adduser -D <span class="string">"<span class="variable">$ZOO_USER</span>"</span> \</div><div class="line">       &amp;&amp; mkdir -p <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span> \</div><div class="line">       &amp;&amp; chown <span class="string">"<span class="variable">$ZOO_USER</span>:<span class="variable">$ZOO_USER</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span> <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span></div><div class="line"></div><div class="line">   ARG GPG_KEY=C823E3E5B12AF29C67F81976F5CECB3CB5E9BD2D</div><div class="line">   ARG DISTRO_NAME=zookeeper-3.4.9</div><div class="line"></div><div class="line">   <span class="comment"># Download Apache Zookeeper, verify its PGP signature, untar and clean up</span></div><div class="line">   RUN <span class="built_in">set</span> -x \</div><div class="line">       &amp;&amp; apk add --no-cache --virtual .build-deps \</div><div class="line">           gnupg \</div><div class="line">       &amp;&amp; wget -q <span class="string">"http://www.apache.org/dist/zookeeper/<span class="variable">$DISTRO_NAME</span>/<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; wget -q <span class="string">"http://www.apache.org/dist/zookeeper/<span class="variable">$DISTRO_NAME</span>/<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> \</div><div class="line">       &amp;&amp; <span class="built_in">export</span> GNUPGHOME=<span class="string">"<span class="variable">$(mktemp -d)</span>"</span> \</div><div class="line">       &amp;&amp; gpg --keyserver ha.pool.sks-keyservers.net --recv-key <span class="string">"<span class="variable">$GPG_KEY</span>"</span> \</div><div class="line">       &amp;&amp; gpg --batch --verify <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; tar -xzf <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> \</div><div class="line">       &amp;&amp; mv <span class="string">"<span class="variable">$DISTRO_NAME</span>/conf/"</span>* <span class="string">"<span class="variable">$ZOO_CONF_DIR</span>"</span> \</div><div class="line">       &amp;&amp; rm -r <span class="string">"<span class="variable">$GNUPGHOME</span>"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz"</span> <span class="string">"<span class="variable">$DISTRO_NAME</span>.tar.gz.asc"</span> \</div><div class="line">       &amp;&amp; apk del .build-deps</div><div class="line"></div><div class="line">   WORKDIR <span class="variable">$DISTRO_NAME</span></div><div class="line">   VOLUME [<span class="string">"<span class="variable">$ZOO_DATA_DIR</span>"</span>, <span class="string">"<span class="variable">$ZOO_DATA_LOG_DIR</span>"</span>]</div><div class="line"></div><div class="line">   ENV ZOO_PORT 2181</div><div class="line">   EXPOSE <span class="variable">$ZOO_PORT</span></div><div class="line"></div><div class="line">   ENV PATH <span class="variable">$PATH</span>:/<span class="variable">$DISTRO_NAME</span>/bin</div><div class="line">   ENV ZOOCFGDIR <span class="variable">$ZOO_CONF_DIR</span></div><div class="line"></div><div class="line">   COPY docker-entrypoint.sh /</div><div class="line">   ENTRYPOINT [<span class="string">"/docker-entrypoint.sh"</span>]</div><div class="line">   CMD [<span class="string">"zkServer.sh"</span>, <span class="string">"start-foreground"</span>]</div></pre></td></tr></table></figure>
-<p>注意：这里依赖的镜像<code>oraclejdk8</code>请查看之前的文章“Docker学习系列五：构建oracle-jdk8镜像” </p>
-          <!--noindex-->
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/07/15/docker-six-zookeeper/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1968,7 +1962,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">60</span>
+              <span class="site-state-item-count">61</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1985,7 +1979,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">93</span>
+                <span class="site-state-item-count">96</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
