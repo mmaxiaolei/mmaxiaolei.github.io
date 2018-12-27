@@ -110,13 +110,13 @@ snowflake简单介绍算法生成的id结构图：
 1-bit：符号位，一般不设置，默认为0
 41-bit：时间戳，大约能用69年
 10-bit：工作机器id，最大支">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/snowflake.png">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/%E6%9B%B4%E6%8D%A2workid%E5%BC%82%E5%B8%B8%E6%97%B6%E5%BA%8F%E5%9B%BE.png">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/3%E7%BA%A7%E7%BC%93%E5%AD%98%E6%B5%81%E9%87%8F%E5%89%8A%E5%B3%B0.png">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/1%E7%BA%A7%E7%BC%93%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE.jpg">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/2&3%E7%BA%A7%E7%BC%93%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE.jpg">
-<meta property="og:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/%E5%90%9E%E5%90%90%E9%87%8F%E5%AF%B9%E6%AF%94%E5%9B%BE.jpg">
-<meta property="og:updated_time" content="2018-04-24T09:46:34.239Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/snowflake.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/更换workid异常时序图.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/3级缓存架构图.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/1级缓存结构图.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/2&3级缓存结构图.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/吞吐量对比图.jpg">
+<meta property="og:updated_time" content="2018-12-27T07:35:42.661Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="X-UID:分布式唯一id服务">
 <meta name="twitter:description" content="背景之前开发的分布式唯一id比较简陋。这段时间重新设计优化，变成一个独立的项目X-UID。这里记录下设计优化的一些东西
@@ -128,7 +128,7 @@ snowflake简单介绍算法生成的id结构图：
 1-bit：符号位，一般不设置，默认为0
 41-bit：时间戳，大约能用69年
 10-bit：工作机器id，最大支">
-<meta name="twitter:image" content="http://7xlnw9.com1.z0.glb.clouddn.com/snowflake.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/snowflake.png">
 
 
 
@@ -436,7 +436,7 @@ snowflake简单介绍算法生成的id结构图：
         <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前开发的分布式唯一id比较简陋。这段时间重新设计优化，变成一个独立的项目X-UID。这里记录下设计优化的一些东西</p>
 <p>基本算法还是基于snowflake。因为需求就是要一个long型数字，snowflake算法简单高效。</p>
 <h2 id="snowflake简单介绍"><a href="#snowflake简单介绍" class="headerlink" title="snowflake简单介绍"></a>snowflake简单介绍</h2><p>算法生成的id结构图：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/snowflake.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/snowflake.png" alt=""></p>
 <p>说明：</p>
 <ul>
 <li>1-bit：符号位，一般不设置，默认为0</li>
@@ -472,7 +472,7 @@ snowflake简单介绍算法生成的id结构图：
 </ul>
 <p>策略存在的问题：</p>
 <p>还存在理论上的id重复问题，例如以下执行序列：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/%E6%9B%B4%E6%8D%A2workid%E5%BC%82%E5%B8%B8%E6%97%B6%E5%BA%8F%E5%9B%BE.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/更换workid异常时序图.png" alt=""></p>
 <p>当连续遇到时间回拨，workerId耗尽时，我们选择从0开始寻找一个目前没有在使用的workerId，例如0.这时候，workerId是从大变成了小。如果同时当前机器的时间戳仍然小于使用0这个workerId生成的id使用的时间戳(基本不可能发生)，那生成的id将会重复。目前没有一个比较好的解决方案，不过我们对此还是采用了一种<strong>柔性处理</strong>，这个下面讲</p>
 <h3 id="提高响应时间稳定性"><a href="#提高响应时间稳定性" class="headerlink" title="提高响应时间稳定性"></a>提高响应时间稳定性</h3><blockquote>
 <p>其实大部分情况不会有这个量级。纯当挑战下，能否进一步提高性能。</p>
@@ -481,10 +481,10 @@ snowflake简单介绍算法生成的id结构图：
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">long</span>[] generateIds(<span class="keyword">long</span> timestamp, <span class="keyword">long</span> workerId, <span class="keyword">int</span> count) &#123;</div><div class="line">    <span class="comment">// 超过了时间戳位数的情况</span></div><div class="line">    <span class="keyword">if</span> (((sequence + count) &gt;&gt; SEQUENCE_BITS) + timestamp &gt; MAX_TIMESTAMP) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"设置的时间戳位数已经使用到上限"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">long</span>[] ids = <span class="keyword">new</span> <span class="keyword">long</span>[count];</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</div><div class="line">        <span class="comment">// 同一毫秒内，进行序列自增</span></div><div class="line">        <span class="keyword">if</span> ((++sequence &amp; SEQUENCE_MASK) == <span class="number">0</span>) &#123;</div><div class="line">            <span class="comment">// 数字溢出了，等待下一个毫秒</span></div><div class="line">            lastTimestamp = timestamp = tilNextMillis(lastTimestamp);</div><div class="line">        &#125;</div><div class="line">        ids[i] = (workerId &lt;&lt; WORKER_ID_SHIFT) | ((timestamp - START_TIME) &lt;&lt; TIMESTAMP_SHIFT) | sequence;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> ids;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>之后的关键就是，如何提升性能来应对瞬时大并发。核心思想就是缓存，缓存部分流量低峰或者是平稳期被浪费的id。例如当某个毫秒时刻只有2个生成id的请求，相当于这一毫秒被浪费了4094个id.这部分id完全可以缓存起来应对瞬时大并发。</p>
 <p>如下3级缓存架构：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/3%E7%BA%A7%E7%BC%93%E5%AD%98%E6%B5%81%E9%87%8F%E5%89%8A%E5%B3%B0.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/3级缓存架构图.png" alt=""></p>
 <p>1级缓存是个数组，并发取数据，取空后发布异步任务去2级缓存拉取数据；2级缓存是个阻塞队列，3级缓存其实是文件，会有个线程不断在<strong>空闲期</strong>调用批量生成id的方法来填充2&amp;3级缓存。并且有另外一个线程不断读取数据推送到2级缓存</p>
 <h4 id="1级缓存结构"><a href="#1级缓存结构" class="headerlink" title="1级缓存结构"></a>1级缓存结构</h4><p>结构图如下：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/1%E7%BA%A7%E7%BC%93%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/1级缓存结构图.jpg" alt=""></p>
 <p>说明：</p>
 <ol>
 <li><p>1级缓存是一个环形数组，默认长度为4096，每个数组槽位采用缓存行填充，避免伪共享(伪共享请参考：<a href="https://zacard.net/2018/02/26/false-share/">传送门</a>)。如何做到环形，就是利用cas让数组下标原子的在0~4095之间循环变动即可</p>
@@ -497,7 +497,7 @@ snowflake简单介绍算法生成的id结构图：
 </li>
 </ol>
 <h4 id="2-amp-3级缓存结构"><a href="#2-amp-3级缓存结构" class="headerlink" title="2&amp;3级缓存结构"></a>2&amp;3级缓存结构</h4><p>结构图如下：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/2&amp;3%E7%BA%A7%E7%BC%93%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/2&amp;3级缓存结构图.jpg" alt=""></p>
 <p>说明：</p>
 <ol>
 <li><p>3级缓存是文件，默认大小3G≈4亿个id.文件顺序读顺序写，系统维护一个读偏移量，每次读取16kb=2048个id的数据量，充分利用磁盘io的预读。数据读完不删除，只有到数据全部读完的时候才会删除整个文件，重新生成一个新的空白文件</p>
@@ -526,7 +526,7 @@ snowflake简单介绍算法生成的id结构图：
 <h3 id="数据对比"><a href="#数据对比" class="headerlink" title="数据对比"></a>数据对比</h3><p>电脑配置：MacBook Pro，i5-4核，16G</p>
 <p>性能测试使用JMH</p>
 <p>吞吐量：</p>
-<p><img src="http://7xlnw9.com1.z0.glb.clouddn.com/%E5%90%9E%E5%90%90%E9%87%8F%E5%AF%B9%E6%AF%94%E5%9B%BE.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/xuid/吞吐量对比图.jpg" alt=""></p>
 <blockquote>
 <p>x-uid取的是最低值800w+,正常情况能跑到1200w+.提升了1倍多</p>
 </blockquote>
