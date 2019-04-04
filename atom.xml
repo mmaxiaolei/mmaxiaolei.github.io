@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://zacard.net/"/>
-  <updated>2018-12-27T07:35:42.661Z</updated>
+  <updated>2019-04-04T02:54:20.505Z</updated>
   <id>https://zacard.net/</id>
   
   <author>
@@ -15,6 +15,41 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>DQC数据质量中心开发沉思</title>
+    <link href="https://zacard.net/2019/04/04/dqc-think/"/>
+    <id>https://zacard.net/2019/04/04/dqc-think/</id>
+    <published>2019-04-04T02:51:13.000Z</published>
+    <updated>2019-04-04T02:54:20.505Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>程序员的自我修养</p></blockquote><p>这里主要和大家分享我在开发DQC（数据质量中心）的过程中，对产品需求、架构设计、编码、自我提升这4个环节的反思与经验。</p><h2 id="产品需求"><a href="#产品需求" class="headerlink" title="产品需求"></a>产品需求</h2><blockquote><p>产品需求阶段，我们能做什么，该做些什么？</p></blockquote><p>我认为有2点很重要:</p><ul><li>沟通：高效沟通，可以减少歧义，加快开发</li><li>参与：参与其中，可以减少返工，保持扩展</li></ul><p>那如何做到这2点呢？我认为有个非常重要的概念：领域通用语言</p><h3 id="领域通用语言"><a href="#领域通用语言" class="headerlink" title="领域通用语言"></a>领域通用语言</h3><p>领域通用语言(Ubiquitous Language)，其实是DDD(Domain-Driven Design，领域驱动设计)中一个非常重要的概念。但是我认为他适用于每个项目的开发流程。</p><ol><li>什么叫领域通用语言：领域（业务）专家、产品经理、开发、一个团队中的所有人使用的一种公共语言，能够准确表达领域结构的术语</li><li>为什么要用领域通用语言<ul><li>降低沟通成本：一个团队中的所有人，使用同一种语言，中间没有翻译的过程，也不会产生歧义</li><li>提升沟通效率：产品、开发、测试使用同一种语言。产品提需求开发能够准确的明白其意图；测试反馈bug，开发能做准确得知异常模块</li><li>加速开发：清晰定义好领域通用语言，也为之后的程序设计也定义了一个清晰的概念(领域模型)</li></ul></li><li>如何定义领域通用语言<ol><li>提炼领域专家的术语：合适的领域术语也将降低系统的使用门槛</li><li>团队成员共同确认：一个团队，一种语言</li><li>领域专家认可：领域专家都无法理解的语言肯定有问题</li></ol></li></ol><h2 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h2><blockquote><p>架构设计阶段，我们应该遵循什么原则，应该注意什么？</p></blockquote><p>我认为有一个原则：<strong>升维思考，降维攻击</strong></p><h3 id="升维思考，降维攻击"><a href="#升维思考，降维攻击" class="headerlink" title="升维思考，降维攻击"></a>升维思考，降维攻击</h3><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E5%8D%87%E7%BB%B4%E6%80%9D%E8%80%83.jpg" alt=""></p><p>之前网上看过一句话：</p><blockquote><p>你所解决问题的复杂度决定了你技术的高度</p></blockquote><p>抛开业务逻辑自身的复杂度，我认为维度越高，复杂度必然也越高。所以我们要在更高的维度思考，才能得到更大的技术挑战和更快的技术成长。</p><h3 id="何为高维-amp-低维"><a href="#何为高维-amp-低维" class="headerlink" title="何为高维&amp;低维"></a>何为高维&amp;低维</h3><p>我认为的高维-&gt;低维：跨部门-&gt;跨项目-&gt;跨节点-&gt;跨线(进)程</p><p>想想我们做的技术方案、公共服务、基础类库等，能否做到跨线程、跨节点、跨项目甚至跨部门使用呢？</p><h3 id="如何升维思考"><a href="#如何升维思考" class="headerlink" title="如何升维思考"></a>如何升维思考</h3><p>先和大家分享一张图:</p><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/4w3w.jpeg" alt=""></p><p>上图表达的其实是一个4维人看3维人下楼梯。我们可以看到，4维人可以看到3维人下楼梯的全过程。所以我想说的是，我们在更高的维度，可以看到更全面的信息，看到更多的问题。</p><p>如何升维思考，我认为要做好2点：</p><ul><li><p>总是递归的在更高维度思考</p><p>例如，写了一段代码，要想想，在跨线程维度，会不会有什么问题？有没有更好的方案适应多线程环境？完了之后再想想在跨节点这个维度是否会有什么问题？有没有适应跨节点维度的更好方案？以此类推…</p></li><li><p>保持对问题的饥渴和敏感</p><p>例如，popo群里的产品或者前端提的问题我往往第一时间去排查，然后总是想，为什么会出现这样的问题？我能否通过技术手段或者架构设计来屏蔽此类问题？</p></li></ul><h3 id="什么是降维攻击"><a href="#什么是降维攻击" class="headerlink" title="什么是降维攻击"></a>什么是降维攻击</h3><p>降维攻击这个词出自《三体》，看过《三体》的同学肯定知道。其大体流程为:</p><blockquote><p>（歌者文明）先把自己改造为低维度生物，而后发动降维打击，投掷“二向箔”使得目标空间的一个维度无限蜷缩，这样，原先的那些同维度的生物，就都被无限压缩挂掉……</p></blockquote><p>例如如下图降维攻击地球：</p><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E9%99%8D%E7%BB%B4%E6%89%93%E5%87%BB.jpeg" alt=""></p><p>使用<strong>二向箔</strong>，无限压缩地球，导致地球上的生物都被压成纸片挂掉。</p><p>所以，我总结降维攻击的步骤，如下：</p><ol><li>改造自己</li><li>创造某种有利条件</li><li>发起攻击</li></ol><p>再举个通俗例子:</p><ol><li>一个习武之人，<strong>戴着眼罩</strong>每天苦练听声辨位，终成一位”盲人”武学高手</li><li>将整个武林都带到一个伸手不见五指的小山洞里</li><li>在黑暗中轻松击败所有人</li></ol><blockquote><p>题外话: 这个例子改编自一个网友写的，原文是习武之人戳瞎自己的双眼再苦练，我觉的实在太蠢了，改成戴着眼罩苦练。其实一直不太明白武侠小说中练某种武功为什么会动不动就要自残，比如《xxx宝典》</p></blockquote><p>大家应该都知道，这个例子其实就是《笑傲江湖》里面思过崖的桥段。</p><p>所以，降维打击<strong>最关键</strong>的一步就是<strong>别人凭什么愿意跟你进伸手不见五指的小山洞呢？</strong></p><p>《笑傲江湖》中的做法是：让别人主动进“<strong>小山洞</strong>”！告诉整个武林，思过崖里面有各大门派的失传武功秘籍，让大家免费参观。</p><p>那我们技术如何降维攻击呢？</p><h3 id="技术如何降维攻击"><a href="#技术如何降维攻击" class="headerlink" title="技术如何降维攻击"></a>技术如何降维攻击</h3><p><strong>KISS（Keep It Simple &amp; Stupid）原则</strong> - 好用方便，这才是我们技术方案的<strong>二向箔</strong>。其优点如下：</p><ul><li>接入便捷：接入只需引入jar-&gt;提供少许配置项-&gt;代码有侵入 (接入是否便捷决定了迁移成本)</li><li>侵入低：无侵入-&gt;低侵入-&gt;高侵入 (是否有侵入决定了修改成本)</li><li>适用度高：适应多个维度，多种语言 (适应度高低决定了受众程度，kpi)</li></ul><h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>coding的艺术</p><h3 id="认知负载"><a href="#认知负载" class="headerlink" title="认知负载"></a>认知负载</h3><p>这里指的是理解你写的代码所需要的思维量。</p><p>你写的代码逻辑越清晰，越简洁，理解起来就越容易。</p><p>常见错误:</p><ul><li>主流程中一堆的get/set。一屏代码可能也就30，40行，结果你一堆get/set占用了20行，不仅代码丑陋，理解起来也相当费劲，这时候特别适合在实体类中出一个<strong>静态工厂模式</strong>来生成你想要的实体对象</li><li>命名混乱。代码尽量要能自解释，命名尤为关键。那如何命名呢？有个相对通用的原则:<strong>释义命名选择器</strong>，什么意思呢，就是在命名的时候，要<strong>描述他们的效果和目的</strong>，而不需要表露他们是通过何种方式达到目的</li></ul><h3 id="做个调包侠"><a href="#做个调包侠" class="headerlink" title="做个调包侠"></a>做个调包侠</h3><p>何谓”调包侠”？就是直接使用开源的jar包，而不用自己写相关的代码逻辑。这样有如下好处：</p><ul><li>充分测试：开源代码通常经过严格测试，我们可以省略很大一部分的测试时间</li><li>该有的坑，别人都踩过了：我们可以相对正确的使用这个jar包</li><li>设计优雅：通常来说，开源代码设计都比较优雅，使用方便</li><li><p>社区支持良好：遇到问题，可以得到社区的支持</p><p>所以，做个调包侠，轻松又愉快，高效不费劲，何乐不为呢？</p></li></ul><h3 id="测试友好"><a href="#测试友好" class="headerlink" title="测试友好"></a>测试友好</h3><p>我们这边的测开比其实非常低，一度达到了1：5。所以，QA同学很辛苦，我们要对他们好一点。</p><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E5%90%88%E4%BD%9C%E6%84%89%E5%BF%AB.jpg" alt=""></p><p>如何编写对测试友好的代码呢？我觉得要关注以下2点：</p><ul><li>职责单一：职责单一的类/方法，测试目的是明确的。反例就是一堆if/else，不仅代码臃肿，测试也非常不友好</li><li>抽象与封装：需要QA测试的，抽象出来（例如主业务逻辑的某个功能，用接口明确定义出来）；不需要QA测试的，封装起来（例如一堆get/set操作，封装到实体内部。给他们点空间，不要什么隐私都暴露给他们，好吧）</li></ul><h2 id="自我提升"><a href="#自我提升" class="headerlink" title="自我提升"></a>自我提升</h2><blockquote><p>技术道路，如何“打怪”升级？</p></blockquote><h3 id="享受coding"><a href="#享受coding" class="headerlink" title="享受coding"></a>享受coding</h3><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E7%96%AF%E7%8B%82coding.gif" alt=""></p><p>我经常看到开发在码代码的时候，表情狰狞。其实我在写代码的时候是非常乐在其中的。我总是想着我要设计一段多么牛逼，多么优雅的代码，用上xxx算法，不仅高效而且简洁易懂，高度可扩展。秀出强劲的coding能力、设计能力、架构能力…</p><blockquote><p>秀，就完事了</p></blockquote><p>那我们如何才能享受其中呢？我觉得要有如下2点：</p><ul><li>成就感：有成就感才能享受coding</li><li>认同感：有认同感才能保持coding的激情</li></ul><p>具体怎么去做呢？</p><ul><li>精细设计：用上xxx算法，xxx设计模式；架构风骚，代码犀利</li><li>回头重构：隔一整子，回头看总会觉得有些地方写的跟坨屎一样……继续重构优化</li></ul><p>这是一个良性的过程。不仅能不断提高我们的技术能力，还能保持代码的活性，不至于变成一团大煤球僵死的代码。</p><p>为什么还是有些同学没法享受coding呢？我觉得是缺乏自信！</p><h3 id="自信"><a href="#自信" class="headerlink" title="自信"></a>自信</h3><blockquote><p>青天不算高，人心第一高</p></blockquote><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E8%87%AA%E4%BF%A1.png" alt=""></p><p>我觉得自信真的特别重要，即使是迷之自信，也强过没有自信。</p><p>缺乏自信的表现大致有2类：</p><ul><li><p>害怕使用、尝试新技术、新设计</p><p>这类开发害怕使用尝试新技术，担心出了问题，自己解决不了，影响业务开发的进度。我觉得这个问题非常严重，你不能把你学到的技术应用起来，你永远不知道你是否掌握了，学到的是否对的，你永远没法成长。其实这也反映出一些问题：</p><ol><li>代码缺乏review，导致他们对自己的代码没有自信，害怕出现问题</li><li>发布上线规范制定的不够好</li></ol></li><li><p>觉得自己设计实现的代码或者方案就那样</p><p>这类开发觉得自己的代码就是：一顿操作猛如虎，一看代码渣如雏。</p><p>我经常和这类人说的是：<strong>战略上藐视所有人，战术上重视所有人</strong>。什么意思呢？就是说战略上，你要知道，你不比任何人差，你的技术也并不比任务人弱多少，你有什么好虚的呢？但是战术上，每个人都可能会有特别的想法意见值得我们去学习吸收。</p><blockquote><p>总有人要赢，那这个人为什么不能是你呢？</p></blockquote></li></ul><p>和缺乏自信的人相反，还有一类是超级自信的那种，觉得自己牛逼坏了。那这种情况应该怎么办呢？我们先来看看一张图：</p><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/zxx1.jpg" alt=""></p><p>当我们自信心爆炸的时候，我们如何检验自己是在<strong>愚昧山峰</strong>，还是在<strong>平稳高原</strong>呢？我觉得要挑战自己。</p><h3 id="挑战自己"><a href="#挑战自己" class="headerlink" title="挑战自己"></a>挑战自己</h3><p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img//dqc-think/%E6%8E%A5%E5%8F%97%E6%8C%91%E6%88%98.jpg" alt=""></p><p>其实我在工作大概2-3年的时候，突然有一天，我觉得java不就那点东西嘛，我感觉我都会了。什么并发，AQS，锁，自旋锁、重入锁、读写锁、jvm、对象内存分布、gc、框架spring等，我都会啊。我那会觉得我可以做架构师了，然后我做了一个非常明智的决定，我决定去写一个框架，彻底代替spring，以后提到java企业级开发，就是我写的框架了(然后名字都起好了，他不是叫spring嘛，我就叫summer)。然后我大概构思设计了2周，发现我找不到一个点下手，我应该用个什么思想呢？用什么高大上的技术手段呢？然后再过了几天，我突然发现，我连java多线程都不了解了，并发他背后到底做了什么事情？我一度怀疑自己失忆了…</p><p>所以，我想说，如果你觉得自己牛逼坏了，不妨多挑战一下自己，比如自己设计个框架啊、写个提升工作效率的小工具等等，你会发现一个不一样的你。</p><p>那当我们挑战自己后，陷入迷茫困顿的时候怎么办呢？看书。</p><h3 id="看书"><a href="#看书" class="headerlink" title="看书"></a>看书</h3><blockquote><p>付出的是价格，收获的是价值</p></blockquote><p>我那会陷入迷茫的时候，我又做了一个非常明智的决定，看书。所有我感觉我不懂的地方，我都针对的买了相应的书，然后非常庆幸我把大部分书都看完了，至少现在我没有当时的那种啥都不知道，感觉掉入黑洞的焦虑。</p><ul><li><p>如何针对性的看书呢？</p><p>我的做法是，一次性买3本相关领域的书。兼听则明，花几十块钱就能学到3位作者花了2-3年总结的知识，我真是太赚了！</p></li><li><p>看一本书，其实很快</p><p>很多开发跟我说，技术书都太厚了，看不完。我想说，看一本书，其实很快。我现在每天中午看10-20分钟，大概能看10页，一个月20天大概能看200页。一本稍微厚点的书也就400多页，2个月就看完了！</p></li></ul><blockquote><p>重要的不是你学习了多少新东西，而是你改正了多少错误，弥补了多少短板，根据你的需要学习了多少新东西</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;程序员的自我修养&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里主要和大家分享我在开发DQC（数据质量中心）的过程中，对产品需求、架构设计、编码、自我提升这4个环节的反思与经验。&lt;/p&gt;
+&lt;h2 id=&quot;产品需求&quot;&gt;&lt;a href=&quot;#产品需求&quot; 
+      
+    
+    </summary>
+    
+      <category term="软件技术" scheme="https://zacard.net/categories/%E8%BD%AF%E4%BB%B6%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="java" scheme="https://zacard.net/tags/java/"/>
+    
+      <category term="架构设计" scheme="https://zacard.net/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"/>
+    
+      <category term="编码" scheme="https://zacard.net/tags/%E7%BC%96%E7%A0%81/"/>
+    
+      <category term="自我提升" scheme="https://zacard.net/tags/%E8%87%AA%E6%88%91%E6%8F%90%E5%8D%87/"/>
+    
+  </entry>
   
   <entry>
     <title>X-UID:分布式唯一id服务</title>
@@ -649,33 +684,6 @@
       <category term="重构" scheme="https://zacard.net/tags/%E9%87%8D%E6%9E%84/"/>
     
       <category term="关联查询" scheme="https://zacard.net/tags/%E5%85%B3%E8%81%94%E6%9F%A5%E8%AF%A2/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>RocketMQ阅读笔记</title>
-    <link href="https://zacard.net/2017/01/03/rocketmq-read-note/"/>
-    <id>https://zacard.net/2017/01/03/rocketmq-read-note/</id>
-    <published>2017-01-03T06:59:50.000Z</published>
-    <updated>2018-01-12T13:37:11.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="为何选择rocketmq"><a href="#为何选择rocketmq" class="headerlink" title="为何选择rocketmq"></a>为何选择rocketmq</h2><p>选型时主要对比了kafka和rocketmq。两者还是存在较大差异的，kafka一开始的定位就是日志收集，对于订单、交易等可靠传输场景不能很好满足（消息丢失、消息重复消费等方面）。并且rocketmq是使用java编写的，相对于scala编写的kafka，我们有更大的定制与扩展的空间。</p><h3 id="数据可靠性"><a href="#数据可靠性" class="headerlink" title="数据可靠性"></a>数据可靠性</h3><ul><li>rocketmq支持异步/同步刷盘,异步/同步复制</li><li>kafka异步刷盘，异步/同步复制</li></ul><p>刷盘效率上应该是rocketmq更高。因为rocketmq的消息都写到一个文件中，而kafka的每个分区对应一个文件，rocketmq可以充分利用IO组commit机制批量传输数据。</p><a id="more"></a><h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><ul><li>kafka单机协议TPS约在100w/s，消息大小为10字节</li><li>rocketmq单机写入TPS单实例约为7W/s,单机3个broker，可以跑到12w/s,消息大小为10字节</li></ul><p>之所以kafka有如此高的TPS,是由于producer端会将多个小消息合并，批量发送至broker。rocketmq没有这做的原因：</p><ol><li>由于使用java语言，如果producer端缓存过多消息，GC是个严重问题</li><li>producer端调用发送消息接口，消息为发送到broker就返回，此时producer宕机会导致消息丢失</li><li>producer通常为分布式部署，且每台机器都是多线程发送，单个producer产生的消息有限</li></ol><h3 id="单机支持的队列-分区数量"><a href="#单机支持的队列-分区数量" class="headerlink" title="单机支持的队列/分区数量"></a>单机支持的队列/分区数量</h3><ul><li>Kafka单机超过64个队列/分区，Load会发生明显的飙高现象，队列越多，load越高，发送消息响应时间变长。<a href="https://www.confluent.io/blog/how-to-choose-the-number-of-topicspartitions-in-a-kafka-cluster/" target="_blank" rel="external">Kafka分区数无法过多的问题</a></li><li>rocketmq支持单机最高5w个队列，负载不会发送明显变化</li></ul><p>队列/分区多的好处：</p><ol><li>单机可以创建更多Topic，因为没有Topic都是有一批队列组成</li><li>消费者的集群规模和队列数成正比</li></ol><h3 id="消息投递实时性"><a href="#消息投递实时性" class="headerlink" title="消息投递实时性"></a>消息投递实时性</h3><ul><li>kafka使用短轮询方式，实时性取决于轮询间隔时间，0.8以后支持长轮询</li><li>rockmq使用长轮询，同push方式实时性基本一致</li></ul><h3 id="消费失败重试"><a href="#消费失败重试" class="headerlink" title="消费失败重试"></a>消费失败重试</h3><ul><li>kafka不支持重试</li><li>rocketmq消费失败支持定时重试，每次重试间隔时间顺延</li></ul><p>重试的场景比较适合依赖第三方的consumer，比较充值，consumer需要调用第三方运营商网关，充值失败可能是对方当前压力过大，稍后调用可能就会成功。</p><h3 id="消息顺序"><a href="#消息顺序" class="headerlink" title="消息顺序"></a>消息顺序</h3><ul><li>kafka支持消息顺序，但是在一台broker宕机后，就会产生消息乱序</li><li>rocketmq支持严格的消息顺序，当一台broker宕机后，发送消息会失败，但不会乱序</li></ul><h3 id="定时消息"><a href="#定时消息" class="headerlink" title="定时消息"></a>定时消息</h3><ul><li>kafka目前不支持定时消息</li><li>rocketmq支持定时消息</li></ul><p>目前业务场景暂时用不到。</p><h3 id="分布式事务消息"><a href="#分布式事务消息" class="headerlink" title="分布式事务消息"></a>分布式事务消息</h3><ul><li>kafka目前不支持</li><li>rocketmq暂时没有开源事务消息</li></ul><h3 id="消息查询"><a href="#消息查询" class="headerlink" title="消息查询"></a>消息查询</h3><ul><li>kafka不支持消息查询</li><li>rocketmq支持根据消息表示查询，也可根据消息内容查询（发送消息时指定一个消息密钥，任意字符串，例如指定为订单编号）</li></ul><p>这个对于消息定位非常有帮助。</p><h3 id="消息回溯"><a href="#消息回溯" class="headerlink" title="消息回溯"></a>消息回溯</h3><ul><li>kafka不支持</li><li>rocketmq可以按照时间回溯消息，精度毫秒</li></ul><p>这个对于对账等功能比较有用</p><h3 id="消息过滤"><a href="#消息过滤" class="headerlink" title="消息过滤"></a>消息过滤</h3><ul><li>kafka不支持broker端过滤</li><li>rocketmq支持根据tag（相当于子主题）过滤</li></ul><h3 id="开发语言友好"><a href="#开发语言友好" class="headerlink" title="开发语言友好"></a>开发语言友好</h3><p>rocketmq使用java，更友好。</p><h3 id="开源社区活跃度"><a href="#开源社区活跃度" class="headerlink" title="开源社区活跃度"></a>开源社区活跃度</h3><p>都比较活跃。</p><h2 id="rocketmq消息存储"><a href="#rocketmq消息存储" class="headerlink" title="rocketmq消息存储"></a>rocketmq消息存储</h2>]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;为何选择rocketmq&quot;&gt;&lt;a href=&quot;#为何选择rocketmq&quot; class=&quot;headerlink&quot; title=&quot;为何选择rocketmq&quot;&gt;&lt;/a&gt;为何选择rocketmq&lt;/h2&gt;&lt;p&gt;选型时主要对比了kafka和rocketmq。两者还是存在较大差异的，kafka一开始的定位就是日志收集，对于订单、交易等可靠传输场景不能很好满足（消息丢失、消息重复消费等方面）。并且rocketmq是使用java编写的，相对于scala编写的kafka，我们有更大的定制与扩展的空间。&lt;/p&gt;
-&lt;h3 id=&quot;数据可靠性&quot;&gt;&lt;a href=&quot;#数据可靠性&quot; class=&quot;headerlink&quot; title=&quot;数据可靠性&quot;&gt;&lt;/a&gt;数据可靠性&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;rocketmq支持异步/同步刷盘,异步/同步复制&lt;/li&gt;
-&lt;li&gt;kafka异步刷盘，异步/同步复制&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;刷盘效率上应该是rocketmq更高。因为rocketmq的消息都写到一个文件中，而kafka的每个分区对应一个文件，rocketmq可以充分利用IO组commit机制批量传输数据。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="软件技术" scheme="https://zacard.net/categories/%E8%BD%AF%E4%BB%B6%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="rocketmq" scheme="https://zacard.net/tags/rocketmq/"/>
     
   </entry>
   
