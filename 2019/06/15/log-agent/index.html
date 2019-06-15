@@ -114,7 +114,7 @@ agent的设计实现其实有一些dirty、creepy的地方（潮湿的）
 <meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/log-agent/%E6%97%A0%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%981.jpg">
 <meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/log-agent/%E6%97%A0%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%982.jpg">
 <meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/log-agent/muri-log.jpg">
-<meta property="og:updated_time" content="2019-06-15T04:33:00.203Z">
+<meta property="og:updated_time" content="2019-06-15T04:37:11.849Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="日志收集Agent，阴暗潮湿的地底世界">
 <meta name="twitter:description" content="分享我参与严选技术工作组的日志平台项目中的时候，在日志收集agent这块遇到的一些问题，深入到每个底层细节和大家谈谈。
@@ -441,6 +441,7 @@ agent的设计实现其实有一些dirty、creepy的地方（潮湿的）
 <p>所以我觉得日志收集agent对大家来说是一个阴暗潮湿的地底世界:</p>
 <p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/log-agent/creepy1.jpeg" alt=""></p>
 <p>就让我举起火把，照亮所有dark、dirty、creepy的地方。</p>
+<a id="more"></a>
 <h2 id="背景提要"><a href="#背景提要" class="headerlink" title="背景提要"></a>背景提要</h2><p>日志收集我们知道是在<strong>宿主服务器</strong>通过一个agent来收集日志数据，并且将收集到的数据源源不断的发送到日志平台的下游链路消费。</p>
 <p>正是因为日志收集agent是整个日志平台的唯一数据来源，所以日志收集的地位非常重要。一旦日志收集agent出现问题，轻则影响后续链路的报警和查询，重则影响宿主服务器，反客为主，影响更为重要的应用系统。</p>
 <p>所以，先来看看我们选型agent的时候有些什么阴暗的地方:</p>
