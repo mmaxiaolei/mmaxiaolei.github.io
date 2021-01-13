@@ -1,0 +1,1138 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,日志采集,agent,backoff," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Zacard's Notes" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景最近在开发自研日志平台的日志采集agent。这里记录下高可用设计的一些思考和技术细节。
+当遇到发送到下游失败需要重试的场景。我们如何合理设计重试？如何优雅重试呢？
+首先，我们需要明确重试的本质是什么？
+重试的本质
+重试的本质是我们认为这个故障是暂时的，而不是永久的，所以我们会去重试
+
+因此，我们需要清晰的定义什么情况下需要重试，什么情况下重试是没有意义的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="日志采集高可用之重试">
+<meta property="og:url" content="https://zacard.net/2021/01/13/log-agent-backoff/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="背景最近在开发自研日志平台的日志采集agent。这里记录下高可用设计的一些思考和技术细节。
+当遇到发送到下游失败需要重试的场景。我们如何合理设计重试？如何优雅重试呢？
+首先，我们需要明确重试的本质是什么？
+重试的本质
+重试的本质是我们认为这个故障是暂时的，而不是永久的，所以我们会去重试
+
+因此，我们需要清晰的定义什么情况下需要重试，什么情况下重试是没有意义的">
+<meta property="og:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/backoff/zsfb.png">
+<meta property="og:updated_time" content="2021-01-13T06:38:09.342Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="日志采集高可用之重试">
+<meta name="twitter:description" content="背景最近在开发自研日志平台的日志采集agent。这里记录下高可用设计的一些思考和技术细节。
+当遇到发送到下游失败需要重试的场景。我们如何合理设计重试？如何优雅重试呢？
+首先，我们需要明确重试的本质是什么？
+重试的本质
+重试的本质是我们认为这个故障是暂时的，而不是永久的，所以我们会去重试
+
+因此，我们需要清晰的定义什么情况下需要重试，什么情况下重试是没有意义的">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/backoff/zsfb.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2021/01/13/log-agent-backoff/"/>
+
+
+
+
+
+  <title> 日志采集高可用之重试 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2021/01/13/log-agent-backoff/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                日志采集高可用之重试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-13T14:35:58+08:00">
+                2021-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2021/01/13/log-agent-backoff/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2021/01/13/log-agent-backoff/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2021/01/13/log-agent-backoff/" class="leancloud_visitors" data-flag-title="日志采集高可用之重试">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在开发自研日志平台的日志采集agent。这里记录下高可用设计的一些思考和技术细节。</p>
+<p>当遇到发送到下游失败需要重试的场景。我们如何合理设计重试？如何优雅重试呢？</p>
+<p>首先，我们需要明确重试的本质是什么？</p>
+<h2 id="重试的本质"><a href="#重试的本质" class="headerlink" title="重试的本质"></a>重试的本质</h2><blockquote>
+<p>重试的本质是我们认为这个故障是暂时的，而不是永久的，所以我们会去重试</p>
+</blockquote>
+<p>因此，我们需要清晰的定义什么情况下需要重试，什么情况下重试是没有意义的</p>
+<a id="more"></a>
+<h2 id="何时重试"><a href="#何时重试" class="headerlink" title="何时重试"></a>何时重试</h2><p>对于日志采集这个场景来说，为了保证<code>at least once</code>语义，大部分场景我们都需要无限重试。例如下游超时、限流，甚至宕机等。所以我们只需要定义出不需要重试的几种场景：</p>
+<ul>
+<li>未知错误：通常为下游代码bug。重试有限次数即丢弃（可配置记录到磁盘）</li>
+<li>业务错误：例如格式错误（非法数据）。这种错误不管重试几次永远都是错误，没有重试的必要</li>
+</ul>
+<h2 id="如何重试"><a href="#如何重试" class="headerlink" title="如何重试"></a>如何重试</h2><p>通常重试会设置一个上界，例如最大重试次数、最大重试间隔</p>
+<p>对于日志采集的场景，为了保证数据的可靠投递，上界选择最大重试间隔更合理。部分情况结合了最大重试次数（例如有限重试的场景：下游未知异常）</p>
+<p>具体如何进行重试呢？常见的方式是每次重试失败时都会“休息”一段时间再重试，以避免一窝蜂的过快重试导致下游过大的负担和无谓的资源消耗</p>
+<p>而常见的”重修-&gt;休息-&gt;重试”的算法叫做backoff退避算法。所以什么是backoff呢？</p>
+<h3 id="backoff是什么"><a href="#backoff是什么" class="headerlink" title="backoff是什么"></a>backoff是什么</h3><p>这里用wiki中的<strong>Exponential backoff</strong>定义：</p>
+<blockquote>
+<p><strong>Exponential backoff</strong> is an <a href="https://en.wikipedia.org/wiki/Algorithm" target="_blank" rel="external">algorithm</a> that uses <a href="https://en.wikipedia.org/wiki/Feedback" target="_blank" rel="external">feedback</a> to multiplicatively decrease the rate of some process, in order to gradually find an acceptable rate</p>
+</blockquote>
+<p>简单来说：backoff退避算法就是一种利用反馈对某个过程的速率进行成倍的降低，以逐步找到一个可接受的速率的算法</p>
+<p>从重试场景看，就是用某种算法，找到一个合理的重试时间，而不是所有异常请求都一窝蜂的直接去重试</p>
+<h3 id="为什么要有backoff"><a href="#为什么要有backoff" class="headerlink" title="为什么要有backoff"></a>为什么要有backoff</h3><p>backoff使用场景是在网络中的节点发送数据发送冲突的时候，等待一定时间后再发，从而避免频繁的发生冲突。通常作为避免网络堵塞的一部分用于同一数据块的重发策略</p>
+<p>想想一下这种场景，某个rpc服务的其中一个节点挂了，突然大规模的流量全部重试打到另一个节点，另一个节点很可能瞬间也被压垮。这也是一种“惊群效应”</p>
+<p>另一个场景是，下游服务挂了，上游一直在重试直至下游服务恢复。如果没有backoff，上游全部无限循环重试，也是一种资源浪费</p>
+<p>为了避免这些问题，我们希望发生异常的时候不是立即重试，而且等待一定时间后再重试</p>
+<p>所以，大部分重试、重发等场景都会利用backoff算法来降低冲突和无谓的资源消耗</p>
+<h3 id="backoff的原理"><a href="#backoff的原理" class="headerlink" title="backoff的原理"></a>backoff的原理</h3><p>backoff基本都需要设定最大重试次数或者最大间隔时间。因为无限次的重试往往没有意义，过长的间隔时间也不利于响应下游的恢复</p>
+<p>backoff算法有以下几种常见实现方式：</p>
+<h4 id="fixed-backoff"><a href="#fixed-backoff" class="headerlink" title="fixed backoff"></a>fixed backoff</h4><p>固定间隔时间的退避算法。每次重试都会间隔固定的<code>interval</code>时间</p>
+<ul>
+<li>优点：实现非常简单</li>
+<li>缺点：<code>interval</code>不太好设定。设置的过小，下游长时间的故障可能造成大量资源浪费；设置的过大，对于偶现的网络抖动不能及时投递数据</li>
+</ul>
+<h4 id="random-backoff"><a href="#random-backoff" class="headerlink" title="random backoff"></a>random backoff</h4><p>给定一个重试等待的最大时间<code>maxInterval</code>，直接随机一个等待时间出来。范围是<code>[0,maxInterval)</code>，比较暴力</p>
+<ul>
+<li>优点：实现非常简单，较好的避免冲突</li>
+<li>缺点也很明显：可能一次偶然的网络抖动，却等待了相当长一段时间才重试成功</li>
+</ul>
+<h4 id="fibonacci-backoff"><a href="#fibonacci-backoff" class="headerlink" title="fibonacci backoff"></a>fibonacci backoff</h4><p>基于fibonacci数列的退避算法。能较好的避免冲突，及时响应短暂的下游故障</p>
+<p>核心算法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">next:=prev+prevPrev</div><div class="line">prevPrev = prev</div><div class="line">prev = next</div><div class="line"><span class="keyword">return</span> next</div></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">=== RUN   TestFibonacci_Next</div><div class="line"><span class="number">0</span>ms</div><div class="line"><span class="number">10</span>ms</div><div class="line"><span class="number">10</span>ms</div><div class="line"><span class="number">20</span>ms</div><div class="line"><span class="number">30</span>ms</div><div class="line"><span class="number">50</span>ms</div><div class="line"><span class="number">80</span>ms</div><div class="line"><span class="number">130</span>ms</div></pre></td></tr></table></figure>
+<ul>
+<li>优点：能够快速恢复数据投递。适合下游故障能够快速恢复或者故障率很低的情况</li>
+<li>缺点：对于下游较长时间的故障，比较浪费资源</li>
+</ul>
+<h4 id="exponential-backoff"><a href="#exponential-backoff" class="headerlink" title="exponential backoff"></a>exponential backoff</h4><p>指数退避算法。也就是每次重试的间隔时间都是指数增长的。那为什么是指数增长呢？</p>
+<p>可以从指数分布来看：</p>
+<blockquote>
+<p>指数分布是独立事件的时间间隔的概率分布</p>
+</blockquote>
+<p>指数分布满足下图：</p>
+<p><img src="https://raw.githubusercontent.com/mmaxiaolei/resource/master/img/backoff/zsfb.png" alt=""></p>
+<p>可以看到，随着间隔时间变长，事件的发生概率急剧下降，呈指数式衰减</p>
+<p>所以，指数退避算法随着重试次数的增加，时间间隔变长，发生冲突的概率是非常低的。因此很适合作为backoff的一种实现算法</p>
+<p>核心代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">next := <span class="keyword">float64</span>(minInterval) * math.Pow(factor, attempts)</div></pre></td></tr></table></figure>
+<p><code>minInterval</code>: 表示初始的时间间隔。例如10ms</p>
+<p><code>factor</code>: 表示指数因子。例如2</p>
+<p><code>attempts</code>: 表示重试的次数</p>
+<p>输出结果如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">=== RUN   TestExponential_Next</div><div class="line"><span class="number">10</span>ms</div><div class="line"><span class="number">20</span>ms</div><div class="line"><span class="number">40</span>ms</div><div class="line"><span class="number">80</span>ms</div><div class="line"><span class="number">160</span>ms</div><div class="line"><span class="number">320</span>ms</div><div class="line"><span class="number">640</span>ms</div><div class="line"><span class="number">1280</span>ms</div><div class="line">...</div></pre></td></tr></table></figure>
+<ul>
+<li>优点：实现比较简单。同时冲突的概率也很低，在重试初期可以在相对比较短的时间内完成。对于服务宕机时间较长的情况，也可以在一个稳定的长时段内重试，不会空耗系统资源</li>
+<li>缺点：当大部分节点恰好都在同一个时间点发生异常，那由于每次重试的间隔时间都是一致的会导致容易发生冲突</li>
+</ul>
+<h4 id="exponential-jitter-backoff"><a href="#exponential-jitter-backoff" class="headerlink" title="exponential jitter backoff"></a>exponential jitter backoff</h4><p>指数抖动退避算法，就是<strong>弥补指数退避算法的缺点</strong>。每次计算出下一次重试的间隔时间的时候加上一定的随机抖动时间，使同一时间需要重试的请求错开</p>
+<p>核心代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">next := <span class="keyword">float64</span>(minInterval) * math.Pow(factor, attempts)</div><div class="line"><span class="keyword">if</span> jitterFactor &gt; <span class="number">0</span> &#123;</div><div class="line">		j := jitterFactor * next</div><div class="line">		min := next - j</div><div class="line">		max := next + j</div><div class="line">		next = min + rand.Float64()*(max-min+<span class="number">1</span>)</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
+<p><code>minInterval</code>: 表示初始的时间间隔。例如10ms</p>
+<p><code>factor</code>: 表示指数因子。例如2</p>
+<p><code>attempts</code>: 表示重试的次数</p>
+<p><code>jitterFactor</code>: 表示抖动的因子。例如0.5</p>
+<p>输出结果如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">=== RUN   TestExponential_NextWithJitter</div><div class="line"><span class="number">11</span>ms</div><div class="line"><span class="number">28</span>ms</div><div class="line"><span class="number">46</span>ms</div><div class="line"><span class="number">75</span>ms</div><div class="line"><span class="number">147</span>ms</div><div class="line"><span class="number">379</span>ms</div><div class="line"><span class="number">362</span>ms</div><div class="line"><span class="number">840</span>ms</div></pre></td></tr></table></figure>
+<p>自己用go实现了<code>exponential jitter backoff</code>：<a href="https://github.com/mmaxiaolei/backoff" target="_blank" rel="external">传送门</a></p>
+<p>欢迎大家使用和反馈</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>理解了重试的本质后，我们只需要根据特定场景选择合适的重试backoff算法即可。backoff的实现有很多，大部分场景<code>exponential jitter backoff</code>都能胜任</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/日志采集/" rel="tag"># 日志采集</a>
+          
+            <a href="/tags/agent/" rel="tag"># agent</a>
+          
+            <a href="/tags/backoff/" rel="tag"># backoff</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/15/log-agent/" rel="next" title="日志收集Agent，阴暗潮湿的地底世界">
+                <i class="fa fa-chevron-left"></i> 日志收集Agent，阴暗潮湿的地底世界
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2021/01/13/log-agent-backoff/"
+           data-title="日志采集高可用之重试" data-url="https://zacard.net/2021/01/13/log-agent-backoff/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">64</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">103</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-block">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://www.dingdangss.com/" title="DingDang's Notes" target="_blank">DingDang's Notes</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重试的本质"><span class="nav-number">2.</span> <span class="nav-text">重试的本质</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#何时重试"><span class="nav-number">3.</span> <span class="nav-text">何时重试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何重试"><span class="nav-number">4.</span> <span class="nav-text">如何重试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#backoff是什么"><span class="nav-number">4.1.</span> <span class="nav-text">backoff是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要有backoff"><span class="nav-number">4.2.</span> <span class="nav-text">为什么要有backoff</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#backoff的原理"><span class="nav-number">4.3.</span> <span class="nav-text">backoff的原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fixed-backoff"><span class="nav-number">4.3.1.</span> <span class="nav-text">fixed backoff</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#random-backoff"><span class="nav-number">4.3.2.</span> <span class="nav-text">random backoff</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fibonacci-backoff"><span class="nav-number">4.3.3.</span> <span class="nav-text">fibonacci backoff</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exponential-backoff"><span class="nav-number">4.3.4.</span> <span class="nav-text">exponential backoff</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exponential-jitter-backoff"><span class="nav-number">4.3.5.</span> <span class="nav-text">exponential jitter backoff</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>
