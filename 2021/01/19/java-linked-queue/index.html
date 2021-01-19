@@ -1,0 +1,1149 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="xbiTmID1n2aAD90n7mafi0Hfvg1CBmIh75_D0ZaXdYo" />
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,并发,可见性," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Zacard's Notes" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="首先抛出一个问题：
+
+LinkedBlockingQueue首尾2把锁是如何保证并发安全的？
+
+背景我们知道，要保证共享变量的多线程并发读写安全需要用同一把锁。但是LinkedBlockingQueue有putLock和takeLock2把锁，是如何保证并发安全的呢？
+先来看下LinkedBlockingQueue源码上的注释：
+
+A variant of the “two lock queue”">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinkedBlockingQueue，我所忽略的并发安全细节">
+<meta property="og:url" content="https://zacard.net/2021/01/19/java-linked-queue/index.html">
+<meta property="og:site_name" content="Zacard's Notes">
+<meta property="og:description" content="首先抛出一个问题：
+
+LinkedBlockingQueue首尾2把锁是如何保证并发安全的？
+
+背景我们知道，要保证共享变量的多线程并发读写安全需要用同一把锁。但是LinkedBlockingQueue有putLock和takeLock2把锁，是如何保证并发安全的呢？
+先来看下LinkedBlockingQueue源码上的注释：
+
+A variant of the “two lock queue”">
+<meta property="og:updated_time" content="2021-01-19T14:28:25.149Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LinkedBlockingQueue，我所忽略的并发安全细节">
+<meta name="twitter:description" content="首先抛出一个问题：
+
+LinkedBlockingQueue首尾2把锁是如何保证并发安全的？
+
+背景我们知道，要保证共享变量的多线程并发读写安全需要用同一把锁。但是LinkedBlockingQueue有putLock和takeLock2把锁，是如何保证并发安全的呢？
+先来看下LinkedBlockingQueue源码上的注释：
+
+A variant of the “two lock queue”">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'zacard'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zacard.net/2021/01/19/java-linked-queue/"/>
+
+
+
+
+
+  <title> LinkedBlockingQueue，我所忽略的并发安全细节 | Zacard's Notes </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6ebbbd5859730fcc789698a808aff680";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zacard's Notes</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://zacard.net/2021/01/19/java-linked-queue/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="zacard">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/88666.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Zacard's Notes">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Zacard's Notes" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                LinkedBlockingQueue，我所忽略的并发安全细节
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-19T21:30:54+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/软件技术/" itemprop="url" rel="index">
+                    <span itemprop="name">软件技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2021/01/19/java-linked-queue/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2021/01/19/java-linked-queue/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2021/01/19/java-linked-queue/" class="leancloud_visitors" data-flag-title="LinkedBlockingQueue，我所忽略的并发安全细节">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>首先抛出一个问题：</p>
+<blockquote>
+<p>LinkedBlockingQueue首尾2把锁是如何保证并发安全的？</p>
+</blockquote>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>我们知道，要保证共享变量的多线程并发读写安全需要用同一把锁。但是<code>LinkedBlockingQueue</code>有putLock和takeLock2把锁，是如何保证并发安全的呢？</p>
+<p>先来看下LinkedBlockingQueue源码上的注释：</p>
+<blockquote>
+<p>A variant of the “two lock queue” algorithm</p>
+</blockquote>
+<p>“two lock queue” algorithm的一个变种。那什么是”two lock queue” algorithm呢？</p>
+<a id="more"></a>
+<h2 id="two-lock-queue-algorithm"><a href="#two-lock-queue-algorithm" class="headerlink" title="two lock queue algorithm"></a>two lock queue algorithm</h2><p>这其实是Maged M. Michael 和 Michael L. Scott在1996年发表的论文 <a href="https://www.cs.rochester.edu/research/synchronization/pseudocode/queues.html" target="_blank" rel="external">Simple, Fast, and Practical Non-Blocking and Blocking</a>描述的其中一种算法</p>
+<p>为了提高并发队列的性能，他们提出了一种lock free的无锁算法（基于CAS）。但是在某些不支持CAS指令的机器上，他们同样提出了优化的算法，就是“two lock queue”算法</p>
+<h3 id="为什么要用2把锁"><a href="#为什么要用2把锁" class="headerlink" title="为什么要用2把锁"></a>为什么要用2把锁</h3><p>如果用一把锁，不管是enqueue入队操作和dequeue出队操作，都需要获取这把唯一的排它锁。在高并发下容易引起激烈竞争导致性能下降。而我们分析下queue的2个主要操作：</p>
+<ul>
+<li>enqueue操作：总是在队列尾部插入节点</li>
+<li>dequeue操作：总是在队列头部删除节点</li>
+</ul>
+<p>可以发现，enqueue和dequeue在大部分情况下都是相互独立的，并没有发生冲突，无需锁住整个队列。我们自然而然就能想到一个锁的常见优化方法：<strong>分段锁</strong>。所以队列用头尾2个锁可以大大降低冲突的概率</p>
+<p>但是用2把锁在临界点会有些不太好处理的逻辑：</p>
+<ul>
+<li>在一个空队列入队一个节点</li>
+<li>只剩最后一个节点的时候出队这个节点</li>
+</ul>
+<p>这2种情况都需要同时操作修改头尾指针，即需要同时获取<code>head lock</code>和<code>tail lock</code></p>
+<p>危险的逻辑来了，同时获取多把锁非常容易造成死锁。即使我们小心翼翼的设计这块加锁/解锁顺序，这块代码逻辑就会出现多次加锁/解锁逻辑，性能反而可能会下降</p>
+<p>论文的算法既然有个“simple”，我们看看论文的算法是如何处理的：</p>
+<h3 id="并发分析"><a href="#并发分析" class="headerlink" title="并发分析"></a>并发分析</h3><p>伪代码（摘自论文）如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">structure node_t &#123;value: data type, next: pointer to node_t&#125;</div><div class="line"> structure queue_t &#123;Head: pointer to node_t, Tail: pointer to node_t,</div><div class="line">                       H_lock: lock type, T_lock: lock type&#125;</div><div class="line"> </div><div class="line"> initialize(Q: pointer to queue_t)</div><div class="line">    node = new_node()		<span class="comment">// Allocate a free node</span></div><div class="line">    node-&gt;next = NULL          <span class="comment">// Make it the only node in the linked list</span></div><div class="line">    Q-&gt;Head = Q-&gt;Tail = node	<span class="comment">// Both Head and Tail point to it</span></div><div class="line">    Q-&gt;H_lock = Q-&gt;T_lock = FREE	<span class="comment">// Locks are initially free</span></div><div class="line"> </div><div class="line"> enqueue(Q: pointer to queue_t, value: data type)</div><div class="line">    node = new_node()	        <span class="comment">// Allocate a new node from the free list</span></div><div class="line">    node-&gt;value = value		<span class="comment">// Copy enqueued value into node</span></div><div class="line">    node-&gt;next = NULL          <span class="comment">// Set next pointer of node to NULL</span></div><div class="line">    lock(&amp;Q-&gt;T_lock)		<span class="comment">// Acquire T_lock in order to access Tail</span></div><div class="line">       Q-&gt;Tail-&gt;next = node	<span class="comment">// Link node at the end of the linked list</span></div><div class="line">       Q-&gt;Tail = node		<span class="comment">// Swing Tail to node</span></div><div class="line">    unlock(&amp;Q-&gt;T_lock)		<span class="comment">// Release T_lock</span></div><div class="line"> </div><div class="line"> dequeue(Q: pointer to queue_t, pvalue: pointer to data type): <span class="function"><span class="keyword">boolean</span></span></div><div class="line">    <span class="title">lock</span><span class="params">(&amp;Q-&gt;H_lock)</span>	        <span class="comment">// Acquire H_lock in order to access Head</span></div><div class="line">       node = Q-&gt;Head		<span class="comment">// Read Head</span></div><div class="line">       new_head = node-&gt;next	<span class="comment">// Read next pointer</span></div><div class="line">       <span class="keyword">if</span> new_head == NULL	<span class="comment">// Is queue empty?</span></div><div class="line">          unlock(&amp;Q-&gt;H_lock)	<span class="comment">// Release H_lock before return</span></div><div class="line">          <span class="keyword">return</span> FALSE		<span class="comment">// Queue was empty</span></div><div class="line">       endif</div><div class="line">       *pvalue = new_head-&gt;value	<span class="comment">// Queue not empty.  Read value before release</span></div><div class="line">       Q-&gt;Head = new_head	<span class="comment">// Swing Head to next node</span></div><div class="line">    unlock(&amp;Q-&gt;H_lock)		<span class="comment">// Release H_lock</span></div><div class="line">    free(node)			<span class="comment">// Free node</span></div><div class="line">    <span class="keyword">return</span> TRUE		<span class="comment">// Queue was not empty, dequeue succeeded</span></div></pre></td></tr></table></figure>
+<p>可以看到：队列初始化的时候new了一个空节点，这样在首次入队的时候，队列就不再是空队列，无需修改head指针。在只剩最后一个元素的时候也不是只有一个节点，无需修改tail指针。巧妙的避开了同时修改头尾指针的情况</p>
+<p>但是这里还是有个并发问题，假设以下执行顺序：</p>
+<ul>
+<li>线程A执行enqueue到第16行</li>
+<li>线程B执行dequeue到第24行</li>
+</ul>
+<p>线程A在执行完16行的时候已经将首个元素节点入队了，然而线程B在执行24行的时候很有可能没法立即读到这个最新节点。因为2个线程使用不同锁保护，且没有用类似java中的volatile的手段来保证可见性</p>
+<p>也就是说这个算法有个可见性问题：</p>
+<blockquote>
+<p>新入队的元素可能无法被立即读到而顺利出队</p>
+</blockquote>
+<p>这个问题挺明显的，作者不至于没有注意。网上搜索了下，看到有位博主对这段有解释：</p>
+<blockquote>
+<p>好在一般来讲next指针是32位数据，而现代的CPU已经能保证多线程程序中内存对齐了的32位数据<strong>读写操作的原子性</strong>，而一般来讲编译器会自动帮你对齐32位数据，所以这个不是问题</p>
+</blockquote>
+<p>这位博主的的意思应该是：对于节点指针的赋值是一个原子操作，所以其他线程能立即读到这次操作的最新值</p>
+<p><strong>个人不认同这个解释</strong>，因为原子性（有关原子性/原子操作后面再专门讲下）并不代表可见性！一个原子操作只是代表这个操作是不可分割，不可中断，其他线程不会读到操作一半的值。最典型的例子：在32位多核机器读写long类型的值可能存在问题，因为写long操作是被拆分成<strong>写高32位和写低32位两部分</strong>的，不是一个原子操作了。然而即便是读写int这种32位数据，在没有voltail或者锁的保护下，也仍然无法做到可见性！</p>
+<p><strong>个人看法</strong>：这个算法应该确实存在可见性问题。但是，出现的条件比较严苛，必须要队列为空的时候入队，同时有出队线程在读。然而即使出现这种情况，也只会使出队操作表现为无数据，并不影响queue的正确性：</p>
+<ul>
+<li>queue仍然表现为FIFO的特性，没有错乱</li>
+<li>数据也不会丢失，只会延迟读取（出队）</li>
+</ul>
+<p>我们看下<code>LinkedBlockingQueue</code>是怎么处理这块的吧</p>
+<h2 id="LinkedBlockingQueue"><a href="#LinkedBlockingQueue" class="headerlink" title="LinkedBlockingQueue"></a>LinkedBlockingQueue</h2><p>先贴下<code>put()</code>和<code>take()</code>的源码（jdk-1.8）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// offer,即enqueue入队</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offer</span><span class="params">(E e)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (e == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    <span class="keyword">final</span> AtomicInteger count = <span class="keyword">this</span>.count;</div><div class="line">    <span class="keyword">if</span> (count.get() == capacity)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">int</span> c = -<span class="number">1</span>;</div><div class="line">    Node&lt;E&gt; node = <span class="keyword">new</span> Node&lt;E&gt;(e);</div><div class="line">    <span class="keyword">final</span> ReentrantLock putLock = <span class="keyword">this</span>.putLock;</div><div class="line">    putLock.lock();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="keyword">if</span> (count.get() &lt; capacity) &#123;</div><div class="line">        		<span class="comment">// 这里直接把enqueue这个私有方法内联进来方便分析</span></div><div class="line">        		<span class="comment">// enqueue(node);</span></div><div class="line">        		last = last.next = node;</div><div class="line">          </div><div class="line">            c = count.getAndIncrement();</div><div class="line">            <span class="keyword">if</span> (c + <span class="number">1</span> &lt; capacity)</div><div class="line">                notFull.signal();</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        putLock.unlock();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (c == <span class="number">0</span>)</div><div class="line">        signalNotEmpty();</div><div class="line">    <span class="keyword">return</span> c &gt;= <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// poll,即dequeue出队</span></div><div class="line"><span class="function"><span class="keyword">public</span> E <span class="title">poll</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> AtomicInteger count = <span class="keyword">this</span>.count;</div><div class="line">    <span class="keyword">if</span> (count.get() == <span class="number">0</span>)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    E x = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">int</span> c = -<span class="number">1</span>;</div><div class="line">    <span class="keyword">final</span> ReentrantLock takeLock = <span class="keyword">this</span>.takeLock;</div><div class="line">    takeLock.lock();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="keyword">if</span> (count.get() &gt; <span class="number">0</span>) &#123;</div><div class="line">          	<span class="comment">// 这里直接把dequeue这个私有方法内联进来方便分析</span></div><div class="line">            <span class="comment">// x = dequeue();</span></div><div class="line">          	Node&lt;E&gt; h = head;</div><div class="line">        		Node&lt;E&gt; first = h.next;</div><div class="line">        		h.next = h; <span class="comment">// help GC</span></div><div class="line">        		head = first;</div><div class="line">        		x = first.item;</div><div class="line">        		first.item = <span class="keyword">null</span>;</div><div class="line">          </div><div class="line">            c = count.getAndDecrement();</div><div class="line">            <span class="keyword">if</span> (c &gt; <span class="number">1</span>)</div><div class="line">                notEmpty.signal();</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        takeLock.unlock();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (c == capacity)</div><div class="line">        signalNotFull();</div><div class="line">    <span class="keyword">return</span> x;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="并发分析-1"><a href="#并发分析-1" class="headerlink" title="并发分析"></a>并发分析</h3><p>逻辑和论文基本一致，所以看起来也有一样的<strong>可见性</strong>问题。请看以下执行序列：</p>
+<ul>
+<li>线程A执行到17行</li>
+<li>线程B执行到43行</li>
+</ul>
+<p>在这个执行序列中，线程A本质上已经将节点入队了，且更新了队列容量。但是由于队列节点无法保证可见性，似乎也没法被线程B立即读到。如果真的是这样，第46行代码是很可能会报NullPointerException的，这肯定不是一个库会有的行为</p>
+<p>回过头来再仔细看了一遍注释（源码第97行）和代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Visibility between writers and readers is provided as follows:</div><div class="line">     </div><div class="line">      Whenever an element is enqueued, the putLock is acquired and</div><div class="line">      count updated.  <span class="function">A subsequent reader guarantees visibility to the</span></div><div class="line">      enqueued Node by either acquiring the <span class="title">putLock</span> <span class="params">(via fullyLock)</span></div><div class="line">      or by acquiring the takeLock, and then reading n = count.get();</div><div class="line">      <span class="keyword">this</span> gives visibility to the first n items.</div></pre></td></tr></table></figure>
+<p>其实<code>LinkedBlockingQueue</code>的注释中有专门对于可见性的解释说明：</p>
+<blockquote>
+<p>当一个元素入队，获取了<code>putLock</code>并且<code>count</code>更新后。随后的出队线程保证能读到最新入队的节点需要用以下2种的任意一种方法：</p>
+<ul>
+<li>方法一：出队线程用时获取<code>putLock</code>：这块大家都能理解，相当于获取2把锁，必然能保证可见性</li>
+<li>方法二：获取<code>takeLock</code>后，执行<code>n = count.get()</code>即可保证可见性</li>
+</ul>
+</blockquote>
+<p>之前对于方法二为什么能保证可见性一直没有想明白，为什么执行下<code>count.get()</code>就能保证节点的可见性。直到最近看到《深入Java虚拟机（第三版）》出了，突然想到volatile的语义（count是个AtomicInteger，对于AtomicInteger的读写本质上都是读写一个volatile变量）：</p>
+<ol>
+<li>保证被修饰的变量对所有线程的可见性</li>
+<li>禁止指令重排序优化</li>
+</ol>
+<blockquote>
+<p>附加规则：如果是写操作，会强制将本处理器的缓存写入了主内存，该写入动作也会引起别的处理器或者别的内核无效化(Invalidate)其缓存</p>
+</blockquote>
+<p>基于第2点语义可以得出：当线程1执行到17后，由于完成了volatile的写操作，将强制将缓存的修改写入主内存，因此对于入队节点的更新操作也会立即写入主内存，并且其他核的相关缓存会失效。因此到线程2执行到43行的时候必然能读到最新的值！</p>
+<p>volatile的这个技巧的典型应该场景如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> initialized;</div><div class="line"></div><div class="line"><span class="keyword">private</span> Properties config;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span>&#123;</div><div class="line">    config = readFromFile();</div><div class="line">    initialized = <span class="keyword">true</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">while</span>(!initialized)&#123;</div><div class="line">        sleep();</div><div class="line">    &#125;</div><div class="line">    doSomethingWithConfig();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>假设线程A执行<code>init()</code>后，线程B立即执行了<code>start()</code>。如果没有volatile的第2条语义保证，线程B执行第14行代码，使用的config很可能没有初始化好或者初始化好了，但是对线程B还不可见。这样很可能执行报错！</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>“two lock queue” 算法并没有保证线程可见性，而使queue的enqueue入队操作对dequeue出队立即可见，存在不可预知的延迟。然而基于此算法的<code>LinkedBlockingQueue</code>利用volatile的“禁止重排序”语义保证了可见性</p>
+<p>举一反三一下，使用同样技巧的还有<code>FutureTask</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 源码第92行</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> state;</div><div class="line"></div><div class="line"><span class="comment">// 源码第104行</span></div><div class="line"><span class="keyword">private</span> Object outcome; <span class="comment">// non-volatile, protected by state reads/writes</span></div></pre></td></tr></table></figure>
+<h2 id="感想"><a href="#感想" class="headerlink" title="感想"></a>感想</h2><p>学习到了：</p>
+<blockquote>
+<p>当使用volatile变量后，其他变量的修改要保证可见性其实已经无需额外使用volatile修饰，只需要在使用的时候优先读写这个volatile即可</p>
+</blockquote>
+<p>另外，看到大哥李（Doug Lea）的博客上说，<code>LinkedBlockingQueue</code>这段500行的代码写了将近1年。深深的感叹：</p>
+<blockquote>
+<p>并发编程从来都不是一件简单的事，性能优化的路上也没有终点</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/wechat-reward-image.png" alt="zacard WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/并发/" rel="tag"># 并发</a>
+          
+            <a href="/tags/可见性/" rel="tag"># 可见性</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/13/log-agent-backoff/" rel="next" title="日志采集高可用之重试">
+                <i class="fa fa-chevron-left"></i> 日志采集高可用之重试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  <p>热评文章</p>
+  <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2021/01/19/java-linked-queue/"
+           data-title="LinkedBlockingQueue，我所忽略的并发安全细节" data-url="https://zacard.net/2021/01/19/java-linked-queue/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/88666.jpg"
+               alt="zacard" />
+          <p class="site-author-name" itemprop="name">zacard</p>
+          <p class="site-description motion-element" itemprop="description">优生笑，菜鸟哭</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">65</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">105</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/mmaxiaolei" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/xiaoguodeshijie" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/za-qia" target="_blank" title="ZhiHu">
+                  
+                    <i class="fa fa-fw fa-zhihu"></i>
+                  
+                  ZhiHu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-block">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://www.dingdangss.com/" title="DingDang's Notes" target="_blank">DingDang's Notes</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#two-lock-queue-algorithm"><span class="nav-number">2.</span> <span class="nav-text">two lock queue algorithm</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要用2把锁"><span class="nav-number">2.1.</span> <span class="nav-text">为什么要用2把锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发分析"><span class="nav-number">2.2.</span> <span class="nav-text">并发分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LinkedBlockingQueue"><span class="nav-number">3.</span> <span class="nav-text">LinkedBlockingQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#并发分析-1"><span class="nav-number">3.1.</span> <span class="nav-text">并发分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#感想"><span class="nav-number">5.</span> <span class="nav-text">感想</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zacard</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zacard"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("X9lEh9fASONXuxd17z7nN0of-gzGzoHsz", "e4CgYPQMhAN7v3CmUYcFwt30");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+</body>
+</html>
