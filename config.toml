@@ -39,6 +39,14 @@ theme = "DoIt"
     url = "/categories/"
     title = ""
     weight = 3
+  [[menu.main]]
+    identifier = "about"
+    pre = ""
+    post = ""
+    name = "关于"
+    url = "/about/"
+    title = ""
+    weight = 3
 
 [params]
   #  DoIt 主题版本
@@ -414,11 +422,11 @@ theme = "DoIt"
       # Gitalk 评论系统设置
       [params.page.comment.gitalk]
         # 
-        enable = false
-        owner = ""
-        repo = ""
-        clientId = ""
-        clientSecret = ""
+        enable = true
+        owner = "mmaxiaolei"
+        repo = "blog-comment"
+        clientId = "ca1fa800a3fe0ef8fbd6"
+        clientSecret = "69b48a6dac78c2b8b3b31fae74675d74020aa11e"
       # Valine 评论系统设置
       [params.page.comment.valine]
         enable = false
@@ -682,8 +690,8 @@ theme = "DoIt"
 
 # 作者配置
 [author]
-  name = "xxxx"
-  email = ""
+  name = "zacard"
+  email = "mmaxiaolei@gmail.com"
   link = ""
   avatar = ""
   gravatarEmail = ""
