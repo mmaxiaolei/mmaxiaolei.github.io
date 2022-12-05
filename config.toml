@@ -67,7 +67,7 @@ theme = "DoIt"
   #  日期格式
   dateFormat = "2006-01-02"
   # 网站图片, 用于 Open Graph 和 Twitter Cards
-  images = ["/logo.png"]
+  images = ["/favicon-32x32.png"]
   #  开启 PWA 支持
   enablePWA = false
   #  版权信息
@@ -79,7 +79,7 @@ theme = "DoIt"
     # 是否隐藏网站图标资源链接
     noFavicon = false
     # 更现代的 SVG 网站图标, 可替代旧的 .png 和 .ico 文件
-    svgFavicon = ""
+    svgFavicon = "/safari-pinned-tab.svg"
     # Safari 图标颜色
     iconColor = "#5bbad5"
     # Windows v8-10磁贴颜色
@@ -130,11 +130,11 @@ theme = "DoIt"
     #  页面头部导航栏标题配置
     [params.header.title]
       # LOGO 的 URL
-      logo = "/logo.png"
+      logo = ""
       # 标题名称
       name = "Zacard's Notes"
       # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
-      pre = ""
+      pre = "<i class='fa-regular fa-rocket-launch'></i>"
       # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
       post = ""
       #  是否为标题显示打字机动画
@@ -308,7 +308,7 @@ theme = "DoIt"
     #  是否使用 fontawesome 扩展语法
     fontawesome = true
     # 是否在文章页面显示原始 Markdown 文档链接
-    linkToMarkdown = true
+    linkToMarkdown = false
     #  配置文章原始文件的链接
     linkToSource = false
     # "https://github.com/user/repo/blob/main/{path}"
